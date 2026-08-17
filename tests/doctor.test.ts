@@ -27,14 +27,16 @@ afterAll(() => {
 
 describe("doctor", () => {
   it("reports missing hook scripts and missing mounted dirs", async () => {
+    const skillDir = join(boostHome, "skills").replace(/\\/g, "\\\\");
+    const hookCmd = join(boostHome, "hooks", "vue3", "protect-main.mjs").replace(/\\/g, "\\\\");
     writeFileSync(
       join(kimiHome, "config.toml"),
       [
-        `extra_skill_dirs = [ "${join(boostHome, "skills")}" ]`,
+        `extra_skill_dirs = [ "${skillDir}" ]`,
         "",
         "[[hooks]]",
         `event = "PreToolUse"`,
-        `command = "node \\"${join(boostHome, "hooks", "vue3", "protect-main.mjs")}\\""`,
+        `command = "node \\"${hookCmd}\\""`,
         'matcher = "Bash"',
       ].join("\n"),
       "utf8",

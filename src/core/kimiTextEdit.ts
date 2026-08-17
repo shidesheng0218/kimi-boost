@@ -20,17 +20,27 @@ export interface ManagedHook {
 export const MANAGED_BEGIN = "# >>> kimi-boost managed >>>";
 export const MANAGED_END = "# <<< kimi-boost managed <<<";
 
-/** 在数组块内提取引号字符串元素 */
+/** TOML 字符串转义:反斜杠与双引号(Windows 路径含反斜杠,必须转义) */
+function tomlStr(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+/** 还原 TOML 转义(\ -> \, \" -> ") */
+function unescapeToml(s: string): string {
+  return s.replace(/\\\\/g, "\\").replace(/\\"/g, '"');
+}
+
+/** 在数组块内提取引号字符串元素(还原转义) */
 function extractElements(block: string): string[] {
   const out: string[] = [];
   const re = /"((?:[^"\\]|\\.)*)"/g;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(block)) !== null) out.push(m[1]);
+  while ((m = re.exec(block)) !== null) out.push(unescapeToml(m[1]));
   return out;
 }
 
 function toArrayLine(key: string, elements: string[]): string {
-  return `${key} = [ ${elements.map((e) => `"${e}"`).join(", ")} ]`;
+  return `${key} = [ ${elements.map((e) => `"${tomlStr(e)}"`).join(", ")} ]`;
 }
 
 /**
@@ -131,8 +141,8 @@ function findManagedBlock(text: string): { start: number; end: number; body: str
 }
 
 function hookToToml(h: ManagedHook): string[] {
-  const lines = ["[[hooks]]", `event = "${h.event}"`, `command = "${h.command.replace(/"/g, '\\"')}"`];
-  if (h.matcher) lines.push(`matcher = "${h.matcher}"`);
+  const lines = ["[[hooks]]", `event = "${tomlStr(h.event)}"`, `command = "${tomlStr(h.command)}"`];
+  if (h.matcher) lines.push(`matcher = "${tomlStr(h.matcher)}"`);
   if (h.timeout !== undefined) lines.push(`timeout = ${h.timeout}`);
   return lines;
 }
@@ -197,7 +207,7 @@ export function upsertManagedHooks(text: string, hooks: ManagedHook[]): { text: 
  * 兼容两种来源:managed 标记块内的(从标记块剔除)与块外的(旧版写入,直接删块)。
  */
 export function removePresetHooks(text: string, presetId: string): { text: string; removed: number } {
-  const needle = `hooks${process.platform === "win32" ? "\\" : "/"}${presetId}${process.platform === "win32" ? "\\" : "/"}`;
+  const needleRe = new RegExp(`hooks[\\\\/]${presetId}[\\\\/]`);
   const block = findManagedBlock(text);
 
   // 1) 块外的 [[hooks]]:整块删除(旧版兼容)
@@ -207,7 +217,7 @@ export function removePresetHooks(text: string, presetId: string): { text: strin
   let m: RegExpExecArray | null;
   while ((m = hookRe.exec(text)) !== null) {
     const inManaged = block !== undefined && m.index >= block.start && m.index < block.end;
-    if (!inManaged && m[0].includes(needle)) {
+    if (!inManaged && needleRe.test(m[0])) {
       deletions.push({ start: m.index, end: m.index + m[0].length });
       removed++;
     }
@@ -226,7 +236,7 @@ export function removePresetHooks(text: string, presetId: string): { text: strin
   const keep: string[] = [];
   let m2: RegExpExecArray | null;
   while ((m2 = re.exec(b2.body)) !== null) {
-    if (m2[0].includes(needle)) removed++;
+    if (needleRe.test(m2[0])) removed++;
     else keep.push(m2[0]);
   }
   if (removed === 0) return { text: out, removed };
