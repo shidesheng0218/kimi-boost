@@ -80,10 +80,10 @@ Preset catalog is PR-driven: add a directory under `presets/`, CI validates sche
 
 ## Roadmap
 
-- [ ] Claude Code + Codex adapters (agent files already cross-compatible)
 - [ ] MCP server presets
 - [ ] Token/cost usage guard hooks
 - [ ] Per-project (`.kimi-boost/`) presets
+- [ ] Codex `~/.codex/agents` support (Codex defines agents via AGENTS.md)
 
 ## License
 

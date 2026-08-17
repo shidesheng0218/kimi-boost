@@ -9,7 +9,7 @@ export function managedRoots(): string[] {
   const boost = process.env.KIMI_BOOST_HOME ?? join(homedir(), ".kimi-boost");
   const kimiHome = process.env.KIMI_CODE_HOME ?? join(homedir(), ".kimi-code");
   const claudeHome = process.env.CLAUDE_CODE_HOME ?? join(homedir(), ".claude");
-  const codexHome = join(homedir(), ".codex");
+  const codexHome = process.env.CODEX_HOME ?? join(homedir(), ".codex");
   return [boost, kimiHome, claudeHome, codexHome];
 }
 
