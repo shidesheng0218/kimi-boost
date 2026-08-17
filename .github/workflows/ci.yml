@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Preset validation
+        run: node scripts/validate-presets.mjs
+      - name: Build
+        run: npm run build
+      - name: Smoke test (list/status/marketplace)
+        run: |
+          node dist/cli.js list
+          node dist/cli.js status
+          node dist/cli.js marketplace /tmp/marketplace.json
+          test -s /tmp/marketplace.json && echo "marketplace OK"
