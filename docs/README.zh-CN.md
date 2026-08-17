@@ -1,12 +1,6 @@
 <div align="center">
 
-```
- _   __ ___ __  __ __  __
-| | / /|  _ \ __ \ \ \ \ \    kimi-boost
-| |/ / | |_) |  _ \ \ \ \ \   一条命令,
-| |\ \ |  __/| |_) \ \ \ \ \  让你的 AI 编程助手
-|_| \_\|_|   |____/  \_\ \_\  获得真实开发工作流
-```
+# ⚡ kimi-boost
 
 **久经实战的 **skills · hooks · agents**,一条命令装进 Kimi Code、Claude Code 和 Codex CLI。**
 

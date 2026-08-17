@@ -1,12 +1,6 @@
 <div align="center">
 
-```
- _   __ ___ __  __ __  __
-| | / /|  _ \ __ \ \ \ \ \    kimi-boost
-| |/ / | |_) |  _ \ \ \ \ \   one command,
-| |\ \ |  __/| |_) \ \ \ \ \  real dev workflow
-|_| \_\|_|   |____/  \_\ \_\  for your AI coding CLI
-```
+# ⚡ kimi-boost
 
 **Battle-tested **skills · hooks · agents**, one command — for Kimi Code, Claude Code and Codex CLI.**
 
