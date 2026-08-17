@@ -1,0 +1,8 @@
+{
+  "id": "weapp",
+  "name": "微信小程序",
+  "description": "微信小程序(原生 / uni-app / Taro)开发规范:目录结构、分包、性能与安全最佳实践。",
+  "tags": ["weapp", "miniprogram", "frontend"],
+  "hooks": [],
+  "docs": "https://kimi-boost.dev/presets/weapp"
+}

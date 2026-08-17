@@ -1,0 +1,15 @@
+{
+  "id": "vue3",
+  "name": "Vue 3 + TypeScript",
+  "description": "Vue 3 / Vite / TypeScript 开发最佳实践:组合式 API 规范、状态管理、性能约定,外加 main 分支推送保护 hook。",
+  "tags": ["vue", "frontend", "typescript"],
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "protect-main.mjs",
+      "timeout": 5
+    }
+  ],
+  "docs": "https://kimi-boost.dev/presets/vue3"
+}

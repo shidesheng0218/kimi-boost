@@ -1,0 +1,15 @@
+{
+  "id": "python",
+  "name": "Python 工程化",
+  "description": "Python 最佳实践:类型标注、测试、依赖管理,外加危险 Shell 命令拦截 hook。",
+  "tags": ["python", "backend"],
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "block-dangerous.mjs",
+      "timeout": 5
+    }
+  ],
+  "docs": "https://kimi-boost.dev/presets/python"
+}
