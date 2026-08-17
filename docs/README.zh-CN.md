@@ -134,20 +134,33 @@ kimi-boost marketplace
 
 ## 工作原理
 
-```
-                ┌────────────────────────────────────┐
-                │         kimi-boost CLI              │
-                │  install · remove · doctor · update │
-                └──────────┬─────────┬─────────┬─────┘
-                           │         │         │
-            ┌──────────────▼┐  ┌─────▼──────┐  ┌▼──────────┐
-            │   Kimi Code   │  │ Claude Code │  │   Codex   │
-            │ config.toml   │  │ settings.json│ │ config.toml│
-            │ (文本级编辑)  │  │ (manifest 驱动)│ │ (manifest 驱动)│
-            └──────┬────────┘  └─────┬──────┘  └──┬─────────┘
-                   │                 │            │
-                   ▼                 ▼            ▼
-        skills + hooks + agents   skills + hooks + agents   skills + hooks
+```mermaid
+flowchart TD
+    KB["<b>kimi-boost CLI</b><br/><i>install · remove · doctor · update · marketplace</i>"]
+    REG["presets/ 注册表<br/>(skills · agents · hooks)"]
+
+    KB -->|写入| KI["kimi adapter<br/>(文本级配置编辑)"]
+    KB -->|写入| CC["claude adapter<br/>(manifest 驱动)"]
+    KB -->|写入| CX["codex adapter<br/>(manifest 驱动)"]
+
+    KI --> KCF["~/.kimi-code/config.toml"]
+    CC --> CCS["~/.claude/settings.json"]
+    CX --> CXC["~/.codex/config.toml"]
+
+    KCF --> BOOST1["# >>> kimi-boost managed >>><br/>extra_skill_dirs · [[hooks]]"]
+    CCS --> BOOST2["hooks · skills/<id>/ · agents/*.md"]
+    CXC --> BOOST3["[[hooks.Event]] · skills/<id>/"]
+
+    REG -->|安装/更新| KB
+    KB -->|生成| MKT["marketplace.json<br/>(tree 或 release-zip 源)"]
+    MKT -->|"/plugins marketplace"| KIMI_PLUGINS["Kimi Code /plugins"]
+
+    classDef cli fill:#7c3aed,color:#fff,font-weight:bold;
+    classDef tool fill:#1e293b,color:#e2e8f0;
+    classDef out fill:#064e3b,color:#a7f3d0;
+    class KB,REG cli;
+    class KI,CC,CX tool;
+    class KCF,CCS,CXC out;
 ```
 
 - **Kimi Code** — 以**文本级**方式编辑 `~/.kimi-code/config.toml`(managed `# >>> kimi-boost managed >>>` 区块 + 原位数组合并)。你的注释与格式原样保留。

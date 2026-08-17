@@ -134,21 +134,33 @@ Each preset is also installable with `/plugins install` directly, with skills, a
 
 ## How it works
 
-```
-                ┌────────────────────────────────────┐
-                │         kimi-boost CLI              │
-                │  install · remove · doctor · update │
-                └──────────┬─────────┬─────────┬─────┘
-                           │         │         │
-            ┌──────────────▼┐  ┌─────▼──────┐  ┌▼──────────┐
-            │   Kimi Code   │  │ Claude Code │  │   Codex   │
-            │ config.toml   │  │ settings.json│ │ config.toml│
-            │ (text-level   │  │ (manifest-  │  │ (manifest- │
-            │  editing)     │  │  driven)    │  │  driven)   │
-            └──────┬────────┘  └─────┬──────┘  └──┬─────────┘
-                   │                 │            │
-                   ▼                 ▼            ▼
-        skills + hooks + agents   skills + hooks + agents   skills + hooks
+```mermaid
+flowchart TD
+    KB["<b>kimi-boost CLI</b><br/><i>install · remove · doctor · update · marketplace</i>"]
+    REG["presets/ registry<br/>(skills · agents · hooks)"]
+
+    KB -->|writes| KI["kimi adapter<br/>(text-level config editing)"]
+    KB -->|writes| CC["claude adapter<br/>(manifest-driven)"]
+    KB -->|writes| CX["codex adapter<br/>(manifest-driven)"]
+
+    KI --> KCF["~/.kimi-code/config.toml"]
+    CC --> CCS["~/.claude/settings.json"]
+    CX --> CXC["~/.codex/config.toml"]
+
+    KCF --> BOOST1["# >>> kimi-boost managed >>><br/>extra_skill_dirs · [[hooks]]"]
+    CCS --> BOOST2["hooks · skills/<id>/ · agents/*.md"]
+    CXC --> BOOST3["[[hooks.Event]] · skills/<id>/"]
+
+    REG -->|installs / updates| KB
+    KB -->|builds| MKT["marketplace.json<br/>(tree or release-zip sources)"]
+    MKT -->|"/plugins marketplace"| KIMI_PLUGINS["Kimi Code /plugins"]
+
+    classDef cli fill:#7c3aed,color:#fff,font-weight:bold;
+    classDef tool fill:#1e293b,color:#e2e8f0;
+    classDef out fill:#064e3b,color:#a7f3d0;
+    class KB,REG cli;
+    class KI,CC,CX tool;
+    class KCF,CCS,CXC out;
 ```
 
 - **Kimi Code** — edits `~/.kimi-code/config.toml` at **text level** (a managed `# >>> kimi-boost managed >>>` block plus in-place array merge). Your comments and formatting survive untouched.
