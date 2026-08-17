@@ -34,7 +34,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/shidesheng0218/kimi-boost"
+    "url": "git+https://github.com/shidesheng0218/kimi-boost.git"
   },
   "homepage": "https://github.com/shidesheng0218/kimi-boost",
   "dependencies": {
