@@ -96,8 +96,16 @@ program
   .description("Update installed presets to the latest versions")
   .action(async () => {
     try {
-      const messages = await runUpdate();
-      for (const m of messages) console.log(pc.blue(`· ${m}`));
+      const results = await runUpdate();
+      for (const r of results) {
+        if (r.status === "updated") {
+          console.log(`${pc.green("↑")} ${r.id}: ${r.from} -> ${r.to}`);
+        } else if (r.status === "up-to-date") {
+          console.log(`${pc.dim("·")} ${r.id}: up to date${r.message ? ` (${r.message})` : ""}`);
+        } else {
+          console.log(`${pc.red("✗")} ${r.id}: ${r.message ?? "failed"}`);
+        }
+      }
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
       process.exitCode = 1;

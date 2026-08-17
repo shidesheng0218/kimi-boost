@@ -37,9 +37,33 @@ export function kimiHomeDir(): string {
   return KIMI_DIRS.find((d) => existsSync(d)) ?? KIMI_DIRS[0];
 }
 
+/**
+ * 除了 PATH 之外,再检查工具的常见安装位置(安装脚本往往只改 shell 配置,
+ * 当前 shell 可能尚未生效)。
+ */
+function findBinInCommonPaths(name: string, homeDir: string): string | undefined {
+  const candidates: string[] = [];
+  if (process.platform === "win32") {
+    candidates.push(join(homeDir, "bin", `${name}.exe`));
+  } else {
+    candidates.push(join(homeDir, "bin", name));
+  }
+  for (const c of candidates) {
+    if (existsSync(c)) {
+      try {
+        execFileSync(c, ["--version"], { stdio: "ignore" });
+        return c;
+      } catch {
+        /* exists but not executable */
+      }
+    }
+  }
+  return undefined;
+}
+
 function toolEnv(tool: ToolName): ToolEnv {
   if (tool === "kimi") {
-    const bin = findBin(["kimi", "kimi-code"]);
+    const bin = findBin(["kimi", "kimi-code"]) ?? findBinInCommonPaths("kimi", kimiHomeDir());
     return {
       tool,
       installed: Boolean(bin),
