@@ -24,7 +24,8 @@ program
   .description("Install a preset into your AI coding CLI (interactive if no preset given)")
   .option("-t, --tool <tool>", "target tool (kimi | claude | codex)")
   .option("-n, --dry-run", "show what would be done without writing anything")
-  .action(async (preset?: string, opts?: { tool?: ToolName; dryRun?: boolean }) => {
+  .option("--with-hooks", "force config.toml hooks even if installed via /plugins")
+  .action(async (preset?: string, opts?: { tool?: ToolName; dryRun?: boolean; withHooks?: boolean }) => {
     try {
       let id = preset;
       if (!id) {
@@ -42,7 +43,7 @@ program
         id = answer.preset;
         if (!id) return;
       }
-      const reports = await installPreset(id, { tool: opts?.tool, dryRun: opts?.dryRun });
+      const reports = await installPreset(id, { tool: opts?.tool, dryRun: opts?.dryRun, withHooks: opts?.withHooks });
       for (const r of reports) {
         const prefix = opts?.dryRun ? pc.cyan("dry-run") : (r.ok ? pc.green("✓") : pc.red("✗"));
         console.log(`${prefix} [${r.tool}] ${r.message}`);
@@ -59,7 +60,7 @@ program
 program
   .command("remove <preset>")
   .description("Remove an installed preset")
-  .option("-t, --tool <tool>", "target tool")
+  .option("-t, --tool <tool>", "target tool (kimi | claude | codex)")
   .option("-n, --dry-run", "show what would be removed without deleting anything")
   .action(async (preset: string, opts?: { tool?: ToolName; dryRun?: boolean }) => {
     try {
@@ -110,9 +111,11 @@ program
 program
   .command("update")
   .description("Update installed presets to the latest versions")
-  .action(async () => {
+  .option("--repo <owner/repo>", "registry repository (default: shidesheng0218/kimi-boost, or $KIMI_BOOST_REPO)")
+  .option("--branch <ref>", "registry branch (default: main)")
+  .action(async (opts?: { repo?: string; branch?: string }) => {
     try {
-      const results = await runUpdate();
+      const results = await runUpdate(opts as { repo?: string; branch?: string });
       for (const r of results) {
         if (r.status === "updated") {
           console.log(`${pc.green("↑")} ${r.id}: ${r.from} -> ${r.to}`);

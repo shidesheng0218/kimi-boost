@@ -4,6 +4,7 @@ import { getPreset, listPresets, presetSourceDir } from "../registry/presets.js"
 import { hooksDir, presetsDir } from "../core/config.js";
 import { copyDirIfWritable, copyFileIfWritable, ensureDir, setDryRun } from "../core/fsguard.js";
 import { detect } from "../core/detect.js";
+import { kimiPluginInstalled } from "../core/kimiPlugins.js";
 import { getAdapter } from "../adapters/index.js";
 import type { PresetDefinition, ToolName } from "../core/types.js";
 import type { InstallReport } from "../adapters/types.js";
@@ -12,6 +13,8 @@ export interface InstallOptions {
   tool?: ToolName;
   force?: boolean;
   dryRun?: boolean;
+  /** 即使检测到官方 /plugins 已安装同 id,也强制写入 config.toml hooks */
+  withHooks?: boolean;
 }
 
 /** 公共步骤:把 preset 的 hooks 脚本复制到共享的 HOOKS_DIR/<id>,所有 adapter 的 hook 命令都指向这里 */
@@ -28,7 +31,7 @@ function syncHooks(preset: PresetDefinition, sourceDir: string): void {
 }
 
 export async function installPreset(id: string, opts: InstallOptions = {}): Promise<InstallReport[]> {
-  const preset = getPreset(id);
+  let preset = getPreset(id);
   if (!preset) {
     const available = listPresets().map((p) => p.id).join(", ");
     throw new Error(`Preset '${id}' not found. Available: ${available}`);
@@ -52,6 +55,17 @@ export async function installPreset(id: string, opts: InstallOptions = {}): Prom
   }
 
   const sourceDir = presetSourceDir(id);
+
+  // 双通道防护:Kimi 官方 /plugins 已装同 id 时,默认跳过 config.toml hooks
+  // (plugin 自身声明 hooks),避免重复触发。--with-hooks 可强制写入。
+  const viaPlugin = kimiPluginInstalled(id);
+  if (viaPlugin && !opts.withHooks) {
+    console.warn(
+      `[warn] preset '${id}' is already installed via Kimi Code '/plugins'. ` +
+        "Skipping config.toml hooks to avoid duplication. Use --with-hooks to force.",
+    );
+    preset = { ...preset, hooks: [] };
+  }
 
   setDryRun(Boolean(opts.dryRun));
   const reports: InstallReport[] = [];

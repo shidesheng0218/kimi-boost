@@ -15,14 +15,22 @@ export interface UpdateResult {
   message?: string;
 }
 
-const REPO = "shidesheng0218/kimi-boost";
-const BRANCH = "main";
-const RAW = `https://raw.githubusercontent.com/${REPO}/${BRANCH}`;
-const TARBALL = `https://codeload.github.com/${REPO}/tar.gz/refs/heads/${BRANCH}`;
+export interface UpdateOptions {
+  /** 自定义 registry 仓库(fork 场景),默认官方仓库 */
+  repo?: string;
+  branch?: string;
+}
 
-export async function fetchRemotePreset(id: string): Promise<{ version?: string; ok: boolean }> {
+export function updateSource(opts: UpdateOptions = {}): { repo: string; branch: string } {
+  const repo = opts.repo ?? process.env.KIMI_BOOST_REPO ?? "shidesheng0218/kimi-boost";
+  const branch = opts.branch ?? process.env.KIMI_BOOST_BRANCH ?? "main";
+  return { repo, branch };
+}
+
+export async function fetchRemotePreset(id: string, opts: UpdateOptions = {}): Promise<{ version?: string; ok: boolean }> {
+  const { repo, branch } = updateSource(opts);
   try {
-    const res = await fetch(`${RAW}/presets/${id}/preset.json`);
+    const res = await fetch(`https://raw.githubusercontent.com/${repo}/${branch}/presets/${id}/preset.json`);
     if (!res.ok) return { ok: false };
     const data = (await res.json()) as { version?: string };
     return { version: data.version, ok: true };
@@ -41,10 +49,11 @@ function localVersion(id: string): string | undefined {
   }
 }
 
-export async function updatePreset(id: string): Promise<UpdateResult> {
-  const remote = await fetchRemotePreset(id);
+export async function updatePreset(id: string, opts: UpdateOptions = {}): Promise<UpdateResult> {
+  const { repo, branch } = updateSource(opts);
+  const remote = await fetchRemotePreset(id, opts);
   if (!remote.ok) {
-    return { id, status: "error", message: "failed to fetch remote registry (offline?)" };
+    return { id, status: "error", message: `failed to fetch remote registry from ${repo}@${branch} (offline?)` };
   }
   const local = localVersion(id);
   if (remote.version && local === remote.version) {
@@ -52,7 +61,7 @@ export async function updatePreset(id: string): Promise<UpdateResult> {
   }
 
   try {
-    const res = await fetch(TARBALL);
+    const res = await fetch(`https://codeload.github.com/${repo}/tar.gz/refs/heads/${branch}`);
     if (!res.ok) throw new Error(`tarball fetch failed: ${res.status}`);
     const buf = Buffer.from(await res.arrayBuffer());
     const root = join(presetsDir(), ".tmp-update");
@@ -61,8 +70,8 @@ export async function updatePreset(id: string): Promise<UpdateResult> {
     const tarballPath = join(root, "src.tgz");
     writeFileSync(tarballPath, buf);
     await tar.x({ file: tarballPath, cwd: root });
-    const extracted = join(root, `kimi-boost-${BRANCH}`, "presets", id);
-    if (!existsSync(extracted)) throw new Error(`preset '${id}' not in tarball`);
+    const extracted = join(root, `kimi-boost-${branch}`, "presets", id);
+    if (!existsSync(extracted)) throw new Error(`preset '${id}' not in tarball of ${repo}@${branch}`);
 
     const installDir = join(presetsDir(), id);
     rmSync(installDir, { recursive: true, force: true });
@@ -80,11 +89,11 @@ export async function updatePreset(id: string): Promise<UpdateResult> {
   }
 }
 
-export async function runUpdate(): Promise<UpdateResult[]> {
+export async function runUpdate(opts: UpdateOptions = {}): Promise<UpdateResult[]> {
   const { installedOnly } = await listStatus();
   const results: UpdateResult[] = [];
   for (const id of installedOnly) {
-    results.push(await updatePreset(id));
+    results.push(await updatePreset(id, opts));
   }
   if (installedOnly.length === 0) {
     results.push({ id: "(none)", status: "up-to-date", message: "no presets installed yet" });
