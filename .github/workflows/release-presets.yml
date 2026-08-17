@@ -38,12 +38,12 @@ jobs:
       - name: Pack preset zips
         run: |
           mkdir -p dist-releases
+          tag="${{ steps.tag.outputs.tag }}"
           for dir in presets/*/; do
             id="$(basename "$dir")"
             if [ ! -f "$dir/preset.json" ]; then continue; fi
-            version="$(node -p "require('./$dir/preset.json').version || '0.0.0'")"
-            (cd presets && zip -r "../dist-releases/$id-$version.zip" "$id")
-            echo "packed $id-$version.zip"
+            (cd presets && zip -r "../dist-releases/$id-$tag.zip" "$id")
+            echo "packed $id-$tag.zip"
           done
       - name: Build zip-mode marketplace
         run: |
