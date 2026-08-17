@@ -38,9 +38,31 @@ AI 编程助手只会做你教它的事。不加以引导,它会写出泛泛的�
 
 <div align="center">
 
-![kimi-boost demo](assets/demo.gif)
+![kimi-boost demo](../assets/demo.gif)
 
 </div>
+
+GIF 加载不出来(或 CDN 慢)?同一场演示的纯文本回放:
+
+```text
+$ kimi-boost install
+✔ 选择一个预设:
+    python — Python 工程化
+  > vue3 — Vue 3 + TypeScript
+    weapp — 微信小程序
+
+✓ [kimi] 已安装预设 'vue3' 到 Kimi Code
+  /Users/you/.kimi-boost/hooks/vue3
+  config.toml[extra_skill_dirs], config.toml[extra_agent_dirs], config.toml[[hooks]] (+1)
+  Run /reload or start a new session.
+
+$ kimi-boost doctor
+✓ kimi: detected (version 0.36.1)
+✓ kimi: config.toml parses
+✓ kimi: hook script valid
+✓ kimi: mounted dir present
+All checks passed.
+```
 
 ## 快速开始
 

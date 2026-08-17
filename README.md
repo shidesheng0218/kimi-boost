@@ -42,6 +42,28 @@ Your AI coding agent only knows what you teach it. Without guidance it writes ge
 
 </div>
 
+GIF won't load (or you're behind a slow CDN)? Same session, as plain text:
+
+```text
+$ kimi-boost install
+✔ Choose a preset:
+    python — Python engineering
+  > vue3 — Vue 3 + TypeScript
+    weapp — WeChat Mini Program
+
+✓ [kimi] Installed preset 'vue3' into Kimi Code
+  /Users/you/.kimi-boost/hooks/vue3
+  config.toml[extra_skill_dirs], config.toml[extra_agent_dirs], config.toml[[hooks]] (+1)
+  Run /reload or start a new session.
+
+$ kimi-boost doctor
+✓ kimi: detected (version 0.36.1)
+✓ kimi: config.toml parses
+✓ kimi: hook script valid
+✓ kimi: mounted dir present
+All checks passed.
+```
+
 ## Quick start
 
 ```bash
