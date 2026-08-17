@@ -1,0 +1,59 @@
+name: Release presets
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.2.0)"
+        required: true
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install deps
+        run: npm ci
+      - name: Validate presets
+        run: node scripts/validate-presets.mjs
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Pack preset zips
+        run: |
+          mkdir -p dist-releases
+          for dir in presets/*/; do
+            id="$(basename "$dir")"
+            if [ ! -f "$dir/preset.json" ]; then continue; fi
+            version="$(node -p "require('./$dir/preset.json').version || '0.0.0'")"
+            (cd presets && zip -r "../dist-releases/$id-$version.zip" "$id")
+            echo "packed $id-$version.zip"
+          done
+      - name: Build zip-mode marketplace
+        run: |
+          node dist/cli.js marketplace dist-releases/marketplace.json \
+            --source-mode zip \
+            --tag "${{ steps.tag.outputs.tag }}" \
+            --repo "${{ github.repository }}"
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.tag.outputs.tag }}"
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --title "$tag" --notes "Preset packs for Kimi Code plugin marketplace"
+          gh release upload "$tag" dist-releases/*.zip --clobber
+          gh release upload "$tag" dist-releases/marketplace.json --clobber
