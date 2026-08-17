@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { createRequire } from "node:module";
 import pc from "picocolors";
 import { installPreset, type InstallOptions } from "./commands/install.js";
 import { listStatus } from "./commands/list.js";
@@ -13,11 +14,13 @@ import prompts from "prompts";
 import type { ToolName } from "./core/types.js";
 
 const program = new Command();
+const require = createRequire(import.meta.url);
+const pkgVersion = (require("../package.json") as { version: string }).version;
 
 program
   .name("kimi-boost")
   .description("One-command preset installer & cross-tool enhancer for Kimi Code, Claude Code and Codex CLI")
-  .version("0.1.0");
+  .version(pkgVersion);
 
 program
   .command("install [preset]")

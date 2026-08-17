@@ -1,3 +1,7 @@
+## 0.2.1 (2026-08-17)
+
+- Fix: `kimi-boost --version` now reads from package.json instead of a hardcoded value (0.2.0 shipped with a stale version banner)
+
 # Changelog
 
 ## 0.2.0 (2026-08-17)
