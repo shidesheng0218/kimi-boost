@@ -5,14 +5,21 @@ import type { PresetDefinition } from "../core/types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-/** 预设内容目录:开发时指向仓库 presets/,打包后指向 dist/presets/ */
+/** 预设内容目录:兼容打包后(dist/vue3/…)与仓库源(presets/vue3)两种布局 */
 export function presetsRoot(): string {
   const candidates = [
+    join(__dirname),
     join(__dirname, "..", "presets"),
     join(__dirname, "..", "..", "presets"),
   ];
   for (const c of candidates) {
-    if (existsSync(c)) return c;
+    try {
+      for (const entry of readdirSync(c)) {
+        if (existsSync(join(c, entry, "preset.json"))) return c;
+      }
+    } catch {
+      /* not a directory */
+    }
   }
   throw new Error("presets directory not found");
 }

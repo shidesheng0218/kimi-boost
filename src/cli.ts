@@ -4,6 +4,7 @@ import { installPreset, type InstallOptions } from "./commands/install.js";
 import { listStatus } from "./commands/list.js";
 import { runUpdate } from "./commands/update.js";
 import { getStatus } from "./commands/status.js";
+import { marketplaceCommand } from "./commands/marketplace.js";
 import { listPresets } from "./registry/presets.js";
 import { getAdapter } from "./adapters/index.js";
 import prompts from "prompts";
@@ -97,6 +98,18 @@ program
     try {
       const messages = await runUpdate();
       for (const m of messages) console.log(pc.blue(`· ${m}`));
+    } catch (err) {
+      console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("marketplace [outfile]")
+  .description("Generate the Kimi Code custom marketplace JSON and print enable instructions")
+  .action((outfile?: string) => {
+    try {
+      marketplaceCommand(outfile);
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
       process.exitCode = 1;

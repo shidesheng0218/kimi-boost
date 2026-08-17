@@ -1,0 +1,23 @@
+{
+  "name": "vue3",
+  "version": "1.0.0",
+  "description": "Vue 3 + TypeScript 开发最佳实践:组合式 API 规范、状态管理、性能约定,外加 main 分支推送保护 hook。",
+  "keywords": ["vue", "frontend", "typescript"],
+  "license": "MIT",
+  "interface": {
+    "displayName": "Vue 3 + TypeScript",
+    "shortDescription": "Vue 3 best practices + main-branch push guard",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

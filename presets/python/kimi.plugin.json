@@ -1,0 +1,23 @@
+{
+  "name": "python",
+  "version": "1.0.0",
+  "description": "Python 工程化最佳实践:类型标注、测试、依赖管理,外加危险 Shell 命令拦截 hook。",
+  "keywords": ["python", "backend"],
+  "license": "MIT",
+  "interface": {
+    "displayName": "Python 工程化",
+    "shortDescription": "Python best practices + dangerous-shell guard",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/block-dangerous.mjs",
+      "timeout": 5
+    }
+  ]
+}

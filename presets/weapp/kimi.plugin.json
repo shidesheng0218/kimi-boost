@@ -1,0 +1,15 @@
+{
+  "name": "weapp",
+  "version": "1.0.0",
+  "description": "微信小程序开发规范:目录结构、分包、渲染性能与数据安全最佳实践。",
+  "keywords": ["weapp", "miniprogram", "frontend"],
+  "license": "MIT",
+  "interface": {
+    "displayName": "微信小程序",
+    "shortDescription": "WeChat Mini Program development best practices",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/"
+}
