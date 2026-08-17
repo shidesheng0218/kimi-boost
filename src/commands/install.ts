@@ -1,7 +1,8 @@
-import { copyFileSync, mkdirSync, readdirSync, statSync, existsSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { getPreset, listPresets, presetSourceDir } from "../registry/presets.js";
-import { HOOKS_DIR, PRESETS_DIR } from "../core/config.js";
+import { hooksDir, presetsDir } from "../core/config.js";
+import { copyDirIfWritable, copyFileIfWritable, ensureDir, setDryRun } from "../core/fsguard.js";
 import { detect } from "../core/detect.js";
 import { getAdapter } from "../adapters/index.js";
 import type { PresetDefinition, ToolName } from "../core/types.js";
@@ -10,28 +11,19 @@ import type { InstallReport } from "../adapters/types.js";
 export interface InstallOptions {
   tool?: ToolName;
   force?: boolean;
-}
-
-function copyDir(src: string, dest: string): void {
-  mkdirSync(dest, { recursive: true });
-  for (const entry of readdirSync(src)) {
-    const s = join(src, entry);
-    const d = join(dest, entry);
-    if (statSync(s).isDirectory()) copyDir(s, d);
-    else copyFileSync(s, d);
-  }
+  dryRun?: boolean;
 }
 
 /** 公共步骤:把 preset 的 hooks 脚本复制到共享的 HOOKS_DIR/<id>,所有 adapter 的 hook 命令都指向这里 */
 function syncHooks(preset: PresetDefinition, sourceDir: string): void {
   const srcHooks = join(sourceDir, "hooks");
   if (!existsSync(srcHooks)) return;
-  const dest = join(HOOKS_DIR, preset.id);
-  mkdirSync(dest, { recursive: true });
+  const dest = join(hooksDir(), preset.id);
+  ensureDir(dest);
   for (const entry of readdirSync(srcHooks)) {
     const s = join(srcHooks, entry);
     if (statSync(s).isDirectory()) continue;
-    copyFileSync(s, join(dest, entry));
+    copyFileIfWritable(s, join(dest, entry));
   }
 }
 
@@ -60,37 +52,43 @@ export async function installPreset(id: string, opts: InstallOptions = {}): Prom
   }
 
   const sourceDir = presetSourceDir(id);
-  syncHooks(preset, sourceDir);
 
+  setDryRun(Boolean(opts.dryRun));
   const reports: InstallReport[] = [];
-  for (const tool of explicit) {
-    const adapter = getAdapter(tool);
-    if (!adapter) {
-      reports.push({
-        tool,
-        presetId: id,
-        ok: false,
-        message: `Adapter for '${tool}' not implemented yet (coming in v0.2).`,
-        changed: [],
-      });
-      continue;
-    }
+  try {
+    syncHooks(preset, sourceDir);
 
-    const installDir = join(PRESETS_DIR, id);
-    mkdirSync(PRESETS_DIR, { recursive: true });
-    copyDir(sourceDir, installDir);
+    for (const tool of explicit) {
+      const adapter = getAdapter(tool);
+      if (!adapter) {
+        reports.push({
+          tool,
+          presetId: id,
+          ok: false,
+          message: `Adapter for '${tool}' not implemented yet (coming in v0.2).`,
+          changed: [],
+        });
+        continue;
+      }
 
-    try {
-      reports.push(await adapter.activate({ tool, preset, sourceDir, installDir }));
-    } catch (err) {
-      reports.push({
-        tool,
-        presetId: id,
-        ok: false,
-        message: err instanceof Error ? err.message : String(err),
-        changed: [],
-      });
+      const installDir = join(presetsDir(), id);
+      ensureDir(presetsDir());
+      copyDirIfWritable(sourceDir, installDir);
+
+      try {
+        reports.push(await adapter.activate({ tool, preset, sourceDir, installDir }));
+      } catch (err) {
+        reports.push({
+          tool,
+          presetId: id,
+          ok: false,
+          message: err instanceof Error ? err.message : String(err),
+          changed: [],
+        });
+      }
     }
+  } finally {
+    setDryRun(false);
   }
   return reports;
 }

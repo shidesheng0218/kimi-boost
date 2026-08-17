@@ -1,25 +1,40 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, copyFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { parse, stringify } from "smol-toml";
 import { kimiHomeDir } from "./detect.js";
+import { copyFileIfWritable, ensureDir, writeFileIfWritable } from "./fsguard.js";
 
-export const BOOST_HOME = process.env.KIMI_BOOST_HOME ?? join(homedir(), ".kimi-boost");
-export const PRESETS_DIR = join(BOOST_HOME, "presets");
-export const AGENTS_DIR = join(BOOST_HOME, "agents");
-export const SKILLS_DIR = join(BOOST_HOME, "skills");
-export const HOOKS_DIR = join(BOOST_HOME, "hooks");
+/**
+ * kimi-boost 管理的各目录。全部惰性求值(函数形式),以便测试环境在运行时
+ * 通过环境变量覆盖 KIMI_BOOST_HOME 等路径,而不受模块加载顺序影响。
+ */
+export function boostHome(): string {
+  return process.env.KIMI_BOOST_HOME ?? join(homedir(), ".kimi-boost");
+}
+export function presetsDir(): string {
+  return join(boostHome(), "presets");
+}
+export function agentsDir(): string {
+  return join(boostHome(), "agents");
+}
+export function skillsDir(): string {
+  return join(boostHome(), "skills");
+}
+export function hooksDir(): string {
+  return join(boostHome(), "hooks");
+}
 
 export function ensureBoostDirs(): void {
-  for (const d of [BOOST_HOME, PRESETS_DIR, AGENTS_DIR, SKILLS_DIR, HOOKS_DIR]) {
-    mkdirSync(d, { recursive: true });
+  for (const d of [boostHome(), presetsDir(), agentsDir(), skillsDir(), hooksDir()]) {
+    ensureDir(d);
   }
 }
 
 export function backupFile(file: string): string | undefined {
   if (!existsSync(file)) return undefined;
   const bak = `${file}.kboost.bak`;
-  copyFileSync(file, bak);
+  copyFileIfWritable(file, bak);
   return bak;
 }
 
@@ -50,9 +65,9 @@ export function mountBoostDirs(config: KimiConfig): boolean {
   const data = config.data;
   const skillDirs = new Set(asStringArray(data.extra_skill_dirs));
   const agentDirs = new Set(asStringArray(data.extra_agent_dirs));
-  const changed = !skillDirs.has(SKILLS_DIR) || !agentDirs.has(AGENTS_DIR);
-  skillDirs.add(SKILLS_DIR);
-  agentDirs.add(AGENTS_DIR);
+  const changed = !skillDirs.has(skillsDir()) || !agentDirs.has(agentsDir());
+  skillDirs.add(skillsDir());
+  agentDirs.add(agentsDir());
   data.extra_skill_dirs = [...skillDirs];
   data.extra_agent_dirs = [...agentDirs];
   return changed;
@@ -104,12 +119,13 @@ export function upsertKimiHooks(config: KimiConfig, hooks: HookEntry[]): boolean
 
 export function saveKimiConfig(config: KimiConfig): void {
   ensureBoostDirs();
-  writeFileSync(config.path, stringify(config.data), "utf8");
+  ensureDir(dirname(config.path));
+  writeFileIfWritable(config.path, stringify(config.data));
 }
 
 export function writeJson(file: string, data: unknown): void {
   ensureBoostDirs();
-  writeFileSync(file, JSON.stringify(data, null, 2), "utf8");
+  writeFileIfWritable(file, JSON.stringify(data, null, 2));
 }
 
 export function readJson<T>(file: string): T | undefined {

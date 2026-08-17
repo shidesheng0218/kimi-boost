@@ -31,10 +31,11 @@ function readVersion(bin: string): string | undefined {
   }
 }
 
-const KIMI_DIRS = [process.env.KIMI_CODE_HOME, join(homedir(), ".kimi-code"), join(homedir(), ".kimi")].filter(Boolean) as string[];
-
 export function kimiHomeDir(): string {
-  return KIMI_DIRS.find((d) => existsSync(d)) ?? KIMI_DIRS[0];
+  // 显式 env 优先,目录不存在也信任它(测试/CI 沙箱场景)
+  if (process.env.KIMI_CODE_HOME) return process.env.KIMI_CODE_HOME;
+  const candidates = [join(homedir(), ".kimi-code"), join(homedir(), ".kimi")];
+  return candidates.find((d) => existsSync(d)) ?? candidates[0];
 }
 
 /**

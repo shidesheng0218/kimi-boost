@@ -1,35 +1,26 @@
-import { existsSync, mkdirSync, rmSync, statSync, copyFileSync, readdirSync } from "node:fs";
+import { existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import {
-  AGENTS_DIR,
-  HOOKS_DIR,
-  SKILLS_DIR,
+  agentsDir,
+  hooksDir,
+  skillsDir,
   backupFile,
   mountBoostDirs,
   readKimiConfig,
   saveKimiConfig,
   upsertKimiHooks,
 } from "../core/config.js";
+import { copyDirIfWritable, removeIfWritable } from "../core/fsguard.js";
 import { assertManagedPath } from "../core/safety.js";
 import type { Adapter, AdapterContext, InstallReport } from "./types.js";
 
-function copyDir(src: string, dest: string): void {
-  mkdirSync(dest, { recursive: true });
-  for (const entry of readdirSync(src)) {
-    const s = join(src, entry);
-    const d = join(dest, entry);
-    if (statSync(s).isDirectory()) copyDir(s, d);
-    else copyFileSync(s, d);
-  }
-}
-
 function mergePresetFiles(presetId: string, sourceDir: string): { skillsDir: string; agentsDir: string; hooksDir: string } {
-  const skillsDir = join(SKILLS_DIR, presetId);
-  const agentsDir = join(AGENTS_DIR, presetId);
-  const hooksDir = join(HOOKS_DIR, presetId);
-  if (existsSync(join(sourceDir, "skills"))) copyDir(join(sourceDir, "skills"), skillsDir);
-  if (existsSync(join(sourceDir, "agents"))) copyDir(join(sourceDir, "agents"), agentsDir);
-  return { skillsDir, agentsDir, hooksDir };
+  const sDir = join(skillsDir(), presetId);
+  const aDir = join(agentsDir(), presetId);
+  const hDir = join(hooksDir(), presetId);
+  if (existsSync(join(sourceDir, "skills"))) copyDirIfWritable(join(sourceDir, "skills"), sDir);
+  if (existsSync(join(sourceDir, "agents"))) copyDirIfWritable(join(sourceDir, "agents"), aDir);
+  return { skillsDir: sDir, agentsDir: aDir, hooksDir: hDir };
 }
 
 export const kimiAdapter: Adapter = {
@@ -75,7 +66,7 @@ export const kimiAdapter: Adapter = {
       const m = cmd.match(/hooks[\\/]([a-z0-9_-]+)[\\/]/i);
       if (m) ids.add(m[1]);
     }
-    const dirs = [SKILLS_DIR, AGENTS_DIR, HOOKS_DIR];
+    const dirs = [skillsDir(), agentsDir(), hooksDir()];
     for (const dir of dirs) {
       if (existsSync(dir)) {
         for (const entry of readdirSync(dir)) {
@@ -105,11 +96,11 @@ export const kimiAdapter: Adapter = {
       changed.push(`config.toml[[hooks]] (${before.size - after.size} removed)`);
     }
 
-    for (const dir of [SKILLS_DIR, AGENTS_DIR, HOOKS_DIR]) {
+    for (const dir of [skillsDir(), agentsDir(), hooksDir()]) {
       const target = join(dir, presetId);
       assertManagedPath(target);
       if (existsSync(target)) {
-        rmSync(target, { recursive: true, force: true });
+        removeIfWritable(target, { recursive: true, force: true });
         changed.push(target);
       }
     }

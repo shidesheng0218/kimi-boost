@@ -1,18 +1,20 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { BOOST_HOME, ensureBoostDirs } from "./config.js";
+import { boostHome, ensureBoostDirs } from "./config.js";
 
 export interface InstallManifest {
   /** presetId -> tool -> 安装时写入的绝对路径列表 */
   presets: Record<string, Record<string, string[]>>;
 }
 
-const MANIFEST_FILE = join(BOOST_HOME, "installed.json");
+function manifestFile() {
+  return join(boostHome(), "installed.json");
+}
 
 export function readManifest(): InstallManifest {
-  if (!existsSync(MANIFEST_FILE)) return { presets: {} };
+  if (!existsSync(manifestFile())) return { presets: {} };
   try {
-    return JSON.parse(readFileSync(MANIFEST_FILE, "utf8")) as InstallManifest;
+    return JSON.parse(readFileSync(manifestFile(), "utf8")) as InstallManifest;
   } catch {
     return { presets: {} };
   }
@@ -20,7 +22,7 @@ export function readManifest(): InstallManifest {
 
 function saveManifest(m: InstallManifest): void {
   ensureBoostDirs();
-  writeFileSync(MANIFEST_FILE, JSON.stringify(m, null, 2), "utf8");
+  writeFileSync(manifestFile(), JSON.stringify(m, null, 2), "utf8");
 }
 
 export function recordInstall(presetId: string, tool: string, files: string[]): void {

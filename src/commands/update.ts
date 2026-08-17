@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
 import * as tar from "tar";
-import { PRESETS_DIR } from "../core/config.js";
+import { boostHome, presetsDir } from "../core/config.js";
 import { getPreset, presetSourceDir } from "../registry/presets.js";
 import { listStatus } from "./list.js";
 import { installPreset } from "./install.js";
@@ -32,7 +32,7 @@ export async function fetchRemotePreset(id: string): Promise<{ version?: string;
 }
 
 function localVersion(id: string): string | undefined {
-  const file = join(PRESETS_DIR, id, "preset.json");
+  const file = join(presetsDir(), id, "preset.json");
   if (!existsSync(file)) return undefined;
   try {
     return (JSON.parse(readFileSync(file, "utf8")) as { version?: string }).version;
@@ -55,7 +55,7 @@ export async function updatePreset(id: string): Promise<UpdateResult> {
     const res = await fetch(TARBALL);
     if (!res.ok) throw new Error(`tarball fetch failed: ${res.status}`);
     const buf = Buffer.from(await res.arrayBuffer());
-    const root = join(PRESETS_DIR, ".tmp-update");
+    const root = join(presetsDir(), ".tmp-update");
     rmSync(root, { recursive: true, force: true });
     mkdirSync(root, { recursive: true });
     const tarballPath = join(root, "src.tgz");
@@ -64,7 +64,7 @@ export async function updatePreset(id: string): Promise<UpdateResult> {
     const extracted = join(root, `kimi-boost-${BRANCH}`, "presets", id);
     if (!existsSync(extracted)) throw new Error(`preset '${id}' not in tarball`);
 
-    const installDir = join(PRESETS_DIR, id);
+    const installDir = join(presetsDir(), id);
     rmSync(installDir, { recursive: true, force: true });
     const { copyDir } = await import("./util.js");
     copyDir(extracted, installDir);

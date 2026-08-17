@@ -1,15 +1,18 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { parse, stringify } from "smol-toml";
 import type { Adapter, AdapterContext, InstallReport } from "./types.js";
 import { backupFile } from "../core/config.js";
 import { clearInstall, installedFilesFor, recordInstall } from "../core/manifest.js";
+import { copyDirIfWritable, removeIfWritable, writeFileIfWritable } from "../core/fsguard.js";
 import { assertManagedPath } from "../core/safety.js";
 
 const CODEX_HOME = process.env.CODEX_HOME ?? join(homedir(), ".codex");
 const CODEX_SKILLS = join(CODEX_HOME, "skills");
-const HOOKS_DIR = process.env.KIMI_BOOST_HOME ? join(process.env.KIMI_BOOST_HOME, "hooks") : join(homedir(), ".kimi-boost", "hooks");
+function boostHooksDir() {
+  return process.env.KIMI_BOOST_HOME ? join(process.env.KIMI_BOOST_HOME, "hooks") : join(homedir(), ".kimi-boost", "hooks");
+}
 
 interface CodexConfig {
   path: string;
@@ -45,19 +48,7 @@ function upsertCodexHooks(data: Record<string, unknown>, event: string, matcher:
 }
 
 function copyDir(src: string, dest: string): string[] {
-  const written: string[] = [];
-  mkdirSync(dest, { recursive: true });
-  for (const entry of readdirSync(src)) {
-    const s = join(src, entry);
-    const d = join(dest, entry);
-    if (statSync(s).isDirectory()) {
-      written.push(...copyDir(s, d));
-    } else {
-      writeFileSync(d, readFileSync(s));
-      written.push(d);
-    }
-  }
-  return written;
+  return copyDirIfWritable(src, dest);
 }
 
 export const codexAdapter: Adapter = {
@@ -70,7 +61,7 @@ export const codexAdapter: Adapter = {
 
     if (existsSync(join(sourceDir, "skills"))) {
       const skillRoot = join(CODEX_SKILLS, preset.id);
-      rmSync(skillRoot, { recursive: true, force: true });
+      removeIfWritable(skillRoot, { recursive: true, force: true });
       written.push(...copyDir(join(sourceDir, "skills"), skillRoot));
       written.push(skillRoot);
     }
@@ -81,11 +72,11 @@ export const codexAdapter: Adapter = {
       if (backup) configChanges.push(backup);
       let any = false;
       for (const h of preset.hooks) {
-        const scriptPath = join(HOOKS_DIR, preset.id, h.script);
+        const scriptPath = join(boostHooksDir(), preset.id, h.script);
         if (upsertCodexHooks(data, h.event, h.matcher ?? "", `node "${scriptPath}"`, h.timeout)) any = true;
       }
       if (any) {
-        writeFileSync(path, stringify(data), "utf8");
+        writeFileIfWritable(path, stringify(data));
         configChanges.push(path);
       }
     }
@@ -119,8 +110,8 @@ export const codexAdapter: Adapter = {
     for (const file of installedFilesFor(presetId, "codex")) {
       if (existsSync(file)) {
         assertManagedPath(file);
-        if (statSync(file).isDirectory()) rmSync(file, { recursive: true, force: true });
-        else rmSync(file, { force: true });
+        if (statSync(file).isDirectory()) removeIfWritable(file, { recursive: true, force: true });
+        else removeIfWritable(file, { force: true });
         changed.push(file);
       }
     }
@@ -143,7 +134,7 @@ export const codexAdapter: Adapter = {
     }
     if (removed) {
       data.hooks = hooks;
-      writeFileSync(path, stringify(data), "utf8");
+      writeFileIfWritable(path, stringify(data));
       changed.push(path);
     }
 

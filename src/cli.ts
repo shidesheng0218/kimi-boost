@@ -5,6 +5,7 @@ import { listStatus } from "./commands/list.js";
 import { runUpdate } from "./commands/update.js";
 import { getStatus } from "./commands/status.js";
 import { marketplaceCommand } from "./commands/marketplace.js";
+import { setDryRun } from "./core/fsguard.js";
 import { listPresets } from "./registry/presets.js";
 import { getAdapter } from "./adapters/index.js";
 import prompts from "prompts";
@@ -21,7 +22,8 @@ program
   .command("install [preset]")
   .description("Install a preset into your AI coding CLI (interactive if no preset given)")
   .option("-t, --tool <tool>", "target tool (kimi | claude | codex)")
-  .action(async (preset?: string, opts?: { tool?: ToolName }) => {
+  .option("-n, --dry-run", "show what would be done without writing anything")
+  .action(async (preset?: string, opts?: { tool?: ToolName; dryRun?: boolean }) => {
     try {
       let id = preset;
       if (!id) {
@@ -39,10 +41,13 @@ program
         id = answer.preset;
         if (!id) return;
       }
-      const reports = await installPreset(id, { tool: opts?.tool } as InstallOptions);
+      const reports = await installPreset(id, { tool: opts?.tool, dryRun: opts?.dryRun });
       for (const r of reports) {
-        const tag = r.ok ? pc.green("✓") : pc.red("✗");
-        console.log(`${tag} [${r.tool}] ${r.message}`);
+        const prefix = opts?.dryRun ? pc.cyan("dry-run") : (r.ok ? pc.green("✓") : pc.red("✗"));
+        console.log(`${prefix} [${r.tool}] ${r.message}`);
+        if (opts?.dryRun) {
+          for (const c of r.changed) console.log(`   ${pc.dim("would write:")} ${c}`);
+        }
       }
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
@@ -54,11 +59,13 @@ program
   .command("remove <preset>")
   .description("Remove an installed preset")
   .option("-t, --tool <tool>", "target tool")
-  .action(async (preset: string, opts?: { tool?: ToolName }) => {
+  .option("-n, --dry-run", "show what would be removed without deleting anything")
+  .action(async (preset: string, opts?: { tool?: ToolName; dryRun?: boolean }) => {
     try {
       if (!/^[a-z0-9][a-z0-9_-]*$/.test(preset)) {
         throw new Error(`Invalid preset id '${preset}'. Expected kebab-case (a-z0-9, -, _).`);
       }
+      setDryRun(Boolean(opts?.dryRun));
       const envTools = opts?.tool ? [opts.tool] : (["kimi", "claude", "codex"] as ToolName[]);
       for (const tool of envTools) {
         const adapter = getAdapter(tool);
@@ -67,12 +74,17 @@ program
           continue;
         }
         const r = await adapter.deactivate(preset);
-        const tag = r.ok ? pc.green("✓") : pc.red("✗");
-        console.log(`${tag} [${tool}] ${r.message}`);
+        const prefix = opts?.dryRun ? pc.cyan("dry-run") : (r.ok ? pc.green("✓") : pc.red("✗"));
+        console.log(`${prefix} [${tool}] ${r.message}`);
+        if (opts?.dryRun) {
+          for (const c of r.changed) console.log(`   ${pc.dim("would remove:")} ${c}`);
+        }
       }
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
       process.exitCode = 1;
+    } finally {
+      setDryRun(false);
     }
   });
 

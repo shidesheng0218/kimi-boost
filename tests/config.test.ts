@@ -20,19 +20,19 @@ afterAll(() => {
 describe("kimi config", () => {
   it("mounts boost dirs into config.toml", async () => {
     const { kimiHomeDir } = await import("../src/core/detect.js");
-    const { readKimiConfig, mountBoostDirs, saveKimiConfig, SKILLS_DIR, AGENTS_DIR } = await import("../src/core/config.js");
+    const { readKimiConfig, mountBoostDirs, saveKimiConfig, skillsDir, agentsDir } = await import("../src/core/config.js");
 
     writeFileSync(join(kimiHomeDir(), "config.toml"), "default_model = \"kimi-code/k3\"\n", "utf8");
 
     const config = readKimiConfig();
     expect(mountBoostDirs(config)).toBe(true);
-    expect(config.data.extra_skill_dirs).toContain(SKILLS_DIR);
-    expect(config.data.extra_agent_dirs).toContain(AGENTS_DIR);
+    expect(config.data.extra_skill_dirs).toContain(skillsDir());
+    expect(config.data.extra_agent_dirs).toContain(agentsDir());
     saveKimiConfig(config);
 
     const reread = readKimiConfig();
     expect(reread.data.default_model).toBe("kimi-code/k3");
-    expect(reread.data.extra_skill_dirs).toContain(SKILLS_DIR);
+    expect(reread.data.extra_skill_dirs).toContain(skillsDir());
     expect(mountBoostDirs(reread)).toBe(false);
   });
 
