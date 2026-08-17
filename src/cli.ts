@@ -5,6 +5,7 @@ import { listStatus } from "./commands/list.js";
 import { runUpdate } from "./commands/update.js";
 import { getStatus } from "./commands/status.js";
 import { marketplaceCommand } from "./commands/marketplace.js";
+import { runDoctor } from "./commands/doctor.js";
 import { setDryRun } from "./core/fsguard.js";
 import { listPresets } from "./registry/presets.js";
 import { getAdapter } from "./adapters/index.js";
@@ -133,6 +134,38 @@ program
   .action((outfile?: string) => {
     try {
       marketplaceCommand(outfile);
+    } catch (err) {
+      console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("doctor")
+  .description("Diagnose your setup: config syntax, hooks, mounted dirs, manifest consistency")
+  .option("-f, --fix", "attempt to auto-fix fixable issues (missing dirs / hook scripts)")
+  .action((opts?: { fix?: boolean }) => {
+    try {
+      const issues = runDoctor(Boolean(opts?.fix));
+      let errors = 0;
+      let warns = 0;
+      for (const i of issues) {
+        if (i.level === "ok") {
+          console.log(`${pc.green("✓")} ${i.item}`);
+        } else if (i.level === "warn") {
+          warns++;
+          console.log(`${pc.yellow("⚠")} ${i.item}`);
+        } else {
+          errors++;
+          console.log(`${pc.red("✗")} ${i.item}`);
+        }
+        if (i.detail) console.log(`   ${pc.dim(i.detail)}`);
+      }
+      console.log("");
+      if (errors) console.log(pc.red(`${errors} error(s)`) + (warns ? `, ${pc.yellow(`${warns} warning(s)`)}` : ""));
+      else if (warns) console.log(pc.yellow(`${warns} warning(s), no errors`));
+      else console.log(pc.green("All checks passed."));
+      process.exitCode = errors ? 1 : 0;
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
       process.exitCode = 1;
