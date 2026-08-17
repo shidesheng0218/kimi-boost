@@ -47,12 +47,21 @@ Interactive picker. That's it. Your next session is boosted.
 
 | Command | What it does |
 |---|---|
-| `kimi-boost install [preset]` | Install a preset (interactive if none given) |
+| `kimi-boost install [preset]` | Install a preset (interactive if none given; `--dry-run` to preview, `--with-hooks` to force hooks) |
 | `kimi-boost list` | Show available + installed presets |
-| `kimi-boost remove <preset>` | Uninstall cleanly |
-| `kimi-boost update` | Pull latest preset versions from the registry and re-apply |
-| `kimi-boost marketplace` | Generate the Kimi Code custom marketplace JSON |
+| `kimi-boost remove <preset>` | Uninstall cleanly (`--dry-run` to preview) |
+| `kimi-boost update [--repo owner/repo]` | Pull latest preset versions and re-apply (works on forks) |
+| `kimi-boost doctor [--fix]` | Diagnose config syntax, hooks, mounted dirs, manifest consistency |
+| `kimi-boost marketplace [--source-mode tree\|zip] [--tag vX.Y.Z]` | Generate the Kimi Code custom marketplace JSON |
 | `kimi-boost status` | Detect installed CLIs & platform |
+
+## Safety by default
+
+- **Your `config.toml` comments and formatting are never touched** — kimi-boost edits only its own managed section
+- Config backed up to `<config>.kboost.bak` before every change
+- Managed-roots whitelist: it refuses to delete anything outside `~/.kimi-boost`, `~/.kimi-code`, `~/.claude`, `~/.codex`
+- Dual-channel guard: already installed via Kimi Code `/plugins`? No duplicate hooks.
+- All hooks are fail-open Node `.mjs` — cross-platform, and a crash never blocks your work
 
 ## Also a plugin marketplace
 
@@ -68,7 +77,7 @@ Each preset is also a valid `kimi.plugin.json` plugin — installable with `/plu
 
 ## How it works
 
-- **Kimi Code** — writes `~/.kimi-code/config.toml` (`extra_skill_dirs`, `extra_agent_dirs`, `[[hooks]]`); agent files follow the native frontmatter format (compatible with Claude Code / OpenCode agent files, per Kimi docs)
+- **Kimi Code** — edits `~/.kimi-code/config.toml` at text level (managed `# >>> kimi-boost managed >>>` block + in-place array merge), preserving your comments; agent files follow the native frontmatter format (compatible with Claude Code / OpenCode agent files, per Kimi docs)
 - **Hooks are plain Node `.mjs`** — same pattern Kimi Code's own docs use, works identically on macOS / Windows / Linux
 - **Fail-open hooks** — a crashing hook never blocks your work (exit `0` allow · exit `2` block)
 - **Safe by default** — your config is backed up to `<config>.kboost.bak` before every change

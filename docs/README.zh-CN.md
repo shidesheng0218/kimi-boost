@@ -47,11 +47,12 @@ npx kimi-boost install
 
 | 命令 | 作用 |
 |---|---|
-| `kimi-boost install [preset]` | 安装预设(不指定则交互选择) |
+| `kimi-boost install [preset]` | 安装预设(`--dry-run` 预览,`--with-hooks` 强制 hooks) |
 | `kimi-boost list` | 查看可用/已安装预设 |
 | `kimi-boost remove <preset>` | 干净卸载 |
-| `kimi-boost update` | 从 registry 拉取最新版本并重新应用 |
+| `kimi-boost update [--repo owner/repo]` | 从 registry 拉取最新版本并重新应用(支持 fork 仓库) |
 | `kimi-boost marketplace` | 生成 Kimi Code 自定义 marketplace JSON |
+| `kimi-boost doctor [--fix]` | 诊断配置语法/hooks/挂载目录/一致性(--fix 自动修复) |
 | `kimi-boost status` | 检测已安装 CLI 与平台 |
 
 ## 同时也是插件市场
@@ -68,7 +69,7 @@ kimi-boost marketplace
 
 ## 工作原理
 
-- **Kimi Code** — 写入 `~/.kimi-code/config.toml`(`extra_skill_dirs`、`extra_agent_dirs`、`[[hooks]]`);agent 文件遵循原生 frontmatter 格式(按官方文档与 Claude Code / OpenCode agent 文件互兼容)
+- **Kimi Code** — 文本级编辑 `~/.kimi-code/config.toml`(managed 区块 + 原位数组合并),**用户注释与格式原样保留**;agent 文件遵循原生 frontmatter 格式(按官方文档与 Claude Code / OpenCode agent 文件互兼容)
 - **Hooks 是纯 Node `.mjs`** — 与 Kimi Code 官方文档示例一致,macOS / Windows / Linux 行为完全相同
 - **Fail-open 设计** — hook 崩溃永远不会阻塞你的工作(退出码 `0` 放行 · `2` 阻断)
 - **默认安全** — 每次修改前自动备份配置到 `<config>.kboost.bak`
