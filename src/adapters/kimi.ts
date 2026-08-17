@@ -10,6 +10,7 @@ import {
   saveKimiConfig,
   upsertKimiHooks,
 } from "../core/config.js";
+import { assertManagedPath } from "../core/safety.js";
 import type { Adapter, AdapterContext, InstallReport } from "./types.js";
 
 function copyDir(src: string, dest: string): void {
@@ -28,7 +29,6 @@ function mergePresetFiles(presetId: string, sourceDir: string): { skillsDir: str
   const hooksDir = join(HOOKS_DIR, presetId);
   if (existsSync(join(sourceDir, "skills"))) copyDir(join(sourceDir, "skills"), skillsDir);
   if (existsSync(join(sourceDir, "agents"))) copyDir(join(sourceDir, "agents"), agentsDir);
-  if (existsSync(join(sourceDir, "hooks"))) copyDir(join(sourceDir, "hooks"), hooksDir);
   return { skillsDir, agentsDir, hooksDir };
 }
 
@@ -87,6 +87,9 @@ export const kimiAdapter: Adapter = {
   },
 
   async deactivate(presetId: string): Promise<InstallReport> {
+    if (!/^[a-z0-9][a-z0-9_-]*$/.test(presetId)) {
+      throw new Error(`Invalid preset id '${presetId}' (kebab-case only).`);
+    }
     const changed: string[] = [];
     const config = readKimiConfig();
     const backup = backupFile(config.path);
@@ -104,6 +107,7 @@ export const kimiAdapter: Adapter = {
 
     for (const dir of [SKILLS_DIR, AGENTS_DIR, HOOKS_DIR]) {
       const target = join(dir, presetId);
+      assertManagedPath(target);
       if (existsSync(target)) {
         rmSync(target, { recursive: true, force: true });
         changed.push(target);

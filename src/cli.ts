@@ -56,6 +56,9 @@ program
   .option("-t, --tool <tool>", "target tool")
   .action(async (preset: string, opts?: { tool?: ToolName }) => {
     try {
+      if (!/^[a-z0-9][a-z0-9_-]*$/.test(preset)) {
+        throw new Error(`Invalid preset id '${preset}'. Expected kebab-case (a-z0-9, -, _).`);
+      }
       const envTools = opts?.tool ? [opts.tool] : (["kimi", "claude", "codex"] as ToolName[]);
       for (const tool of envTools) {
         const adapter = getAdapter(tool);

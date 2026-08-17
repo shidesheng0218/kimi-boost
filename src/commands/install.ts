@@ -1,10 +1,10 @@
 import { copyFileSync, mkdirSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { getPreset, listPresets, presetSourceDir } from "../registry/presets.js";
-import { PRESETS_DIR } from "../core/config.js";
+import { HOOKS_DIR, PRESETS_DIR } from "../core/config.js";
 import { detect } from "../core/detect.js";
 import { getAdapter } from "../adapters/index.js";
-import type { ToolName } from "../core/types.js";
+import type { PresetDefinition, ToolName } from "../core/types.js";
 import type { InstallReport } from "../adapters/types.js";
 
 export interface InstallOptions {
@@ -22,6 +22,19 @@ function copyDir(src: string, dest: string): void {
   }
 }
 
+/** 公共步骤:把 preset 的 hooks 脚本复制到共享的 HOOKS_DIR/<id>,所有 adapter 的 hook 命令都指向这里 */
+function syncHooks(preset: PresetDefinition, sourceDir: string): void {
+  const srcHooks = join(sourceDir, "hooks");
+  if (!existsSync(srcHooks)) return;
+  const dest = join(HOOKS_DIR, preset.id);
+  mkdirSync(dest, { recursive: true });
+  for (const entry of readdirSync(srcHooks)) {
+    const s = join(srcHooks, entry);
+    if (statSync(s).isDirectory()) continue;
+    copyFileSync(s, join(dest, entry));
+  }
+}
+
 export async function installPreset(id: string, opts: InstallOptions = {}): Promise<InstallReport[]> {
   const preset = getPreset(id);
   if (!preset) {
@@ -34,11 +47,20 @@ export async function installPreset(id: string, opts: InstallOptions = {}): Prom
     (t) => env.tools[t]?.installed,
   );
   const explicit = opts.tool ? [opts.tool] : targets;
+  if (opts.tool && !env.tools[opts.tool]?.installed) {
+    console.warn(
+      `[warn] '${opts.tool}' was not detected on this machine. Installing anyway — ` +
+        "your config will be modified and backed up before changes.",
+    );
+  }
   if (explicit.length === 0) {
     throw new Error(
       "No supported CLI detected. Install Kimi Code (curl -fsSL https://code.kimi.com/kimi-code/install.sh | bash) first, or pass --tool.",
     );
   }
+
+  const sourceDir = presetSourceDir(id);
+  syncHooks(preset, sourceDir);
 
   const reports: InstallReport[] = [];
   for (const tool of explicit) {
@@ -56,10 +78,10 @@ export async function installPreset(id: string, opts: InstallOptions = {}): Prom
 
     const installDir = join(PRESETS_DIR, id);
     mkdirSync(PRESETS_DIR, { recursive: true });
-    copyDir(presetSourceDir(id), installDir);
+    copyDir(sourceDir, installDir);
 
     try {
-      reports.push(await adapter.activate({ tool, preset, sourceDir: presetSourceDir(id), installDir }));
+      reports.push(await adapter.activate({ tool, preset, sourceDir, installDir }));
     } catch (err) {
       reports.push({
         tool,

@@ -77,7 +77,8 @@ function toolEnv(tool: ToolName): ToolEnv {
     const dir = join(homedir(), ".claude");
     return {
       tool,
-      installed: Boolean(bin),
+      // VM/桌面版 Claude 可能没有 claude bin,但 ~/.claude 活跃存在即视为已安装
+      installed: Boolean(bin) || existsSync(dir),
       version: bin ? readVersion(bin) : undefined,
       homeDir: dir,
       configured: existsSync(join(dir, "settings.json")),
