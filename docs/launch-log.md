@@ -28,3 +28,11 @@ Track where kimi-boost was announced, with links, so we can follow up and measur
 |---|---|---|
 | GitHub stars | 0 | 2026-08-17 |
 | npm downloads | — | — |
+
+## Releases
+
+| Version | npm | GitHub Release | Notes |
+|---|---|---|---|
+| 0.1.0 | ✅ published | — | initial |
+| 0.2.0 | ✅ published | v0.2.0 (3 preset zips + marketplace.json) | doctor / dry-run / comment-preserving config editing / Windows CI |
+| 0.2.1 | ✅ published | — | fix: dynamic --version banner |
