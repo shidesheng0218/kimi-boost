@@ -23,6 +23,8 @@ jobs:
           node-version: 20
       - name: Install deps
         run: npm ci
+      - name: Build CLI
+        run: npm run build
       - name: Validate presets
         run: node scripts/validate-presets.mjs
       - name: Determine tag
