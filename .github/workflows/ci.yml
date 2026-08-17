@@ -7,7 +7,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,8 +28,9 @@ jobs:
       - name: Build
         run: npm run build
       - name: Smoke test (list/status/marketplace)
+        shell: bash
         run: |
           node dist/cli.js list
           node dist/cli.js status
-          node dist/cli.js marketplace /tmp/marketplace.json
-          test -s /tmp/marketplace.json && echo "marketplace OK"
+          node dist/cli.js marketplace marketplace.json
+          test -s marketplace.json && echo "marketplace OK"
