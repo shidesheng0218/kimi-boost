@@ -1,6 +1,3 @@
-import { readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
-import { hooksDir, skillsDir, agentsDir } from "../core/config.js";
 import { getAdapter } from "../adapters/index.js";
 import { detect } from "../core/detect.js";
 import { listPresets } from "../registry/presets.js";

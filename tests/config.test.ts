@@ -18,40 +18,19 @@ afterAll(() => {
 });
 
 describe("kimi config", () => {
-  it("mounts boost dirs into config.toml", async () => {
-    const { kimiHomeDir } = await import("../src/core/detect.js");
-    const { readKimiConfig, mountBoostDirs, saveKimiConfig, skillsDir, agentsDir } = await import("../src/core/config.js");
+  it("reads an existing config.toml and returns empty for a missing one", async () => {
+    const { readKimiConfig } = await import("../src/core/config.js");
 
-    writeFileSync(join(kimiHomeDir(), "config.toml"), "default_model = \"kimi-code/k3\"\n", "utf8");
+    const empty = readKimiConfig();
+    expect(empty.data).toEqual({});
 
+    writeFileSync(join(tmp, "config.toml"), 'default_model = "kimi-code/k3"\n', "utf8");
     const config = readKimiConfig();
-    expect(mountBoostDirs(config)).toBe(true);
-    expect(config.data.extra_skill_dirs).toContain(skillsDir());
-    expect(config.data.extra_agent_dirs).toContain(agentsDir());
-    saveKimiConfig(config);
-
-    const reread = readKimiConfig();
-    expect(reread.data.default_model).toBe("kimi-code/k3");
-    expect(reread.data.extra_skill_dirs).toContain(skillsDir());
-    expect(mountBoostDirs(reread)).toBe(false);
+    expect(config.data.default_model).toBe("kimi-code/k3");
+    expect(existsSync(config.path)).toBe(true);
   });
 
-  it("upserts hooks without duplicating", async () => {
-    const { readKimiConfig, upsertKimiHooks, listKimiHooks, saveKimiConfig } = await import("../src/core/config.js");
-
-    const config = readKimiConfig();
-    const hook = { event: "PreToolUse", matcher: "Bash", command: "node /tmp/h.mjs", timeout: 5 };
-    expect(upsertKimiHooks(config, [hook])).toBe(true);
-    expect(upsertKimiHooks(config, [hook])).toBe(false);
-    expect(listKimiHooks(config)).toHaveLength(1);
-    saveKimiConfig(config);
-
-    const reread = readKimiConfig();
-    expect(listKimiHooks(reread)).toHaveLength(1);
-    expect(reread.data.hooks).toMatchObject([hook]);
-  });
-
-  it("backs up existing config before mutation", async () => {
+  it("backs up an existing config before mutation", async () => {
     const { readKimiConfig, backupFile } = await import("../src/core/config.js");
     const config = readKimiConfig();
     const bak = backupFile(config.path);

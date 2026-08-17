@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { createRequire } from "node:module";
 import pc from "picocolors";
-import { installPreset, type InstallOptions } from "./commands/install.js";
+import { installPreset } from "./commands/install.js";
 import { listStatus } from "./commands/list.js";
 import { runUpdate } from "./commands/update.js";
 import { getStatus } from "./commands/status.js";

@@ -1,6 +1,7 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { boostHome, ensureBoostDirs } from "./config.js";
+import { writeFileIfWritable } from "./fsguard.js";
 
 export interface InstallManifest {
   /** presetId -> tool -> 安装时写入的绝对路径列表 */
@@ -22,7 +23,7 @@ export function readManifest(): InstallManifest {
 
 function saveManifest(m: InstallManifest): void {
   ensureBoostDirs();
-  writeFileSync(manifestFile(), JSON.stringify(m, null, 2), "utf8");
+  writeFileIfWritable(manifestFile(), JSON.stringify(m, null, 2));
 }
 
 export function recordInstall(presetId: string, tool: string, files: string[]): void {

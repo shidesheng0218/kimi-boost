@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { agentsDir, hooksDir, skillsDir, backupFile } from "../core/config.js";
 import { copyDirIfWritable, removeIfWritable, writeFileIfWritable, ensureDir } from "../core/fsguard.js";
 import { assertManagedPath } from "../core/safety.js";
-import { removeDirEntry, removePresetHooks, upsertDirArray, upsertManagedHooks, type ManagedHook } from "../core/kimiTextEdit.js";
+import { removePresetHooks, upsertDirArray, upsertManagedHooks, type ManagedHook } from "../core/kimiTextEdit.js";
 import { parse as parseToml } from "smol-toml";
 import { kimiHomeDir } from "../core/detect.js";
 import type { Adapter, AdapterContext, InstallReport } from "./types.js";

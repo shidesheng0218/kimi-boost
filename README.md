@@ -32,7 +32,7 @@ Your AI coding agent only knows what you teach it. Without guidance it writes ge
 
 <div align="center">
 
-![kimi-boost demo](assets/demo.gif)
+![kimi-boost demo](https://github.com/shidesheng0218/kimi-boost/raw/main/assets/demo.gif)
 
 </div>
 

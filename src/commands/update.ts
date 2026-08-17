@@ -2,8 +2,8 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
 import * as tar from "tar";
-import { boostHome, presetsDir } from "../core/config.js";
-import { getPreset, presetSourceDir } from "../registry/presets.js";
+import { presetsDir } from "../core/config.js";
+import { copyDirIfWritable } from "../core/fsguard.js";
 import { listStatus } from "./list.js";
 import { installPreset } from "./install.js";
 
@@ -75,8 +75,7 @@ export async function updatePreset(id: string, opts: UpdateOptions = {}): Promis
 
     const installDir = join(presetsDir(), id);
     rmSync(installDir, { recursive: true, force: true });
-    const { copyDir } = await import("./util.js");
-    copyDir(extracted, installDir);
+    copyDirIfWritable(extracted, installDir);
     rmSync(root, { recursive: true, force: true });
 
     const reports = await installPreset(id);

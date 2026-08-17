@@ -32,7 +32,7 @@ AI 编程助手只会做你教它的事。不加以引导,它会写出泛泛的�
 
 <div align="center">
 
-![kimi-boost demo](../assets/demo.gif)
+![kimi-boost demo](https://github.com/shidesheng0218/kimi-boost/raw/main/assets/demo.gif)
 
 </div>
 
