@@ -1,12 +1,21 @@
 <div align="center">
 
-# kimi-boost
+```
+ _   __ ___ __  __ __  __
+| | / /|  _ \ __ \ \ \ \ \    kimi-boost
+| |/ / | |_) |  _ \ \ \ \ \   一条命令,
+| |\ \ |  __/| |_) \ \ \ \ \  让你的 AI 编程助手
+|_| \_\|_|   |____/  \_\ \_\  获得真实开发工作流
+```
 
-**一条命令,让你的 AI 编程助手瞬间获得完整开发工作流。**
-
-把久经实战检验的 **Skills · Hooks · Agents** 一键装进 **Kimi Code**、Claude Code 和 Codex CLI。
+**久经实战的 **skills · hooks · agents**,一条命令装进 Kimi Code、Claude Code 和 Codex CLI。**
 
 `npx kimi-boost install` → 选一个预设 → 完成。
+
+[![GitHub stars](https://img.shields.io/github/stars/shidesheng0218/kimi-boost?style=flat-square)](https://github.com/shidesheng0218/kimi-boost)
+[![npm](https://img.shields.io/npm/v/kimi-boost?style=flat-square)](https://www.npmjs.com/package/kimi-boost)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](/LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/shidesheng0218/kimi-boost/ci.yml?style=flat-square&label=CI)](https://github.com/shidesheng0218/kimi-boost/actions)
 
 </div>
 
@@ -16,11 +25,22 @@
 
 AI 编程助手只会做你教它的事。不加以引导,它会写出泛泛的代码、直接推 main 分支、对你还想保留的文件执行 `rm -rf`。手动配置 skills / hooks / agents 要花几个小时——大多数人永远不会去做。
 
-**kimi-boost** 几秒钟内把完整、有主张的开发工作流装进你的助手:
+**kimi-boost 几秒钟内把完整、有主张的开发工作流装进你的助手:**
 
-- **Skills** — 自动加载,教助手你的技术栈最佳实践
-- **Hooks** — 跨平台 `node` 守卫(危险命令拦截、main 分支保护)
-- **Agents** — 现成的代码审查 subagent,助手可以直接委派
+| 你能得到 | 作用 |
+|---|---|
+| 🧠 **Skills** | 助手**自动加载**的最佳实践规则——无需每次提醒 |
+| 🔍 **审查 Agent** | 提交前可以委派的只读 subagent |
+| 🛡️ **Hooks** | 跨平台 Node 守卫:危险命令拦截、main 分支保护 |
+| 🔄 **一键更新** | `kimi-boost update` 保持所有预设最新,支持 fork |
+
+## 演示
+
+<div align="center">
+
+![kimi-boost demo](assets/demo.gif)
+
+</div>
 
 ## 快速开始
 
@@ -37,11 +57,22 @@ npx kimi-boost install
 
 ## 预设
 
-| 预设 | 技术栈 | 包含内容 |
-|---|---|---|
-| `vue3` | Vue 3 + TypeScript | 最佳实践 skill · 审查 agent · **main 分支推送保护 hook** |
-| `weapp` | 微信小程序 | 目录/分包/性能/安全规范 · 审查 agent |
-| `python` | Python | PEP 8 + 类型标注 skill · 审查 agent · **危险命令拦截 hook** |
+| 预设 | 技术栈 | Skills | 审查 Agent | Hooks |
+|---|---|---|---|---|
+| `vue3` | Vue 3 + TypeScript | 组合式 API、props 类型、状态与性能规范 | `vue3-reviewer` | 🛡️ main 分支推送保护 |
+| `weapp` | 微信小程序 | 分包策略、`setData` 限制、安全规范 | `weapp-reviewer` | — |
+| `python` | Python | PEP 8、类型标注、依赖卫生 | `python-reviewer` | 🛡️ 危险命令拦截 |
+
+每个预设就是本仓库里的**一个目录**——既是合法的 `kimi.plugin.json` 插件,也是 kimi-boost 预设。欢迎贡献:
+
+```
+presets/<id>/
+├── preset.json          # kimi-boost 元数据
+├── kimi.plugin.json     # Kimi Code 插件 manifest(原生 marketplace 形态)
+├── skills/<name>/SKILL.md
+├── agents/<name>-reviewer.md
+└── hooks/<name>.mjs     # 跨平台 Node,fail-open 设计
+```
 
 ## 命令
 
@@ -50,10 +81,28 @@ npx kimi-boost install
 | `kimi-boost install [preset]` | 安装预设(`--dry-run` 预览,`--with-hooks` 强制 hooks) |
 | `kimi-boost list` | 查看可用/已安装预设 |
 | `kimi-boost remove <preset>` | 干净卸载 |
-| `kimi-boost update [--repo owner/repo]` | 从 registry 拉取最新版本并重新应用(支持 fork 仓库) |
-| `kimi-boost marketplace` | 生成 Kimi Code 自定义 marketplace JSON |
-| `kimi-boost doctor [--fix]` | 诊断配置语法/hooks/挂载目录/一致性(--fix 自动修复) |
+| `kimi-boost update [--repo owner/repo]` | 拉取最新版本并重新应用(支持 fork) |
+| `kimi-boost doctor [--fix]` | 诊断配置语法/hooks/挂载目录/一致性 |
+| `kimi-boost marketplace [--source-mode tree\|zip] [--tag vX.Y.Z]` | 生成 Kimi Code 自定义 marketplace JSON |
 | `kimi-boost status` | 检测已安装 CLI 与平台 |
+
+### `doctor` — 随时知道环境是否健康
+
+```bash
+$ kimi-boost doctor
+✓ kimi: detected
+  version 0.36.1
+✓ kimi: config.toml parses
+✓ kimi: hook script valid
+  /Users/you/.kimi-boost/hooks/vue3/protect-main.mjs
+✓ kimi: mounted dir present
+⚠ codex: CLI not detected
+  Install codex or ignore if you don't use it.
+
+1 warning(s), no errors
+```
+
+`kimi-boost doctor --fix` 自动重建缺失的挂载目录与 hook 脚本。
 
 ## 同时也是插件市场
 
@@ -61,30 +110,52 @@ Kimi Code 自带原生插件系统(`/plugins`)。kimi-boost 同时充当它的**
 
 ```bash
 kimi-boost marketplace
-# 终端执行: /plugins marketplace https://raw.githubusercontent.com/shidesheng0218/kimi-boost/main/marketplace.json
-# 或环境变量: export KIMI_CODE_PLUGIN_MARKETPLACE_URL=<同一地址>
+# 1. 终端执行: /plugins marketplace https://raw.githubusercontent.com/shidesheng0218/kimi-boost/main/marketplace.json
+# 2. 环境变量: export KIMI_CODE_PLUGIN_MARKETPLACE_URL=<同一地址>
 ```
 
-每个预设同时也是合法的 `kimi.plugin.json` 插件——可用 `/plugins install` 安装,manifest 中声明了 skills、agents、hooks 与 MCP servers。
+每个预设也可直接用 `/plugins install` 安装,manifest 中声明了 skills、agents、hooks 与 MCP servers。
 
 ## 工作原理
 
-- **Kimi Code** — 文本级编辑 `~/.kimi-code/config.toml`(managed 区块 + 原位数组合并),**用户注释与格式原样保留**;agent 文件遵循原生 frontmatter 格式(按官方文档与 Claude Code / OpenCode agent 文件互兼容)
-- **Hooks 是纯 Node `.mjs`** — 与 Kimi Code 官方文档示例一致,macOS / Windows / Linux 行为完全相同
-- **Fail-open 设计** — hook 崩溃永远不会阻塞你的工作(退出码 `0` 放行 · `2` 阻断)
-- **默认安全** — 每次修改前自动备份配置到 `<config>.kboost.bak`
-- **幂等** — 重装/更新绝不产生重复条目
+```
+                ┌────────────────────────────────────┐
+                │         kimi-boost CLI              │
+                │  install · remove · doctor · update │
+                └──────────┬─────────┬─────────┬─────┘
+                           │         │         │
+            ┌──────────────▼┐  ┌─────▼──────┐  ┌▼──────────┐
+            │   Kimi Code   │  │ Claude Code │  │   Codex   │
+            │ config.toml   │  │ settings.json│ │ config.toml│
+            │ (文本级编辑)  │  │ (manifest 驱动)│ │ (manifest 驱动)│
+            └──────┬────────┘  └─────┬──────┘  └──┬─────────┘
+                   │                 │            │
+                   ▼                 ▼            ▼
+        skills + hooks + agents   skills + hooks + agents   skills + hooks
+```
+
+- **Kimi Code** — 以**文本级**方式编辑 `~/.kimi-code/config.toml`(managed `# >>> kimi-boost managed >>>` 区块 + 原位数组合并)。你的注释与格式原样保留。
+- **Claude Code & Codex** — 基于 manifest 安装到 `~/.claude` / `~/.codex`;agent 文件遵循原生 frontmatter 格式(跨工具兼容)。
+- **Hooks 是纯 Node `.mjs`** — 与 Kimi Code 官方文档示例一致,macOS / Windows / Linux 行为完全相同。
+
+## 默认安全
+
+- 🔒 **只动自己管理的片段**——注释、顺序、格式全部保留
+- 🗄️ 每次修改前自动备份到 `<config>.kboost.bak`
+- 🚧 受管目录白名单——拒绝删除 `~/.kimi-boost`、`~/.kimi-code`、`~/.claude`、`~/.codex` 之外的任何东西
+- 🛡️ 双通道防护——已通过 Kimi `/plugins` 安装?不产生重复 hooks
+- ⚡ Fail-open hooks——hook 崩溃永远不会阻塞你的工作(退出码 `0` 放行 · `2` 阻断)
+
+## 路线图
+
+- [ ] MCP server 预设
+- [ ] token/成本用量守卫 hooks
+- [ ] 项目级(`.kimi-boost/`)预设
+- [ ] 更多技术栈预设(在 [issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1) 投票)
 
 ## 贡献
 
 预设目录由 PR 驱动:在 `presets/` 下新增目录,CI 自动校验 schema、hook 事件与文件存在性。见 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-## 路线图
-
-- [ ] Claude Code + Codex 适配器(agent 文件已天然兼容)
-- [ ] MCP server 预设
-- [ ] token/成本用量守卫 hooks
-- [ ] 项目级(`.kimi-boost/`)预设
 
 ## 协议
 

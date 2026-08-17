@@ -1,12 +1,21 @@
 <div align="center">
 
-# kimi-boost
+```
+ _   __ ___ __  __ __  __
+| | / /|  _ \ __ \ \ \ \ \    kimi-boost
+| |/ / | |_) |  _ \ \ \ \ \   one command,
+| |\ \ |  __/| |_) \ \ \ \ \  real dev workflow
+|_| \_\|_|   |____/  \_\ \_\  for your AI coding CLI
+```
 
-**One command. Instant workflow superpowers for your AI coding CLI.**
-
-Battle-tested **skills · hooks · agents** — preconfigured into **Kimi Code**, Claude Code and Codex CLI.
+**Battle-tested **skills · hooks · agents**, one command — for Kimi Code, Claude Code and Codex CLI.**
 
 `npx kimi-boost install` → pick a preset → done.
+
+[![GitHub stars](https://img.shields.io/github/stars/shidesheng0218/kimi-boost?style=flat-square)](https://github.com/shidesheng0218/kimi-boost)
+[![npm](https://img.shields.io/npm/v/kimi-boost?style=flat-square)](https://www.npmjs.com/package/kimi-boost)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](/LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/shidesheng0218/kimi-boost/ci.yml?style=flat-square&label=CI)](https://github.com/shidesheng0218/kimi-boost/actions)
 
 </div>
 
@@ -14,13 +23,24 @@ Battle-tested **skills · hooks · agents** — preconfigured into **Kimi Code**
 
 ## Why
 
-Your AI coding agent only knows what you teach it. Without guidance it writes generic, unidiomatic code, pushes straight to `main`, and runs `rm -rf` on things you liked. Hand-configuring skills, hooks and agents takes hours — and most people never do it.
+Your AI coding agent only knows what you teach it. Without guidance it writes generic, unidiomatic code, pushes straight to `main`, and runs `rm -rf` on things you liked. Hand-configuring skills, hooks and agents takes hours — so nobody ever does it.
 
-**kimi-boost** installs a complete, opinionated development workflow into your agent in seconds:
+**kimi-boost installs a complete, opinionated development workflow in seconds:**
 
-- **Skills** — loaded automatically, teach your agent best practices for your stack
-- **Hooks** — cross-platform `node` guards (dangerous commands, main-branch protection)
-- **Agents** — ready-made reviewer subagents your agent can delegate to
+| You get | What it does |
+|---|---|
+| 🧠 **Skills** | Best-practice rules your agent **auto-loads** — no prompting required |
+| 🔍 **Reviewer agents** | Read-only subagents your agent delegates to before committing |
+| 🛡️ **Hooks** | Cross-platform Node guards: dangerous commands, main-branch protection |
+| 🔄 **One-command updates** | `kimi-boost update` keeps every preset current, even on forks |
+
+## Demo
+
+<div align="center">
+
+![kimi-boost demo](assets/demo.gif)
+
+</div>
 
 ## Quick start
 
@@ -31,68 +51,112 @@ npx kimi-boost install
 # ✔ python — Python engineering
 ```
 
-Interactive picker. That's it. Your next session is boosted.
+Interactive picker. Done. Your next session is boosted.
 
 > Requires [Kimi Code](https://www.kimi.com/code/docs/kimi-code-cli/guides/getting-started.html), Claude Code or Codex CLI. Works on macOS, Windows and Linux.
 
 ## Presets
 
-| Preset | Stack | Included |
-|---|---|---|
-| `vue3` | Vue 3 + TypeScript | Best-practice skill · reviewer agent · **main-branch push guard hook** |
-| `weapp` | WeChat Mini Program | Structure / subpackage / performance / security rules · reviewer agent |
-| `python` | Python | PEP 8 + typing skill · reviewer agent · **dangerous-shell guard hook** |
+| Preset | Stack | Skills | Reviewer agent | Hooks |
+|---|---|---|---|---|
+| `vue3` | Vue 3 + TypeScript | Composition API, props typing, state & perf rules | `vue3-reviewer` | 🛡️ main-branch push guard |
+| `weapp` | WeChat Mini Program | Subpackage strategy, `setData` limits, security | `weapp-reviewer` | — |
+| `python` | Python | PEP 8, type annotations, dependency hygiene | `python-reviewer` | 🛡️ dangerous-shell blocker |
+
+Each preset is **one directory** in this repo — a valid `kimi.plugin.json` plugin AND a kimi-boost preset. Contributions welcome:
+
+```
+presets/<id>/
+├── preset.json          # kimi-boost metadata
+├── kimi.plugin.json     # Kimi Code plugin manifest (native marketplace form)
+├── skills/<name>/SKILL.md
+├── agents/<name>-reviewer.md
+└── hooks/<name>.mjs     # cross-platform Node, fail-open by design
+```
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| `kimi-boost install [preset]` | Install a preset (interactive if none given; `--dry-run` to preview, `--with-hooks` to force hooks) |
+| `kimi-boost install [preset]` | Install a preset (`--dry-run` preview, `--with-hooks` force) |
 | `kimi-boost list` | Show available + installed presets |
-| `kimi-boost remove <preset>` | Uninstall cleanly (`--dry-run` to preview) |
-| `kimi-boost update [--repo owner/repo]` | Pull latest preset versions and re-apply (works on forks) |
-| `kimi-boost doctor [--fix]` | Diagnose config syntax, hooks, mounted dirs, manifest consistency |
-| `kimi-boost marketplace [--source-mode tree\|zip] [--tag vX.Y.Z]` | Generate the Kimi Code custom marketplace JSON |
+| `kimi-boost remove <preset>` | Uninstall cleanly |
+| `kimi-boost update [--repo owner/repo]` | Pull latest versions and re-apply (works on forks) |
+| `kimi-boost doctor [--fix]` | Diagnose config, hooks, mounted dirs, manifest consistency |
+| `kimi-boost marketplace [--source-mode tree\|zip] [--tag vX.Y.Z]` | Generate a Kimi Code custom marketplace JSON |
 | `kimi-boost status` | Detect installed CLIs & platform |
 
-## Safety by default
+### `doctor` — know your setup is healthy
 
-- **Your `config.toml` comments and formatting are never touched** — kimi-boost edits only its own managed section
-- Config backed up to `<config>.kboost.bak` before every change
-- Managed-roots whitelist: it refuses to delete anything outside `~/.kimi-boost`, `~/.kimi-code`, `~/.claude`, `~/.codex`
-- Dual-channel guard: already installed via Kimi Code `/plugins`? No duplicate hooks.
-- All hooks are fail-open Node `.mjs` — cross-platform, and a crash never blocks your work
+```bash
+$ kimi-boost doctor
+✓ kimi: detected
+  version 0.36.1
+✓ kimi: config.toml parses
+✓ kimi: hook script valid
+  /Users/you/.kimi-boost/hooks/vue3/protect-main.mjs
+✓ kimi: mounted dir present
+⚠ codex: CLI not detected
+  Install codex or ignore if you don't use it.
+
+1 warning(s), no errors
+```
+
+`kimi-boost doctor --fix` restores missing mounted dirs and hook scripts automatically.
 
 ## Also a plugin marketplace
 
 Kimi Code ships a native plugin system (`/plugins`). kimi-boost doubles as a **third-party marketplace** for it:
 
 ```bash
-kimi-boost marketplace        # prints instructions
-# Terminal: /plugins marketplace https://raw.githubusercontent.com/shidesheng0218/kimi-boost/main/marketplace.json
-# or env:   export KIMI_CODE_PLUGIN_MARKETPLACE_URL=<same url>
+kimi-boost marketplace
+# 1. Terminal: /plugins marketplace https://raw.githubusercontent.com/shidesheng0218/kimi-boost/main/marketplace.json
+# 2. Env var:  export KIMI_CODE_PLUGIN_MARKETPLACE_URL=<same url>
 ```
 
-Each preset is also a valid `kimi.plugin.json` plugin — installable with `/plugins install`, with skills, agents, hooks and MCP servers declared in the manifest.
+Each preset is also installable with `/plugins install` directly, with skills, agents, hooks and MCP servers declared in its manifest.
 
 ## How it works
 
-- **Kimi Code** — edits `~/.kimi-code/config.toml` at text level (managed `# >>> kimi-boost managed >>>` block + in-place array merge), preserving your comments; agent files follow the native frontmatter format (compatible with Claude Code / OpenCode agent files, per Kimi docs)
-- **Hooks are plain Node `.mjs`** — same pattern Kimi Code's own docs use, works identically on macOS / Windows / Linux
-- **Fail-open hooks** — a crashing hook never blocks your work (exit `0` allow · exit `2` block)
-- **Safe by default** — your config is backed up to `<config>.kboost.bak` before every change
-- **Idempotent** — reinstall/update never duplicates entries
+```
+                ┌────────────────────────────────────┐
+                │         kimi-boost CLI              │
+                │  install · remove · doctor · update │
+                └──────────┬─────────┬─────────┬─────┘
+                           │         │         │
+            ┌──────────────▼┐  ┌─────▼──────┐  ┌▼──────────┐
+            │   Kimi Code   │  │ Claude Code │  │   Codex   │
+            │ config.toml   │  │ settings.json│ │ config.toml│
+            │ (text-level   │  │ (manifest-  │  │ (manifest- │
+            │  editing)     │  │  driven)    │  │  driven)   │
+            └──────┬────────┘  └─────┬──────┘  └──┬─────────┘
+                   │                 │            │
+                   ▼                 ▼            ▼
+        skills + hooks + agents   skills + hooks + agents   skills + hooks
+```
 
-## Contributing
+- **Kimi Code** — edits `~/.kimi-code/config.toml` at **text level** (a managed `# >>> kimi-boost managed >>>` block plus in-place array merge). Your comments and formatting survive untouched.
+- **Claude Code & Codex** — manifest-driven install into `~/.claude` / `~/.codex`; agent files use the native frontmatter format (cross-compatible, per Kimi docs).
+- **Hooks are plain Node `.mjs`** — the same pattern Kimi Code's own docs use, identical behavior on macOS / Windows / Linux.
 
-Preset catalog is PR-driven: add a directory under `presets/`, CI validates schema, hook events and file existence. See [CONTRIBUTING.md](CONTRIBUTING.md).
+## Safety by default
+
+- 🔒 **Never touches your config beyond its own managed section** — comments, ordering, formatting all preserved
+- 🗄️ Backed up to `<config>.kboost.bak` before every change
+- 🚧 Managed-roots whitelist — refuses to delete anything outside `~/.kimi-boost`, `~/.kimi-code`, `~/.claude`, `~/.codex`
+- 🛡️ Dual-channel guard — already installed via Kimi `/plugins`? No duplicate hooks.
+- ⚡ Fail-open hooks — a crashing hook never blocks your work (exit `0` allow · exit `2` block)
 
 ## Roadmap
 
 - [ ] MCP server presets
 - [ ] Token/cost usage guard hooks
 - [ ] Per-project (`.kimi-boost/`) presets
-- [ ] Codex `~/.codex/agents` support (Codex defines agents via AGENTS.md)
+- [ ] More stack presets (vote in [issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1))
+
+## Contributing
+
+Preset catalog is PR-driven: add a directory under `presets/`, CI validates schema, hook events and file existence. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
