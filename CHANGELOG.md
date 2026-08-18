@@ -1,3 +1,15 @@
+## 0.3.0 (2026-08-17)
+
+### Presets (3 → 8)
+
+- New: `go`, `react`, `flutter`, `nestjs`, `uniapp` (each = auto-loaded best-practice SKILL.md + reviewer agent + main-branch guard)
+- Every preset is also a valid `kimi.plugin.json` plugin
+
+### Community
+
+- `kimi-boost create <id> [--name] [--tags]` — one-command preset scaffold for contributors; CI validates the result
+- CONTRIBUTING updated with the scaffold flow
+
 ## 0.2.1 (2026-08-17)
 
 - Fix: `kimi-boost --version` now reads from package.json instead of a hardcoded value (0.2.0 shipped with a stale version banner)
