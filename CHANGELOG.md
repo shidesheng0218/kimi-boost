@@ -1,3 +1,11 @@
+## 0.5.0 (2026-08-18)
+
+### Differentiators
+
+- **`usage` preset + `kimi-boost usage` command** — session / prompt / tool-call tracking with daily limit hint (`KIMI_BOOST_DAILY_LIMIT`); all hooks fail-open, no agent blocking
+- **MCP presets** — `mcp-tools` (zero-config `fetch` + `time` servers); preset `mcpServers` are merged into `~/.kimi-code/mcp.json` (user entries preserved), 16 presets total
+- Hook `args` support (same script registered under multiple events with distinct commands)
+
 ## 0.4.0 (2026-08-18)
 
 ### Presets (8 → 14)

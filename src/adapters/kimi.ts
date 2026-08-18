@@ -6,7 +6,17 @@ import { assertManagedPath } from "../core/safety.js";
 import { removePresetHooks, upsertDirArray, upsertManagedHooks, type ManagedHook } from "../core/kimiTextEdit.js";
 import { parse as parseToml } from "smol-toml";
 import { kimiHomeDir } from "../core/detect.js";
+import { getPreset } from "../registry/presets.js";
+import { readMcpFile, removeMcpServers, saveMcpFile, upsertMcpServers } from "../core/kimiMcp.js";
 import type { Adapter, AdapterContext, InstallReport } from "./types.js";
+
+function getPresetSafe(id: string) {
+  try {
+    return getPreset(id);
+  } catch {
+    return undefined;
+  }
+}
 
 function readRawConfig(): { path: string; text: string } {
   const path = join(kimiHomeDir(), "config.toml");
@@ -52,6 +62,15 @@ export const kimiAdapter: Adapter = {
       const up = upsertManagedHooks(result.text, hooks);
       if (up.added > 0) changed.push(`config.toml[[hooks]] (+${up.added})`);
       result.text = up.text;
+    }
+
+    if (preset.mcpServers && Object.keys(preset.mcpServers).length > 0) {
+      const mcp = readMcpFile();
+      const up = upsertMcpServers(mcp, preset.mcpServers);
+      if (up.changed) {
+        saveMcpFile(mcp);
+        changed.push(`mcp.json mcpServers (+${up.added.length}: ${up.added.join(", ")})`);
+      }
     }
 
     ensureDir(dirname(path));
@@ -101,6 +120,16 @@ export const kimiAdapter: Adapter = {
     if (result.removed > 0) changed.push(`config.toml[[hooks]] (-${result.removed})`);
     // 注意:extra_skill_dirs/extra_agent_dirs 是全局挂载(所有 preset 共享),
     // 卸载单个 preset 不移除它们;只有全部 preset 卸载后可由 doctor 提示清理。
+
+    const presetDef = getPresetSafe(presetId);
+    if (presetDef?.mcpServers) {
+      const mcp = readMcpFile();
+      const rm = removeMcpServers(mcp, Object.keys(presetDef.mcpServers));
+      if (rm.changed) {
+        saveMcpFile(mcp);
+        changed.push(`mcp.json mcpServers (-${rm.removed.length})`);
+      }
+    }
     ensureDir(dirname(path));
     writeFileIfWritable(path, result.text);
 

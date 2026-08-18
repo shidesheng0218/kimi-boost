@@ -1,0 +1,28 @@
+{
+  "id": "mcp-tools",
+  "name": "MCP 工具",
+  "description": "零配置 MCP 工具:fetch(网页抓取)与 time(时间/时区),开箱即用。",
+  "tags": [
+    "mcp",
+    "tools",
+    "fetch"
+  ],
+  "version": "1.0.0",
+  "hooks": [],
+  "mcpServers": {
+    "fetch": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-fetch"
+      ]
+    },
+    "time": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-time",
+        "--local-timezone",
+        "Asia/Shanghai"
+      ]
+    }
+  }
+}

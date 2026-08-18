@@ -32,6 +32,8 @@ export interface PresetDefinition {
   agentsDir?: string;
   /** 是否提供 kimi.plugin.json(插件形态) */
   asPlugin?: boolean;
+  /** MCP server 声明(serverName -> 配置),写入 ~/.kimi-code/mcp.json */
+  mcpServers?: Record<string, unknown>;
   docs?: string;
 }
 

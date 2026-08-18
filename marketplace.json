@@ -27,6 +27,11 @@
       "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/java"
     },
     {
+      "id": "mcp-tools",
+      "displayName": "MCP 工具",
+      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/mcp-tools"
+    },
+    {
       "id": "nestjs",
       "displayName": "NestJS",
       "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/nestjs"
@@ -60,6 +65,11 @@
       "id": "uniapp",
       "displayName": "uni-app",
       "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/uniapp"
+    },
+    {
+      "id": "usage",
+      "displayName": "用量守卫",
+      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/usage"
     },
     {
       "id": "vue3",

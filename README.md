@@ -90,6 +90,13 @@ Interactive picker. Done. Your next session is boosted.
 | `java` | Java (Spring Boot) | `java-reviewer` | 🛡️ main-branch guard |
 | `python` | Python | `python-reviewer` | 🛡️ dangerous-shell blocker |
 
+**Special presets:**
+
+| Preset | What it gives you |
+|---|---|
+| `usage` | Tracks sessions / prompts / tool calls into `~/.kimi-boost/usage.json`; daily limit hint via `KIMI_BOOST_DAILY_LIMIT`; view with `kimi-boost usage` |
+| `mcp-tools` | Zero-config MCP servers: `fetch` (web scraping) + `time` (timezones) — written to `~/.kimi-code/mcp.json` |
+
 > Every preset bundles a best-practice SKILL.md (auto-loaded) + a reviewer agent. New stacks are vote-driven — [issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1).
 
 Each preset is **one directory** in this repo — a valid `kimi.plugin.json` plugin AND a kimi-boost preset. Contributions welcome:
@@ -113,6 +120,7 @@ presets/<id>/
 | `kimi-boost update [--repo owner/repo]` | Pull latest versions and re-apply (works on forks) |
 | `kimi-boost doctor [--fix]` | Diagnose config, hooks, mounted dirs, manifest consistency |
 | `kimi-boost marketplace [--source-mode tree\|zip] [--tag vX.Y.Z]` | Generate a Kimi Code custom marketplace JSON |
+| `kimi-boost usage [-d N]` | Show session/prompt/tool-call usage tracked by the `usage` preset |
 | `kimi-boost status` | Detect installed CLIs & platform |
 
 ### `doctor` — know your setup is healthy

@@ -90,6 +90,13 @@ npx kimi-boost install
 | `java` | Java(Spring Boot) | `java-reviewer` | 🛡️ main 分支保护 |
 | `python` | Python | `python-reviewer` | 🛡️ 危险命令拦截 |
 
+**特殊预设:**
+
+| 预设 | 提供能力 |
+|---|---|
+| `usage` | 统计会话/提示/工具调用到 `~/.kimi-boost/usage.json`;`KIMI_BOOST_DAILY_LIMIT` 每日阈值提示;`kimi-boost usage` 查看 |
+| `mcp-tools` | 零配置 MCP 工具:`fetch`(网页抓取)+ `time`(时区)——写入 `~/.kimi-code/mcp.json` |
+
 > 每个预设都内置一份自动加载的 SKILL.md 最佳实践 + 一个审查 Agent。新技术栈由社区投票决定——[issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1)。
 
 每个预设就是本仓库里的**一个目录**——既是合法的 `kimi.plugin.json` 插件,也是 kimi-boost 预设。欢迎贡献:
@@ -113,6 +120,7 @@ presets/<id>/
 | `kimi-boost update [--repo owner/repo]` | 拉取最新版本并重新应用(支持 fork) |
 | `kimi-boost doctor [--fix]` | 诊断配置语法/hooks/挂载目录/一致性 |
 | `kimi-boost marketplace [--source-mode tree\|zip] [--tag vX.Y.Z]` | 生成 Kimi Code 自定义 marketplace JSON |
+| `kimi-boost usage [-d N]` | 查看 usage 预设追踪的会话/提示/工具调用用量 |
 | `kimi-boost status` | 检测已安装 CLI 与平台 |
 
 ### `doctor` — 随时知道环境是否健康

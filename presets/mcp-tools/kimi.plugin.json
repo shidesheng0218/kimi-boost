@@ -1,0 +1,32 @@
+{
+  "name": "mcp-tools",
+  "version": "1.0.0",
+  "description": "零配置 MCP 工具:fetch(网页抓取)与 time(时间/时区)。",
+  "keywords": [
+    "mcp",
+    "fetch"
+  ],
+  "license": "MIT",
+  "interface": {
+    "displayName": "MCP 工具",
+    "shortDescription": "Zero-config MCP tools: fetch + time",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "mcpServers": {
+    "fetch": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-fetch"
+      ]
+    },
+    "time": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-time",
+        "--local-timezone",
+        "Asia/Shanghai"
+      ]
+    }
+  }
+}
