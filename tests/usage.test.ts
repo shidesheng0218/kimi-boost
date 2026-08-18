@@ -39,8 +39,8 @@ describe("usage tracking", () => {
     expect(data.days[day].toolCalls).toBe(1);
   });
 
-  it("summarize() produces N rows including today", () => {
-    const { summarize } = require("../src/core/usage.js") as typeof import("../src/core/usage.js");
+  it("summarize() produces N rows including today", async () => {
+    const { summarize } = await import("../src/core/usage.js");
     const rows = summarize(7);
     expect(rows).toHaveLength(7);
     expect(rows[6].day).toBe(new Date().toISOString().slice(0, 10));
