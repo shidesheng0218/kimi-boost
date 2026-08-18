@@ -1,0 +1,27 @@
+{
+  "name": "flutter",
+  "version": "1.0.0",
+  "description": "Flutter / Dart 最佳实践:Widget 组织、状态管理、性能与测试。",
+  "keywords": [
+    "flutter",
+    "dart",
+    "mobile"
+  ],
+  "license": "MIT",
+  "interface": {
+    "displayName": "Flutter",
+    "shortDescription": "Flutter engineering best practices",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

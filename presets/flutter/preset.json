@@ -1,0 +1,19 @@
+{
+  "id": "flutter",
+  "name": "Flutter",
+  "description": "Flutter / Dart 最佳实践:Widget 组织、状态管理、性能与测试。",
+  "tags": [
+    "flutter",
+    "dart",
+    "mobile"
+  ],
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "nestjs",
+  "name": "NestJS",
+  "description": "NestJS / TypeScript 后端最佳实践:模块化、依赖注入、守卫与测试。",
+  "tags": [
+    "nestjs",
+    "backend",
+    "typescript",
+    "node"
+  ],
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

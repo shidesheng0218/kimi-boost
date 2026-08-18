@@ -1,0 +1,27 @@
+{
+  "name": "react",
+  "version": "1.0.0",
+  "description": "React + TypeScript 最佳实践:组件组合、Hooks 规范、性能与可访问性。",
+  "keywords": [
+    "react",
+    "frontend",
+    "typescript"
+  ],
+  "license": "MIT",
+  "interface": {
+    "displayName": "React",
+    "shortDescription": "React engineering best practices + main-branch guard",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

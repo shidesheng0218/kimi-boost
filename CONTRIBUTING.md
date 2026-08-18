@@ -4,7 +4,16 @@ Thanks for helping grow the preset catalog. Three ways to contribute:
 
 ## 1. Add a new preset (most valuable)
 
-A preset is a directory under `presets/<id>/`:
+Fastest start — scaffold a skeleton with one command (from the repo root):
+
+```bash
+npm run build
+node dist/cli.js create mypreset --name "My Stack" --tags "frontend,vue"
+```
+
+This generates `presets/<id>/` with `preset.json`, `kimi.plugin.json`, a SKILL.md stub, a reviewer-agent stub and the default `protect-main` hook. Fill in the SKILL.md with real rules and the agent with real review criteria, then open a PR.
+
+Or hand-write a preset:
 
 ```
 presets/<id>/

@@ -1,0 +1,27 @@
+{
+  "name": "nestjs",
+  "version": "1.0.0",
+  "description": "NestJS / TypeScript 后端最佳实践:模块化、依赖注入、守卫与测试。",
+  "keywords": [
+    "nestjs",
+    "backend",
+    "typescript"
+  ],
+  "license": "MIT",
+  "interface": {
+    "displayName": "NestJS",
+    "shortDescription": "NestJS engineering best practices + main-branch guard",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

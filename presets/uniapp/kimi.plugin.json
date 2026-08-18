@@ -1,0 +1,27 @@
+{
+  "name": "uniapp",
+  "version": "1.0.0",
+  "description": "uni-app 跨端最佳实践:页面结构、条件编译、性能与兼容性。",
+  "keywords": [
+    "uniapp",
+    "vue",
+    "cross-platform"
+  ],
+  "license": "MIT",
+  "interface": {
+    "displayName": "uni-app",
+    "shortDescription": "uni-app cross-platform best practices",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

@@ -73,11 +73,18 @@ npx kimi-boost install
 
 ## 预设
 
-| 预设 | 技术栈 | Skills | 审查 Agent | Hooks |
-|---|---|---|---|---|
-| `vue3` | Vue 3 + TypeScript | 组合式 API、props 类型、状态与性能规范 | `vue3-reviewer` | 🛡️ main 分支推送保护 |
-| `weapp` | 微信小程序 | 分包策略、`setData` 限制、安全规范 | `weapp-reviewer` | — |
-| `python` | Python | PEP 8、类型标注、依赖卫生 | `python-reviewer` | 🛡️ 危险命令拦截 |
+| 预设 | 技术栈 | 审查 Agent | Hooks |
+|---|---|---|---|
+| `vue3` | Vue 3 + TypeScript | `vue3-reviewer` | 🛡️ main 分支保护 |
+| `react` | React + TypeScript | `react-reviewer` | 🛡️ main 分支保护 |
+| `flutter` | Flutter / Dart | `flutter-reviewer` | 🛡️ main 分支保护 |
+| `uniapp` | uni-app(跨端) | `uniapp-reviewer` | 🛡️ main 分支保护 |
+| `weapp` | 微信小程序 | `weapp-reviewer` | — |
+| `nestjs` | NestJS / TypeScript 后端 | `nestjs-reviewer` | 🛡️ main 分支保护 |
+| `go` | Go | `go-reviewer` | 🛡️ main 分支保护 |
+| `python` | Python | `python-reviewer` | 🛡️ 危险命令拦截 |
+
+> 每个预设都内置一份自动加载的 SKILL.md 最佳实践 + 一个审查 Agent。新技术栈由社区投票决定——[issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1)。
 
 每个预设就是本仓库里的**一个目录**——既是合法的 `kimi.plugin.json` 插件,也是 kimi-boost 预设。欢迎贡献:
 

@@ -73,11 +73,18 @@ Interactive picker. Done. Your next session is boosted.
 
 ## Presets
 
-| Preset | Stack | Skills | Reviewer agent | Hooks |
-|---|---|---|---|---|
-| `vue3` | Vue 3 + TypeScript | Composition API, props typing, state & perf rules | `vue3-reviewer` | 🛡️ main-branch push guard |
-| `weapp` | WeChat Mini Program | Subpackage strategy, `setData` limits, security | `weapp-reviewer` | — |
-| `python` | Python | PEP 8, type annotations, dependency hygiene | `python-reviewer` | 🛡️ dangerous-shell blocker |
+| Preset | Stack | Reviewer agent | Hooks |
+|---|---|---|---|
+| `vue3` | Vue 3 + TypeScript | `vue3-reviewer` | 🛡️ main-branch guard |
+| `react` | React + TypeScript | `react-reviewer` | 🛡️ main-branch guard |
+| `flutter` | Flutter / Dart | `flutter-reviewer` | 🛡️ main-branch guard |
+| `uniapp` | uni-app (cross-platform) | `uniapp-reviewer` | 🛡️ main-branch guard |
+| `weapp` | WeChat Mini Program | `weapp-reviewer` | — |
+| `nestjs` | NestJS / TypeScript backend | `nestjs-reviewer` | 🛡️ main-branch guard |
+| `go` | Go | `go-reviewer` | 🛡️ main-branch guard |
+| `python` | Python | `python-reviewer` | 🛡️ dangerous-shell blocker |
+
+> Every preset bundles a best-practice SKILL.md (auto-loaded) + a reviewer agent. New stacks are vote-driven — [issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1).
 
 Each preset is **one directory** in this repo — a valid `kimi.plugin.json` plugin AND a kimi-boost preset. Contributions welcome:
 

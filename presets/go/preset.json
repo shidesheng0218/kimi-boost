@@ -1,0 +1,15 @@
+{
+  "id": "go",
+  "name": "Go",
+  "description": "Go 工程最佳实践:gofmt、错误处理、并发安全、标准库优先、测试与项目结构。",
+  "tags": ["go", "backend", "golang"],
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

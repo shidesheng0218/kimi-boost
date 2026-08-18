@@ -1,0 +1,19 @@
+{
+  "id": "react",
+  "name": "React",
+  "description": "React + TypeScript 最佳实践:组件组合、Hooks 规范、性能与可访问性。",
+  "tags": [
+    "react",
+    "frontend",
+    "typescript"
+  ],
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}
