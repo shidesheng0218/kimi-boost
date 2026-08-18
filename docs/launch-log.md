@@ -36,3 +36,4 @@ Track where kimi-boost was announced, with links, so we can follow up and measur
 | 0.1.0 | ✅ published | — | initial |
 | 0.2.0 | ✅ published | v0.2.0 (3 preset zips + marketplace.json) | doctor / dry-run / comment-preserving config editing / Windows CI |
 | 0.2.1 | ✅ published | — | fix: dynamic --version banner |
+| 0.3.0 | ✅ published | v0.3.0 (8 preset zips + marketplace.json) | 8 presets (go/react/flutter/nestjs/uniapp added), `create` scaffold command |
