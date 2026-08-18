@@ -73,7 +73,8 @@ export const codexAdapter: Adapter = {
       let any = false;
       for (const h of preset.hooks) {
         const scriptPath = join(boostHooksDir(), preset.id, h.script);
-        if (upsertCodexHooks(data, h.event, h.matcher ?? "", `node "${scriptPath}"`, h.timeout)) any = true;
+        const cmd = `node "${scriptPath}"${h.args && h.args.length ? ` ${h.args.join(" ")}` : ""}`;
+        if (upsertCodexHooks(data, h.event, h.matcher ?? "", cmd, h.timeout)) any = true;
       }
       if (any) {
         writeFileIfWritable(path, stringify(data));

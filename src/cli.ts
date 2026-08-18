@@ -8,6 +8,7 @@ import { getStatus } from "./commands/status.js";
 import { marketplaceCommand } from "./commands/marketplace.js";
 import { runDoctor } from "./commands/doctor.js";
 import { createPreset } from "./commands/create.js";
+import { printUsage } from "./commands/usage.js";
 import { setDryRun } from "./core/fsguard.js";
 import { listPresets } from "./registry/presets.js";
 import { getAdapter } from "./adapters/index.js";
@@ -200,6 +201,20 @@ program
       console.log(pc.green(`✓ Created preset '${id}' in presets/${id}/`));
       for (const f of files) console.log(`   ${pc.dim(f)}`);
       console.log(`\nNext: edit the SKILL.md and reviewer agent, then open a PR.`);
+    } catch (err) {
+      console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("usage")
+  .description("Show session/prompt/tool-call usage tracked by the 'usage' preset")
+  .option("-d, --days <n>", "number of days to show", "7")
+  .action((opts?: { days?: string }) => {
+    try {
+      const days = Math.min(30, Math.max(1, Number(opts?.days ?? 7) || 7));
+      printUsage(days);
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
       process.exitCode = 1;

@@ -47,7 +47,7 @@ export const kimiAdapter: Adapter = {
         event: h.event,
         matcher: h.matcher,
         timeout: h.timeout,
-        command: `node "${join(hDir, h.script)}"`,
+        command: `node "${join(hDir, h.script)}"${h.args && h.args.length ? ` ${h.args.join(" ")}` : ""}`,
       }));
       const up = upsertManagedHooks(result.text, hooks);
       if (up.added > 0) changed.push(`config.toml[[hooks]] (+${up.added})`);

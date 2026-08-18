@@ -41,6 +41,8 @@ export interface PresetHook {
   /** 相对 preset 根目录的脚本路径 */
   script: string;
   timeout?: number;
+  /** 追加到 command 的参数(用于同脚本多事件注册时区分 command) */
+  args?: string[];
 }
 
 export interface InstalledPreset {

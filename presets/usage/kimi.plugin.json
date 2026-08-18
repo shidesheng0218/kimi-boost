@@ -1,0 +1,47 @@
+{
+  "name": "usage",
+  "version": "1.0.0",
+  "description": "用量统计与阈值提示:会话/提示/工具调用,写入 ~/.kimi-boost/usage.json。",
+  "keywords": [
+    "usage",
+    "cost"
+  ],
+  "license": "MIT",
+  "interface": {
+    "displayName": "用量守卫",
+    "shortDescription": "Session/prompt/tool-call usage tracking with daily limit hint",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "hooks": [
+    {
+      "event": "SessionStart",
+      "command": "node ./hooks/usage-track.mjs --event=SessionStart",
+      "timeout": 5,
+      "matcher": "startup"
+    },
+    {
+      "event": "SessionStart",
+      "command": "node ./hooks/usage-track.mjs --event=SessionStart",
+      "timeout": 5,
+      "matcher": "resume"
+    },
+    {
+      "event": "SessionEnd",
+      "command": "node ./hooks/usage-track.mjs --event=SessionEnd",
+      "timeout": 5,
+      "matcher": "exit"
+    },
+    {
+      "event": "UserPromptSubmit",
+      "command": "node ./hooks/usage-track.mjs --event=UserPromptSubmit",
+      "timeout": 5
+    },
+    {
+      "event": "PreToolUse",
+      "command": "node ./hooks/usage-track.mjs --event=PreToolUse",
+      "timeout": 5,
+      "matcher": "Bash"
+    }
+  ]
+}
