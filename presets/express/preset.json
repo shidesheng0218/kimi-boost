@@ -1,0 +1,19 @@
+{
+  "id": "express",
+  "name": "Express (Node.js)",
+  "description": "Express 最佳实践:中间件、错误处理、校验、安全与测试。",
+  "tags": [
+    "express",
+    "node",
+    "backend"
+  ],
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

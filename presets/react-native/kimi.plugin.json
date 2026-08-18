@@ -1,0 +1,26 @@
+{
+  "name": "react-native",
+  "version": "1.0.0",
+  "description": "React Native 最佳实践:组件组织、性能、原生桥接与发布。",
+  "keywords": [
+    "react-native",
+    "mobile"
+  ],
+  "license": "MIT",
+  "interface": {
+    "displayName": "React Native",
+    "shortDescription": "React Native 最佳实践:组件组织、性能、原生桥接与发布。",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

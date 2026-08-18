@@ -77,11 +77,17 @@ npx kimi-boost install
 |---|---|---|---|
 | `vue3` | Vue 3 + TypeScript | `vue3-reviewer` | 🛡️ main 分支保护 |
 | `react` | React + TypeScript | `react-reviewer` | 🛡️ main 分支保护 |
+| `nextjs` | Next.js(全栈) | `nextjs-reviewer` | 🛡️ main 分支保护 |
+| `react-native` | React Native | `react-native-reviewer` | 🛡️ main 分支保护 |
 | `flutter` | Flutter / Dart | `flutter-reviewer` | 🛡️ main 分支保护 |
 | `uniapp` | uni-app(跨端) | `uniapp-reviewer` | 🛡️ main 分支保护 |
 | `weapp` | 微信小程序 | `weapp-reviewer` | — |
 | `nestjs` | NestJS / TypeScript 后端 | `nestjs-reviewer` | 🛡️ main 分支保护 |
+| `express` | Express(Node.js) | `express-reviewer` | 🛡️ main 分支保护 |
+| `fastapi` | FastAPI(Python) | `fastapi-reviewer` | 🛡️ main 分支保护 |
 | `go` | Go | `go-reviewer` | 🛡️ main 分支保护 |
+| `rust` | Rust | `rust-reviewer` | 🛡️ main 分支保护 |
+| `java` | Java(Spring Boot) | `java-reviewer` | 🛡️ main 分支保护 |
 | `python` | Python | `python-reviewer` | 🛡️ 危险命令拦截 |
 
 > 每个预设都内置一份自动加载的 SKILL.md 最佳实践 + 一个审查 Agent。新技术栈由社区投票决定——[issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1)。

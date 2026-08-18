@@ -1,0 +1,20 @@
+{
+  "id": "nextjs",
+  "name": "Next.js",
+  "description": "Next.js 最佳实践:App Router、服务端组件、数据获取与性能。",
+  "tags": [
+    "nextjs",
+    "react",
+    "frontend",
+    "fullstack"
+  ],
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

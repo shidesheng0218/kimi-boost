@@ -1,0 +1,26 @@
+{
+  "name": "rust",
+  "version": "1.0.0",
+  "description": "Rust 工程最佳实践:所有权与借用、错误处理、cargo 与测试。",
+  "keywords": [
+    "rust",
+    "systems"
+  ],
+  "license": "MIT",
+  "interface": {
+    "displayName": "Rust",
+    "shortDescription": "Rust 工程最佳实践:所有权与借用、错误处理、cargo 与测试。",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

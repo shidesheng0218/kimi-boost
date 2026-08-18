@@ -1,0 +1,19 @@
+{
+  "id": "rust",
+  "name": "Rust",
+  "description": "Rust 工程最佳实践:所有权与借用、错误处理、cargo 与测试。",
+  "tags": [
+    "rust",
+    "systems",
+    "backend"
+  ],
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

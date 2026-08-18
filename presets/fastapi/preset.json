@@ -1,0 +1,19 @@
+{
+  "id": "fastapi",
+  "name": "FastAPI",
+  "description": "FastAPI 最佳实践:pydantic 校验、异步、依赖注入与测试。",
+  "tags": [
+    "fastapi",
+    "python",
+    "backend"
+  ],
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

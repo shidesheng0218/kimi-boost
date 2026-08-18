@@ -2,6 +2,16 @@
   "version": "2",
   "plugins": [
     {
+      "id": "express",
+      "displayName": "Express (Node.js)",
+      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/express"
+    },
+    {
+      "id": "fastapi",
+      "displayName": "FastAPI",
+      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/fastapi"
+    },
+    {
       "id": "flutter",
       "displayName": "Flutter",
       "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/flutter"
@@ -12,14 +22,19 @@
       "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/go"
     },
     {
-      "id": "mytest",
-      "displayName": "My Stack",
-      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/mytest"
+      "id": "java",
+      "displayName": "Java (Spring Boot)",
+      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/java"
     },
     {
       "id": "nestjs",
       "displayName": "NestJS",
       "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/nestjs"
+    },
+    {
+      "id": "nextjs",
+      "displayName": "Next.js",
+      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/nextjs"
     },
     {
       "id": "python",
@@ -30,6 +45,16 @@
       "id": "react",
       "displayName": "React",
       "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/react"
+    },
+    {
+      "id": "react-native",
+      "displayName": "React Native",
+      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/react-native"
+    },
+    {
+      "id": "rust",
+      "displayName": "Rust",
+      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/rust"
     },
     {
       "id": "uniapp",

@@ -1,0 +1,27 @@
+{
+  "name": "java",
+  "version": "1.0.0",
+  "description": "Spring Boot 最佳实践:分层架构、依赖注入、事务、测试与安全。",
+  "keywords": [
+    "java",
+    "spring",
+    "backend"
+  ],
+  "license": "MIT",
+  "interface": {
+    "displayName": "Java (Spring Boot)",
+    "shortDescription": "Spring Boot 最佳实践:分层架构、依赖注入、事务、测试与安全。",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

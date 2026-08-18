@@ -1,0 +1,26 @@
+{
+  "name": "nextjs",
+  "version": "1.0.0",
+  "description": "Next.js 最佳实践:App Router、服务端组件、数据获取与性能。",
+  "keywords": [
+    "nextjs",
+    "react"
+  ],
+  "license": "MIT",
+  "interface": {
+    "displayName": "Next.js",
+    "shortDescription": "Next.js 最佳实践:App Router、服务端组件、数据获取与性能。",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

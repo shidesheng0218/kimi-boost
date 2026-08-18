@@ -1,0 +1,19 @@
+{
+  "id": "java",
+  "name": "Java (Spring Boot)",
+  "description": "Spring Boot 最佳实践:分层架构、依赖注入、事务、测试与安全。",
+  "tags": [
+    "java",
+    "spring",
+    "backend"
+  ],
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

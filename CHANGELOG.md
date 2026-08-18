@@ -1,3 +1,10 @@
+## 0.4.0 (2026-08-18)
+
+### Presets (8 → 14)
+
+- New: `rust`, `java` (Spring Boot), `fastapi`, `nextjs`, `express`, `react-native`
+- 14 presets total, each = auto-loaded best-practice SKILL.md + reviewer agent + main-branch guard
+
 ## 0.3.0 (2026-08-17)
 
 ### Presets (3 → 8)

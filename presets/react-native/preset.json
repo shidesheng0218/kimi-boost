@@ -1,0 +1,19 @@
+{
+  "id": "react-native",
+  "name": "React Native",
+  "description": "React Native 最佳实践:组件组织、性能、原生桥接与发布。",
+  "tags": [
+    "react-native",
+    "mobile",
+    "react"
+  ],
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}

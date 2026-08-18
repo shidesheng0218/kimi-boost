@@ -1,0 +1,26 @@
+{
+  "name": "fastapi",
+  "version": "1.0.0",
+  "description": "FastAPI 最佳实践:pydantic 校验、异步、依赖注入与测试。",
+  "keywords": [
+    "fastapi",
+    "python"
+  ],
+  "license": "MIT",
+  "interface": {
+    "displayName": "FastAPI",
+    "shortDescription": "FastAPI 最佳实践:pydantic 校验、异步、依赖注入与测试。",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "command": "node ./hooks/protect-main.mjs",
+      "timeout": 5
+    }
+  ]
+}
