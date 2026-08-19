@@ -129,7 +129,7 @@ presets/<id>/
 
 | 命令 | 作用 |
 |---|---|
-| `kimi-boost install [预设]` | 安装预设（`--dry-run` 预览，`--with-hooks` 强制含 hooks） |
+| `kimi-boost install [预设]` | 安装预设（`--dry-run` 预览，`--with-hooks` 强制含 hooks，`--project` 装进当前项目） |
 | `kimi-boost list` | 查看可用与已安装预设 |
 | `kimi-boost remove <预设>` | 干净卸载 |
 | `kimi-boost update [--repo owner/repo]` | 拉取最新版本并重新应用（支持 fork） |
@@ -137,6 +137,16 @@ presets/<id>/
 | `kimi-boost marketplace [--source-mode repo\|zip]` | 生成 Kimi Code 自定义市场 JSON |
 | `kimi-boost usage [-d N]` | 查看 usage 预设记录的会话/提示/工具调用量 |
 | `kimi-boost status` | 检测已安装的 CLI 与平台 |
+
+### 项目级安装（团队共享）
+
+`kimi-boost install <预设> --project` 把预设写进当前项目而不是你的用户配置：
+
+- skills → `.agents/skills/`（Kimi Code 及兼容 `.agents/` 约定的工具）和 `.claude/skills/`
+- agents → `.agents/agents/` 和 `.claude/agents/`
+- hooks → `.claude/settings.json`（仅 Claude Code——Kimi Code 暂无项目级 hook 机制；Codex 跳过）
+
+所有产物都落在项目根（最近的 `.git` 上级目录）内，因此可以**提交进 git 与团队共享**——每个 clone 都获得一致的 AI 行为。卸载用 `kimi-boost remove <预设> --project`。
 
 ### `doctor`——随时确认环境健康
 

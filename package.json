@@ -1,6 +1,6 @@
 {
   "name": "kimi-boost",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "One-command preset installer & cross-tool marketplace for Kimi Code, Claude Code and Codex CLI",
   "scripts": {
     "test": "vitest run",

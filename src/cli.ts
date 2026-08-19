@@ -10,6 +10,7 @@ import { runDoctor } from "./commands/doctor.js";
 import { createPreset } from "./commands/create.js";
 import { printUsage } from "./commands/usage.js";
 import { setDryRun } from "./core/fsguard.js";
+import { installProjectPreset, removeProjectPreset } from "./core/project.js";
 import { listPresets } from "./registry/presets.js";
 import { getAdapter } from "./adapters/index.js";
 import prompts from "prompts";
@@ -30,7 +31,8 @@ program
   .option("-t, --tool <tool>", "target tool (kimi | claude | codex)")
   .option("-n, --dry-run", "show what would be done without writing anything")
   .option("--with-hooks", "force config.toml hooks even if installed via /plugins")
-  .action(async (preset?: string, opts?: { tool?: ToolName; dryRun?: boolean; withHooks?: boolean }) => {
+  .option("-p, --project", "install into the current project (.agents/, .claude/) for git-based team sharing")
+  .action(async (preset?: string, opts?: { tool?: ToolName; dryRun?: boolean; withHooks?: boolean; project?: boolean }) => {
     try {
       let id = preset;
       if (!id) {
@@ -48,7 +50,9 @@ program
         id = answer.preset;
         if (!id) return;
       }
-      const reports = await installPreset(id, { tool: opts?.tool, dryRun: opts?.dryRun, withHooks: opts?.withHooks });
+      const reports = opts?.project
+        ? await installProjectPreset(id, { tool: opts?.tool, dryRun: opts?.dryRun })
+        : await installPreset(id, { tool: opts?.tool, dryRun: opts?.dryRun, withHooks: opts?.withHooks });
       for (const r of reports) {
         const prefix = opts?.dryRun ? pc.cyan("dry-run") : (r.ok ? pc.green("✓") : pc.red("✗"));
         console.log(`${prefix} [${r.tool}] ${r.message}`);
@@ -67,10 +71,22 @@ program
   .description("Remove an installed preset")
   .option("-t, --tool <tool>", "target tool (kimi | claude | codex)")
   .option("-n, --dry-run", "show what would be removed without deleting anything")
-  .action(async (preset: string, opts?: { tool?: ToolName; dryRun?: boolean }) => {
+  .option("-p, --project", "remove from the current project instead of user config")
+  .action(async (preset: string, opts?: { tool?: ToolName; dryRun?: boolean; project?: boolean }) => {
     try {
       if (!/^[a-z0-9][a-z0-9_-]*$/.test(preset)) {
         throw new Error(`Invalid preset id '${preset}'. Expected kebab-case (a-z0-9, -, _).`);
+      }
+      if (opts?.project) {
+        const reports = await removeProjectPreset(preset, { tool: opts?.tool, dryRun: opts?.dryRun });
+        for (const r of reports) {
+          const prefix = opts?.dryRun ? pc.cyan("dry-run") : (r.ok ? pc.green("✓") : pc.red("✗"));
+          console.log(`${prefix} [${r.tool}] ${r.message}`);
+          if (opts?.dryRun) {
+            for (const c of r.changed) console.log(`   ${pc.dim("would remove:")} ${c}`);
+          }
+        }
+        return;
       }
       setDryRun(Boolean(opts?.dryRun));
       const envTools = opts?.tool ? [opts.tool] : (["kimi", "claude", "codex"] as ToolName[]);

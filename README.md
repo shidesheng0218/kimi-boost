@@ -129,7 +129,7 @@ presets/<id>/
 
 | Command | What it does |
 |---|---|
-| `kimi-boost install [preset]` | Install a preset (`--dry-run` preview, `--with-hooks` force) |
+| `kimi-boost install [preset]` | Install a preset (`--dry-run` preview, `--with-hooks` force, `--project` install into current project) |
 | `kimi-boost list` | Show available + installed presets |
 | `kimi-boost remove <preset>` | Uninstall cleanly |
 | `kimi-boost update [--repo owner/repo]` | Pull latest versions and re-apply (works on forks) |
@@ -137,6 +137,16 @@ presets/<id>/
 | `kimi-boost marketplace [--source-mode repo\|zip]` | Generate a Kimi Code custom marketplace JSON |
 | `kimi-boost usage [-d N]` | Show session/prompt/tool-call usage tracked by the `usage` preset |
 | `kimi-boost status` | Detect installed CLIs & platform |
+
+### Project-level installs (team sharing)
+
+`kimi-boost install <preset> --project` writes the preset into the current project instead of your user config:
+
+- skills → `.agents/skills/` (Kimi Code + the cross-tool `.agents/` convention) and `.claude/skills/`
+- agents → `.agents/agents/` and `.claude/agents/`
+- hooks → `.claude/settings.json` (Claude Code only — Kimi Code has no project-level hook mechanism; Codex is skipped)
+
+Everything lands inside the project root (nearest `.git` ancestor), so you can **commit the preset and share it with your team** — every clone gets the same AI behavior. Remove with `kimi-boost remove <preset> --project`.
 
 ### `doctor` — know your setup is healthy
 

@@ -1,3 +1,21 @@
+## 0.7.0 (2026-08-19)
+
+### Project-level presets
+
+- `kimi-boost install <preset> --project`: install into the current project for git-based team sharing — skills → `.agents/skills/` + `.claude/skills/`, agents → `.agents/agents/` + `.claude/agents/`, hooks → `.claude/settings.json` (Claude Code only; Kimi Code has no project-level hook mechanism, Codex skipped with a notice)
+- `kimi-boost remove <preset> --project`: surgical cleanup — never deletes settings.json itself, only our hook entries
+- `kboost status`: three-way per-preset install matrix (kimi/claude/codex) with `--json`
+
+### Presets
+
+- Flagship presets thickened with slash commands: `/<id>:review` (severity-graded reviewer delegation), plus `/react:component`, `/go:test`, `/python:lint`, `/usage:report`
+- `skillInstructions` gates stack skills to matching projects only
+
+### CI / security
+
+- split-presets.sh detects missing mirror repos and prints the exact `gh repo create` one-liner
+- SPLIT_TOKEN rotated to a fine-grained PAT scoped to the five mirror repos (Contents R/W only)
+
 ## 0.6.0 (2026-08-19)
 
 ### Official-channel distribution
