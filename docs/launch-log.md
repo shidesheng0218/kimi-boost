@@ -16,11 +16,16 @@ Track where kimi-boost was announced, with links, so we can follow up and measur
 ## Checklist
 
 - [x] X / Twitter main tweet
+- [x] npm 0.6.0 published (2026-08-19)
+- [x] v0.6.0 copy refresh (`docs/feedback-post-zh.md`, `docs/feedback-post-en.md`)
+- [x] Curated application copy (`docs/curated-application.md`)
+- [ ] X / Twitter v0.6.0 follow-up (official /plugins channel angle)
 - [ ] Reddit r/ChatGPTCoding + r/LLMDevs (copy in `docs/feedback-post-en.md`)
 - [ ] Hacker News Show HN (after Reddit, tune title from comments)
 - [ ] V2EX (copy in `docs/feedback-post-zh.md`)
-- [ ] Kimi official developer community group
+- [ ] Kimi official developer community group (+ Curated application)
 - [ ] 即刻 / 知乎
+- [ ] 掘金 long-form (NOTE: `docs/juejin.md` still describes the v0.1 three-preset release — refresh before posting)
 
 ## Metric snapshot
 
