@@ -19,7 +19,7 @@
     {
       "id": "go",
       "displayName": "Go",
-      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/go"
+      "source": "https://github.com/shidesheng0218/kimi-boost-go"
     },
     {
       "id": "java",
@@ -44,12 +44,12 @@
     {
       "id": "python",
       "displayName": "Python 工程化",
-      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/python"
+      "source": "https://github.com/shidesheng0218/kimi-boost-python"
     },
     {
       "id": "react",
       "displayName": "React",
-      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/react"
+      "source": "https://github.com/shidesheng0218/kimi-boost-react"
     },
     {
       "id": "react-native",
@@ -69,12 +69,12 @@
     {
       "id": "usage",
       "displayName": "用量守卫",
-      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/usage"
+      "source": "https://github.com/shidesheng0218/kimi-boost-usage"
     },
     {
       "id": "vue3",
       "displayName": "Vue 3 + TypeScript",
-      "source": "https://github.com/shidesheng0218/kimi-boost/tree/main/presets/vue3"
+      "source": "https://github.com/shidesheng0218/kimi-boost-vue3"
     },
     {
       "id": "weapp",
