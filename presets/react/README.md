@@ -39,6 +39,12 @@ npx kimi-boost install react
 - **Agent Skills**：`skills/`
 - **Subagents**：`agents/`
 - **Hooks**：`hooks/`
+- **斜杠命令**：`commands/`
+
+## 斜杠命令
+
+- `/react:component`
+- `/react:review`
 
 ## 说明
 

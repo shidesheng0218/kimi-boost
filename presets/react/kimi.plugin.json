@@ -16,6 +16,8 @@
   },
   "skills": "./skills/",
   "agents": "./agents/",
+  "commands": "./commands/",
+  "skillInstructions": "仅在检测到 React 项目(如 package.json 依赖含 react)时应用本 skill 的规范;非 React 项目不要强行套用。",
   "hooks": [
     {
       "event": "PreToolUse",

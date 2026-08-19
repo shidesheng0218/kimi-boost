@@ -2,7 +2,11 @@
   "name": "go",
   "version": "1.0.0",
   "description": "Go 工程最佳实践:gofmt、错误处理、并发安全、测试与项目结构。",
-  "keywords": ["go", "golang", "backend"],
+  "keywords": [
+    "go",
+    "golang",
+    "backend"
+  ],
   "license": "MIT",
   "interface": {
     "displayName": "Go",
@@ -12,6 +16,8 @@
   },
   "skills": "./skills/",
   "agents": "./agents/",
+  "commands": "./commands/",
+  "skillInstructions": "仅在检测到 Go 项目(如存在 go.mod)时应用本 skill 的规范;非 Go 项目不要强行套用。",
   "hooks": [
     {
       "event": "PreToolUse",

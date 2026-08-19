@@ -39,6 +39,12 @@ npx kimi-boost install python
 - **Agent Skills**：`skills/`
 - **Subagents**：`agents/`
 - **Hooks**：`hooks/`
+- **斜杠命令**：`commands/`
+
+## 斜杠命令
+
+- `/python:lint`
+- `/python:review`
 
 ## 说明
 

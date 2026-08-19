@@ -2,7 +2,10 @@
   "name": "python",
   "version": "1.0.0",
   "description": "Python 工程化最佳实践:类型标注、测试、依赖管理,外加危险 Shell 命令拦截 hook。",
-  "keywords": ["python", "backend"],
+  "keywords": [
+    "python",
+    "backend"
+  ],
   "license": "MIT",
   "interface": {
     "displayName": "Python 工程化",
@@ -12,6 +15,8 @@
   },
   "skills": "./skills/",
   "agents": "./agents/",
+  "commands": "./commands/",
+  "skillInstructions": "仅在检测到 Python 项目(如存在 pyproject.toml / requirements.txt / setup.py)时应用本 skill 的规范;非 Python 项目不要强行套用。",
   "hooks": [
     {
       "event": "PreToolUse",

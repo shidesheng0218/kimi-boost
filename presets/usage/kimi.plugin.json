@@ -13,6 +13,7 @@
     "developerName": "kimi-boost",
     "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
   },
+  "commands": "./commands/",
   "hooks": [
     {
       "event": "SessionStart",

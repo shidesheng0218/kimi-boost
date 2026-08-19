@@ -39,6 +39,12 @@ npx kimi-boost install go
 - **Agent Skills**：`skills/`
 - **Subagents**：`agents/`
 - **Hooks**：`hooks/`
+- **斜杠命令**：`commands/`
+
+## 斜杠命令
+
+- `/go:review`
+- `/go:test`
 
 ## 说明
 

@@ -37,6 +37,11 @@ npx kimi-boost install usage
 ## 包含
 
 - **Hooks**：`hooks/`
+- **斜杠命令**：`commands/`
+
+## 斜杠命令
+
+- `/usage:report`
 
 ## 说明
 

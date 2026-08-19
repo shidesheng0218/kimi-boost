@@ -39,6 +39,12 @@ npx kimi-boost install vue3
 - **Agent Skills**：`skills/`
 - **Subagents**：`agents/`
 - **Hooks**：`hooks/`
+- **斜杠命令**：`commands/`
+
+## 斜杠命令
+
+- `/vue3:component`
+- `/vue3:review`
 
 ## 说明
 
