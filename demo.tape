@@ -17,14 +17,11 @@ Enter
 Sleep 400ms
 Type "kimi-boost list"
 Enter
-Sleep 1500ms
-Type "kimi-boost install"
-Enter
 Sleep 2000ms
-Down
+Type "kimi-boost install vue3"
 Enter
 Sleep 3000ms
-Type "cat ~/.kimi-code/config.toml"
+Type "cat $KIMI_CODE_HOME/config.toml"
 Enter
 Sleep 2500ms
 Type "kimi-boost doctor"

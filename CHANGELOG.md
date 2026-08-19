@@ -1,3 +1,23 @@
+## 0.6.0 (2026-08-19)
+
+### Official-channel distribution
+
+- Flagship presets (vue3/react/go/python/usage) are mirrored to single-plugin repos (`kimi-boost-<id>`) via CI subtree split — installable with the official `/plugins install <repo-url>` (tree-subdirectory URLs are rejected by the official installer)
+- `marketplace` command: new default `repo` source mode (mirrored presets only); `tree` mode deprecated with a warning
+- `presets/flagship.json`: single source of truth for mirrored presets (read by CLI + split script)
+
+### Compatibility CI
+
+- `verify.yml`: live-installs every preset into a real Kimi Code CLI via the `kimi web` REST API — on PRs touching `presets/**` and weekly (upstream drift)
+- `split-presets.yml`: auto-mirrors flagship presets to single repos on push
+- `scripts/verify-plugins.mjs` + `npm run verify:plugins` for local verification
+
+### Docs & misc
+
+- Bilingual README refresh: two install paths, preset catalog with official-repo links, mirror-architecture mermaid
+- Per-preset README for mirrors; demo.gif re-recorded deterministically
+- Delete stale `presets/marketplace.json`
+
 ## 0.5.0 (2026-08-18)
 
 ### Differentiators
