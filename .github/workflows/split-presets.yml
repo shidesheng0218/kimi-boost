@@ -1,0 +1,43 @@
+name: Split flagship presets
+
+# Mirrors flagship presets into single-plugin repos (kimi-boost-<id>) so the
+# official Kimi Code installer can consume them directly:
+#   /plugins install https://github.com/<org>/kimi-boost-<id>
+#
+# One-time setup: create the target repos and add a PAT with repo scope as
+# the SPLIT_TOKEN secret (GITHUB_TOKEN cannot push to other repositories).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "presets/vue3/**"
+      - "presets/react/**"
+      - "presets/go/**"
+      - "presets/python/**"
+      - "presets/usage/**"
+      - "scripts/split-presets.sh"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "kimi-boost-bot"
+          git config user.email "kimi-boost-bot@users.noreply.github.com"
+
+      - name: Split and push flagship presets
+        env:
+          GH_TOKEN: ${{ secrets.SPLIT_TOKEN }}
+        run: |
+          chmod +x scripts/split-presets.sh
+          scripts/split-presets.sh --push

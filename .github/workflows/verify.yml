@@ -1,0 +1,37 @@
+name: Plugin compatibility
+
+# Live-installs every preset into a real Kimi Code CLI via the local
+# `kimi web` REST API and asserts state:"ok" with no diagnostics.
+# No model calls are made, so no API key or login is required.
+
+on:
+  pull_request:
+    paths:
+      - "presets/**"
+      - "scripts/verify-plugins.mjs"
+      - ".github/workflows/verify.yml"
+  push:
+    branches: [main]
+    paths:
+      - "presets/**"
+      - "scripts/verify-plugins.mjs"
+      - ".github/workflows/verify.yml"
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Kimi Code CLI
+        run: |
+          curl -fsSL https://code.kimi.com/kimi-code/install.sh | bash
+          "$HOME/.kimi-code/bin/kimi" --version
+
+      - name: Verify all presets install cleanly
+        run: node scripts/verify-plugins.mjs
