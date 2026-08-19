@@ -45,3 +45,13 @@ export function getPreset(id: string): PresetDefinition | undefined {
 export function presetSourceDir(id: string): string {
   return join(presetsRoot(), id);
 }
+
+/** 拥有单仓镜像（kimi-boost-<id>）的旗舰预设，唯一事实来源是 presets/flagship.json */
+export function flagshipIds(): string[] {
+  try {
+    const raw = JSON.parse(readFileSync(join(presetsRoot(), "flagship.json"), "utf8")) as unknown;
+    return Array.isArray(raw) ? raw.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}

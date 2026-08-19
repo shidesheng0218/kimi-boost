@@ -18,12 +18,21 @@
 
 set -euo pipefail
 
-PRESETS=(vue3 react go python usage)
+cd "$(dirname "$0")/.."
+
+# Flagship preset list lives in presets/flagship.json (single source of
+# truth, also read by the CLI's marketplace command).
+if [[ -f presets/flagship.json ]]; then
+  PRESETS=()
+  while IFS= read -r line; do PRESETS+=("$line"); done < <(
+    node -e "process.stdout.write(JSON.parse(require('node:fs').readFileSync('presets/flagship.json','utf8')).join('\n'))"
+  )
+else
+  PRESETS=(vue3 react go python usage)
+fi
 ORG="${KB_ORG:-shidesheng0218}"
 PUSH=0
 [[ "${1:-}" == "--push" ]] && PUSH=1
-
-cd "$(dirname "$0")/.."
 
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "error: working tree is dirty; commit or stash first" >&2

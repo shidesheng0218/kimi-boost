@@ -17,6 +17,10 @@ on:
       - "scripts/verify-plugins.mjs"
       - ".github/workflows/verify.yml"
   workflow_dispatch:
+  # Weekly drift check: catches upstream Kimi Code manifest-spec changes
+  # even when no preset code changed. Monday 01:17 UTC.
+  schedule:
+    - cron: "17 1 * * 1"
 
 jobs:
   verify:
