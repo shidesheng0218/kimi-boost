@@ -17,6 +17,7 @@ on:
       - "presets/python/**"
       - "presets/usage/**"
       - "scripts/split-presets.sh"
+      - ".github/workflows/split-presets.yml"
   workflow_dispatch:
 
 permissions:
@@ -29,6 +30,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Do not let the github-actions[bot] credential header shadow the
+          # SPLIT_TOKEN embedded in the push URL.
+          persist-credentials: false
 
       - name: Configure git identity
         run: |
