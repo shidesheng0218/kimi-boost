@@ -21,7 +21,7 @@ Track where kimi-boost was announced, with links, so we can follow up and measur
 - [x] Curated application copy (`docs/curated-application.md`)
 - [ ] X / Twitter v0.6.0 follow-up (official /plugins channel angle)
 - [ ] Reddit r/ChatGPTCoding + r/LLMDevs (copy in `docs/feedback-post-en.md`)
-- [ ] Hacker News Show HN (after Reddit, tune title from comments)
+- [ ] Hacker News Show HN —— **暂缓**:HN 对新账号限制 Show HN(2026-08-19 实测触发限制页)。先养号 1-2 周(实质评论 5-10 条 + 投稿 1-2 篇非自有技术文章),有 karma 后再发;文案已备好在 `docs/feedback-post-en.md`
 - [ ] V2EX (copy in `docs/feedback-post-zh.md`)
 - [ ] Kimi official developer community group (+ Curated application)
 - [ ] 即刻 / 知乎
