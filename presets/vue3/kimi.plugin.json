@@ -11,7 +11,9 @@
     "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
   },
   "skills": "./skills/",
+  "skillInstructions": "仅在检测到 Vue 3 项目(如 package.json 依赖含 vue 3.x,或存在 vite.config/nuxt.config)时应用本 skill 的规范;非 Vue 项目不要强行套用。",
   "agents": "./agents/",
+  "commands": "./commands/",
   "hooks": [
     {
       "event": "PreToolUse",

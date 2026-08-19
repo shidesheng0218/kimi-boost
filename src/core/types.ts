@@ -23,6 +23,8 @@ export interface PresetDefinition {
   description: string;
   /** 标签,如 vue, frontend */
   tags: string[];
+  /** 预设版本(preset.json 里有,此前类型未声明) */
+  version?: string;
   /** 面向的工具,默认全部支持 */
   tools?: ToolName[];
   /** 需要写入各工具配置的 hook 规则(纯数据,由 adapter 翻译) */

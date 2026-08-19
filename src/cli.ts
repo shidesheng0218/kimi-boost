@@ -4,7 +4,7 @@ import pc from "picocolors";
 import { installPreset } from "./commands/install.js";
 import { listStatus } from "./commands/list.js";
 import { runUpdate } from "./commands/update.js";
-import { getStatus } from "./commands/status.js";
+import { getPresetMatrix, getStatus, renderPresetMatrix } from "./commands/status.js";
 import { marketplaceCommand } from "./commands/marketplace.js";
 import { runDoctor } from "./commands/doctor.js";
 import { createPreset } from "./commands/create.js";
@@ -223,15 +223,26 @@ program
 
 program
   .command("status")
-  .description("Show detected CLIs and platform info")
-  .action(() => {
+  .description("Show detected CLIs, platform info, and per-preset install state across tools")
+  .option("--json", "print machine-readable JSON")
+  .action(async (opts: { json?: boolean }) => {
     const s = getStatus();
+    const matrix = await getPresetMatrix();
+    if (opts.json) {
+      console.log(JSON.stringify({ ...s, presets: matrix }, null, 2));
+      return;
+    }
     console.log(pc.bold(`platform: ${s.platform}`));
     for (const t of s.tools) {
       const mark = t.installed ? pc.green("✓ installed") : pc.red("✗ not installed");
       const cfg = t.configured ? "" : pc.yellow(" (no config yet)");
       console.log(`${pc.bold(t.name)} ${mark} ${t.version ?? ""}${cfg}`);
       console.log(`   config: ${t.homeDir}`);
+    }
+    if (matrix.length > 0) {
+      console.log();
+      console.log(pc.bold("installed presets:"));
+      console.log(renderPresetMatrix(matrix));
     }
   });
 

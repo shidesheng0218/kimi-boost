@@ -89,6 +89,27 @@ function lintManifest(id, dir) {
   checkPaths("agents");
   checkPaths("commands");
   checkPaths("systemPromptPath");
+  // commands: 每个 .md 命令文件需在 frontmatter 后有非空正文
+  const commandsVal = manifest.commands;
+  if (commandsVal) {
+    const cmdPaths = Array.isArray(commandsVal) ? commandsVal : [commandsVal];
+    for (const p of cmdPaths) {
+      const abs = join(dir, String(p));
+      if (!existsSync(abs)) continue; // checkPaths 已报过
+      const files = [];
+      if (statSync(abs).isDirectory()) {
+        for (const f of readdirSync(abs, { recursive: true })) {
+          if (String(f).endsWith(".md")) files.push(join(abs, String(f)));
+        }
+      } else if (abs.endsWith(".md")) {
+        files.push(abs);
+      }
+      for (const f of files) {
+        const body = readFileSync(f, "utf8").replace(/^---\n[\s\S]*?\n---\n?/, "").trim();
+        if (!body) failures.push(`presets/${id}: command file "${p}" (${f}) has empty prompt body`);
+      }
+    }
+  }
   for (const [i, hook] of (manifest.hooks || []).entries()) {
     if (!hook.event || !hook.command) {
       failures.push(`presets/${id}: hooks[${i}] missing event or command`);

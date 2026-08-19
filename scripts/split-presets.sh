@@ -39,6 +39,26 @@ if [[ -n "$(git status --porcelain)" ]]; then
   exit 1
 fi
 
+# Fine-grained PATs cannot create repositories (API limitation), so repo
+# creation stays a rare manual step: detect missing mirrors and print the
+# exact one-liner instead of failing the push with a cryptic error.
+repo_exists() {
+  local auth=()
+  [[ -n "${GH_TOKEN:-}" ]] && auth=(-H "Authorization: Bearer ${GH_TOKEN}")
+  curl -sf -o /dev/null -m 15 "${auth[@]}" "https://api.github.com/repos/$1"
+}
+
+MISSING=0
+for id in "${PRESETS[@]}"; do
+  if ! repo_exists "${ORG}/kimi-boost-${id}"; then
+    echo "MISSING mirror repo: ${ORG}/kimi-boost-${id}" >&2
+    echo "  create it with:" >&2
+    echo "  gh repo create ${ORG}/kimi-boost-${id} --public --description \"kimi-boost preset '${id}' (auto-synced mirror; contribute at ${ORG}/kimi-boost)\"" >&2
+    MISSING=1
+  fi
+done
+[[ "$MISSING" == "1" ]] && exit 2
+
 for id in "${PRESETS[@]}"; do
   prefix="presets/$id"
   [[ -d "$prefix" ]] || { echo "skip $id: $prefix not found"; continue; }
