@@ -6,6 +6,7 @@ Track where kimi-boost was announced, with links, so we can follow up and measur
 |---|---|---|---|
 | 2026-08-17 | X / Twitter | https://x.com/Shidesheng0218/status/2089223442902262137 | main announcement tweet |
 | 2026-08-20 | X / Twitter | https://x.com/Shidesheng0218/status/2090276862450864374 | v0.6/0.7 follow-up: official /plugins channel + project-level presets, demo.gif attached |
+| 2026-08-20 | X / Twitter | https://x.com/Shidesheng0218/status/2090276862450864374 | v0.6/0.7 follow-up: official /plugins channel + project-level presets, demo.gif attached |
 | | | | |
 
 ## Feedback funnel
