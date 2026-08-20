@@ -5,6 +5,7 @@ Track where kimi-boost was announced, with links, so we can follow up and measur
 | Date (UTC) | Channel | Link | Notes |
 |---|---|---|---|
 | 2026-08-17 | X / Twitter | https://x.com/Shidesheng0218/status/2089223442902262137 | main announcement tweet |
+| 2026-08-20 | X / Twitter | https://x.com/Shidesheng0218/status/2090276862450864374 | v0.6/0.7 follow-up: official /plugins channel + project-level presets, demo.gif attached |
 | | | | |
 
 ## Feedback funnel
@@ -19,7 +20,7 @@ Track where kimi-boost was announced, with links, so we can follow up and measur
 - [x] npm 0.6.0 published (2026-08-19)
 - [x] v0.6.0 copy refresh (`docs/feedback-post-zh.md`, `docs/feedback-post-en.md`)
 - [x] Curated application copy (`docs/curated-application.md`)
-- [ ] X / Twitter v0.6.0 follow-up (official /plugins channel angle)
+- [x] X / Twitter v0.6.0+ follow-up (official /plugins channel angle): https://x.com/Shidesheng0218/status/2090276862450864374 (2026-08-20, demo.gif 配图, 仓库链接在自回复)
 - [ ] Reddit r/ChatGPTCoding + r/LLMDevs (copy in `docs/feedback-post-en.md`)
 - [ ] Hacker News Show HN —— **暂缓**:HN 对新账号限制 Show HN(2026-08-19 实测触发限制页)。先养号 1-2 周(实质评论 5-10 条 + 投稿 1-2 篇非自有技术文章),有 karma 后再发;文案已备好在 `docs/feedback-post-en.md`
 - [ ] V2EX (copy in `docs/feedback-post-zh.md`)
