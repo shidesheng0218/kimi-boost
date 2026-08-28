@@ -95,6 +95,16 @@ describe("removePresetHooks", () => {
     expect(r.text).toContain('# c');
   });
 
+  it("removes hooks whose paths are TOML-escaped (Windows backslashes)", () => {
+    const text = '# c\n';
+    const once = upsertManagedHooks(text, [
+      { event: "PreToolUse", command: 'node "C:\\Users\\me\\.kimi-boost\\hooks\\vue3\\protect-main.mjs"' },
+    ]);
+    const r = removePresetHooks(once.text, "vue3");
+    expect(r.removed).toBe(1);
+    expect(r.text).not.toContain("[[hooks]]");
+  });
+
   it("keeps hooks belonging to other presets", () => {
     const text = '# c\n';
     const a = upsertManagedHooks(text, [

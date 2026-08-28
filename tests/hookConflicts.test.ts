@@ -20,10 +20,11 @@ function writeHook(id: string, file: string, content: string): string {
 }
 
 function writeConfig(hooks: Array<{ scriptPath: string; timeout?: number }>): void {
+  // Windows 路径含反斜杠,写进 TOML 字符串必须转义
   const managed = hooks
     .map(
       (h) =>
-        `[[hooks]]\nevent = "PreToolUse"\nmatcher = "Bash"\ncommand = "node \\"${h.scriptPath}\\""\ntimeout = 5\n`,
+        `[[hooks]]\nevent = "PreToolUse"\nmatcher = "Bash"\ncommand = "node \\"${h.scriptPath.replace(/\\/g, "\\\\")}\\""\ntimeout = 5\n`,
     )
     .join("\n");
   writeFileSync(

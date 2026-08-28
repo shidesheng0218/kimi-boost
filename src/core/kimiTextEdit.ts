@@ -207,7 +207,9 @@ export function upsertManagedHooks(text: string, hooks: ManagedHook[]): { text: 
  * 兼容两种来源:managed 标记块内的(从标记块剔除)与块外的(旧版写入,直接删块)。
  */
 export function removePresetHooks(text: string, presetId: string): { text: string; removed: number } {
-  const needleRe = new RegExp(`hooks[\\\\/]${presetId}[\\\\/]`);
+  // + 匹配一个或多个分隔符:文本里的路径可能是 TOML 转义形态(Windows 下
+  // hooks\\<id>\\ 为两个连续反斜杠),单分隔符正则会漏匹配导致 hook 清不掉
+  const needleRe = new RegExp(`hooks[\\\\/]+${presetId}[\\\\/]+`);
   const block = findManagedBlock(text);
 
   // 1) 块外的 [[hooks]]:整块删除(旧版兼容)

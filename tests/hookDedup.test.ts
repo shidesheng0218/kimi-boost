@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { tomlStr } from "../src/core/kimiTextEdit.js";
 
 /**
  * hook 内容去重端到端验证:
@@ -16,6 +17,9 @@ let boostHome: string;
 
 const GUARD_V1 = 'process.stdin.on("end", () => process.exit(0));\n';
 const GUARD_V2 = 'process.stdin.on("end", () => process.exit(0)); // v2\n';
+
+/** config.toml 文本中的路径是 TOML 转义形态(Windows 反斜杠),断言前先转义 */
+const tomlPath = (p: string): string => tomlStr(p);
 
 interface Fixture {
   id: string;
@@ -99,7 +103,7 @@ describe("hook dedup: kimi adapter", () => {
     const report = await kimiAdapter.activate({ tool: "kimi", preset: b.preset as never, sourceDir: b.sourceDir, installDir: tmp });
     expect(report.message).toContain("shared");
     expect(kimiConfig().match(/\[\[hooks\]\]/g)).toHaveLength(1);
-    expect(kimiConfig()).toContain(join(boostHome, "hooks", "aa", "guard.mjs"));
+    expect(kimiConfig()).toContain(tomlPath(join(boostHome, "hooks", "aa", "guard.mjs")));
 
     const reg = readHookRegistry();
     const entries = Object.values(reg);
@@ -114,8 +118,8 @@ describe("hook dedup: kimi adapter", () => {
     await kimiAdapter.deactivate("aa");
     const cfg = kimiConfig();
     expect(cfg.match(/\[\[hooks\]\]/g)).toHaveLength(1);
-    expect(cfg).toContain(join(boostHome, "hooks", "bb", "guard.mjs"));
-    expect(cfg).not.toContain(join(boostHome, "hooks", "aa", "guard.mjs"));
+    expect(cfg).toContain(tomlPath(join(boostHome, "hooks", "bb", "guard.mjs")));
+    expect(cfg).not.toContain(tomlPath(join(boostHome, "hooks", "aa", "guard.mjs")));
     expect(readHookRegistry()[Object.keys(readHookRegistry())[0]].refs).toEqual(["bb"]);
   });
 
@@ -154,7 +158,7 @@ describe("hook dedup: kimi adapter", () => {
     // aa 卸载:只删自己的新条目,bb 的共享条目不受影响
     await kimiAdapter.deactivate("aa");
     expect(kimiConfig().match(/\[\[hooks\]\]/g)).toHaveLength(1);
-    expect(kimiConfig()).toContain(join(boostHome, "hooks", "bb", "guard.mjs"));
+    expect(kimiConfig()).toContain(tomlPath(join(boostHome, "hooks", "bb", "guard.mjs")));
   });
 });
 

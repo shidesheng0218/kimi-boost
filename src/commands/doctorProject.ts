@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, sep } from "node:path";
 import { detect } from "../core/detect.js";
 import { copyDirIfWritable, ensureDir, writeFileIfWritable } from "../core/fsguard.js";
 import { findProjectRoot } from "../core/project.js";
@@ -103,13 +103,13 @@ export function runProjectDoctor(fix = false, cwd: string = process.cwd()): Doct
           const resolved = script.replace("$CLAUDE_PROJECT_DIR", root);
           if (!existsSync(resolved)) {
             issues.push({ level: "error", item: "project: claude hook script missing", detail: resolved });
-            missing.push({ id: "(hook)", rel: resolved.replace(root + "/", "") });
+            missing.push({ id: "(hook)", rel: resolved.replace(root + sep, "") });
           } else {
             try {
               execFileSync(process.execPath, ["--check", resolved], { stdio: "ignore" });
-              issues.push({ level: "ok", item: "project: claude hook script valid", detail: resolved.replace(root + "/", "") });
+              issues.push({ level: "ok", item: "project: claude hook script valid", detail: resolved.replace(root + sep, "") });
             } catch {
-              issues.push({ level: "error", item: "project: claude hook script has syntax errors", detail: resolved.replace(root + "/", "") });
+              issues.push({ level: "error", item: "project: claude hook script has syntax errors", detail: resolved.replace(root + sep, "") });
             }
           }
         }
@@ -121,8 +121,9 @@ export function runProjectDoctor(fix = false, cwd: string = process.cwd()): Doct
   const env = detect();
   const toolsNeeded = new Set<string>();
   for (const rel of Object.values(manifest.presets).flatMap((rec) => filesOf(rec))) {
-    if (rel.startsWith(".agents/")) toolsNeeded.add("kimi");
-    if (rel.startsWith(".claude/")) toolsNeeded.add("claude");
+    // rel 分隔符随平台(Windows 为 \),统一按两种分隔符识别
+    if (/^[.]agents[\\/]/.test(rel)) toolsNeeded.add("kimi");
+    if (/^[.]claude[\\/]/.test(rel)) toolsNeeded.add("claude");
   }
   for (const tool of toolsNeeded) {
     const t = env.tools[tool as "kimi" | "claude"];
@@ -143,8 +144,8 @@ export function runProjectDoctor(fix = false, cwd: string = process.cwd()): Doct
       if (id === "(hook)") continue; // hook 脚本由 preset 复制逻辑恢复
       // 从仓库 presets/<id>/ 恢复
       const sourceBase = presetSourceDir(id);
-      // rel 形如 .agents/skills/<name>/SKILL.md 或 .claude/skills/...
-      const parts = rel.split("/");
+      // rel 形如 .agents/skills/<name>/SKILL.md(分隔符随平台)
+      const parts = rel.split(/[\\/]/);
       const kindIdx = parts.findIndex((p) => ["skills", "agents", "hooks"].includes(p));
       if (kindIdx < 0) continue;
       const kind = parts[kindIdx]; // skills | agents | hooks
