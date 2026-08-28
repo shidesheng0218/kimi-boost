@@ -1,6 +1,7 @@
 import { detect } from "../core/detect.js";
 import { availableAdapters } from "../adapters/index.js";
 import { listPresets } from "../registry/presets.js";
+import { storedPresetVersion } from "../core/config.js";
 
 export interface StatusLine {
   platform: string;
@@ -9,6 +10,8 @@ export interface StatusLine {
 
 export interface PresetMatrixEntry {
   id: string;
+  /** 本地已安装版本(本地存储中的 preset.json;未知为 "?") */
+  installed: string;
   /** 仓库内 preset.json 的最新版本(未知为 "?") */
   latest: string;
   /** 各端安装状态:kimi / claude / codex */
@@ -48,6 +51,7 @@ export async function getPresetMatrix(): Promise<PresetMatrixEntry[]> {
   }
   return [...ids].sort().map((id) => ({
     id,
+    installed: storedPresetVersion(id) ?? "?",
     latest: latest.get(id) ?? "?",
     tools: Object.fromEntries(TOOL_ORDER.map((t) => [t, installedByTool[t]?.has(id) ?? false])),
   }));
@@ -55,9 +59,10 @@ export async function getPresetMatrix(): Promise<PresetMatrixEntry[]> {
 
 /** 渲染矩阵为等宽表格(供 CLI 直接打印) */
 export function renderPresetMatrix(rows: PresetMatrixEntry[]): string {
-  const headers = ["Preset", "Latest", "Kimi Code", "Claude Code", "Codex"];
+  const headers = ["Preset", "Installed", "Latest", "Kimi Code", "Claude Code", "Codex"];
   const cells = rows.map((r) => [
     r.id,
+    r.installed,
     r.latest,
     r.tools.kimi ? "✓" : "—",
     r.tools.claude ? "✓" : "—",

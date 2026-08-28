@@ -3,9 +3,11 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { Adapter, AdapterContext, InstallReport } from "./types.js";
 import { backupFile } from "../core/config.js";
-import { clearInstall, installedFilesFor, recordInstall } from "../core/manifest.js";
+import { clearInstall, installedFilesFor, readHookRegistry, recordInstall, writeHookRegistry } from "../core/manifest.js";
+import { claimPresetHooks, fingerprintPresetHooks, hookCommandOwner, releasePresetRefs } from "../core/hookRegistry.js";
 import { copyDirIfWritable, ensureDir as mkdirSyncSafe, removeIfWritable, writeFileIfWritable } from "../core/fsguard.js";
 import { assertManagedPath } from "../core/safety.js";
+import type { PresetHook } from "../core/types.js";
 
 const CLAUDE_HOME = process.env.CLAUDE_CODE_HOME ?? join(homedir(), ".claude");
 const CLAUDE_AGENTS = join(CLAUDE_HOME, "agents");
@@ -43,6 +45,39 @@ function upsertClaudeHooks(data: ClaudeSettings, event: string, matcher: string 
   return true;
 }
 
+/** 对 settings.json 中每条 hook command 应用变换:返回新 command 改写、undefined 删除、原值保留 */
+function transformClaudeHooks(data: ClaudeSettings, fn: (command: string) => string | undefined): boolean {
+  let changed = false;
+  const hooksByEvent = data.hooks ?? {};
+  for (const event of Object.keys(hooksByEvent)) {
+    const groups = (hooksByEvent[event] ?? [])
+      .map((g) => ({
+        ...g,
+        hooks: g.hooks.flatMap((h) => {
+          const next = fn(h.command);
+          if (next === undefined) {
+            changed = true;
+            return [];
+          }
+          if (next !== h.command) {
+            changed = true;
+            return [{ ...h, command: next }];
+          }
+          return [h];
+        }),
+      }))
+      .filter((g) => g.hooks.length > 0);
+    if (groups.length !== (hooksByEvent[event] ?? []).length) changed = true;
+    hooksByEvent[event] = groups;
+  }
+  if (changed) data.hooks = hooksByEvent;
+  return changed;
+}
+
+function buildHookCommand(hooksBase: string, h: PresetHook): string {
+  return `node "${join(hooksBase, h.script)}"${h.args && h.args.length ? ` ${h.args.join(" ")}` : ""}`;
+}
+
 function copyDir(src: string, dest: string): string[] {
   return copyDirIfWritable(src, dest);
 }
@@ -71,23 +106,37 @@ export const claudeAdapter: Adapter = {
       written.push(skillRoot);
     }
 
-    if (preset.hooks.length > 0) {
+    // hook 内容去重:释放本预设旧引用(keepFps 之外的)→ 重定向/清理 config 条目 → 重新认领。
+    // 需要动 settings.json 的两种情况:本预设带 hooks,或释放动作需要重定向/清理陈旧条目
+    const registry = readHookRegistry();
+    const fps = fingerprintPresetHooks(sourceDir, preset.hooks);
+    const released = releasePresetRefs(registry, preset.id, new Set(fps.filter((f): f is string => Boolean(f))));
+
+    if (preset.hooks.length > 0 || released.length > 0) {
       const { path, data } = readSettings();
       const backup = backupFile(path);
       if (backup) configChanges.push(backup);
-      let any = false;
-      for (const h of preset.hooks) {
-        const scriptPath = join(boostHooksDir(), preset.id, h.script);
-        const cmd = `node "${scriptPath}"${h.args && h.args.length ? ` ${h.args.join(" ")}` : ""}`;
-        if (upsertClaudeHooks(data, h.event, h.matcher, cmd, h.timeout)) any = true;
+
+      const retargets = new Map(released.filter((r) => r.newCommand).map((r) => [r.oldCommand, r.newCommand!]));
+      transformClaudeHooks(data, (cmd) => {
+        const t = retargets.get(cmd);
+        if (t) return t;
+        return hookCommandOwner(cmd) === preset.id ? undefined : cmd;
+      });
+
+      const claim = claimPresetHooks(registry, preset.id, fps, preset.hooks, (pid, h) =>
+        buildHookCommand(join(boostHooksDir(), pid), h),
+      );
+      for (const w of claim.entries) {
+        upsertClaudeHooks(data, w.event, w.matcher, w.command, w.timeout);
       }
-      if (any) {
-        writeFileIfWritable(path, JSON.stringify(data, null, 2));
-        configChanges.push(path);
-      }
+      if (claim.registryChanged || released.length > 0) writeHookRegistry(registry);
+
+      writeFileIfWritable(path, JSON.stringify(data, null, 2));
+      configChanges.push(path);
     }
 
-    recordInstall(preset.id, "claude", written);
+    recordInstall(preset.id, "claude", written, preset.version);
 
     const all = [...written, ...configChanges];
     return {
@@ -123,23 +172,21 @@ export const claudeAdapter: Adapter = {
     }
     clearInstall(presetId, "claude");
 
+    // hook 共享注册表:先重定向仍被共享的条目,再删除本预设拥有的条目(顺序不能反)
+    const registry = readHookRegistry();
+    const released = releasePresetRefs(registry, presetId);
+    if (released.length > 0) writeHookRegistry(registry);
+
     const { path, data } = readSettings();
     const backup = backupFile(path);
     if (backup) changed.push(backup);
-    const hooksByEvent = data.hooks ?? {};
-    let removed = false;
-    for (const event of Object.keys(hooksByEvent)) {
-      const groups = hooksByEvent[event]
-        .map((g) => ({
-          ...g,
-          hooks: g.hooks.filter((h) => !h.command.includes(`hooks${process.platform === "win32" ? "\\" : "/"}${presetId}${process.platform === "win32" ? "\\" : "/"}`)),
-        }))
-        .filter((g) => g.hooks.length > 0);
-      if (groups.length !== hooksByEvent[event].length) removed = true;
-      hooksByEvent[event] = groups;
-    }
+    const retargets = new Map(released.filter((r) => r.newCommand).map((r) => [r.oldCommand, r.newCommand!]));
+    const removed = transformClaudeHooks(data, (cmd) => {
+      const t = retargets.get(cmd);
+      if (t) return t;
+      return hookCommandOwner(cmd) === presetId ? undefined : cmd;
+    });
     if (removed) {
-      data.hooks = hooksByEvent;
       writeFileIfWritable(path, JSON.stringify(data, null, 2));
       changed.push(path);
     }

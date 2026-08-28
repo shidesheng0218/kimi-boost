@@ -52,3 +52,14 @@ export function readKimiConfig(): KimiConfig {
     : {};
   return { path, data };
 }
+
+/** 本地预设存储(~/.kimi-boost/presets/<id>/preset.json)中记录的已安装版本 */
+export function storedPresetVersion(id: string): string | undefined {
+  const file = join(presetsDir(), id, "preset.json");
+  if (!existsSync(file)) return undefined;
+  try {
+    return (JSON.parse(readFileSync(file, "utf8")) as { version?: string }).version;
+  } catch {
+    return undefined;
+  }
+}

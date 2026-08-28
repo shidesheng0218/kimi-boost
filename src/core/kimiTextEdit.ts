@@ -21,7 +21,7 @@ export const MANAGED_BEGIN = "# >>> kimi-boost managed >>>";
 export const MANAGED_END = "# <<< kimi-boost managed <<<";
 
 /** TOML 字符串转义:反斜杠与双引号(Windows 路径含反斜杠,必须转义) */
-function tomlStr(s: string): string {
+export function tomlStr(s: string): string {
   return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
@@ -251,4 +251,26 @@ export function removePresetHooks(text: string, presetId: string): { text: strin
 
   const newBlock = [MANAGED_BEGIN, ...keep, MANAGED_END].join("\n");
   return { text: out.slice(0, b2.start) + newBlock + out.slice(b2.end), removed };
+}
+
+/**
+ * 把 config 中 command 为 fromCommand 的 hook 条目重定向为 toCommand
+ * (hook 共享卸载场景:条目还指向被卸载预设的脚本路径时,改指下一个共享者的副本)。
+ * 同时尝试原始与 TOML 转义两种形态(Windows 路径在文本中是转义存储的)。
+ */
+export function retargetHookCommand(
+  text: string,
+  fromCommand: string,
+  toCommand: string,
+): { text: string; changed: boolean } {
+  const candidates: Array<[string, string]> = [
+    [fromCommand, toCommand],
+    [tomlStr(fromCommand), tomlStr(toCommand)],
+  ];
+  for (const [from, to] of candidates) {
+    if (from && text.includes(from)) {
+      return { text: text.split(from).join(to), changed: true };
+    }
+  }
+  return { text, changed: false };
 }

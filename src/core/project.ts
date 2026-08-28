@@ -21,8 +21,20 @@ export interface ProjectOptions {
   root?: string;
 }
 
+/** 项目级安装记录。v0.8 起为对象形态并带版本;旧版为数组(读取兼容,下次写入自然迁移) */
+type ProjectPresetRecord = string[] | { files: string[]; version?: string };
+
 interface ProjectManifest {
-  presets: Record<string, string[]>;
+  presets: Record<string, ProjectPresetRecord>;
+}
+
+function filesOf(rec: ProjectPresetRecord | undefined): string[] {
+  if (!rec) return [];
+  return Array.isArray(rec) ? rec : rec.files;
+}
+
+function versionOf(rec: ProjectPresetRecord | undefined): string | undefined {
+  return rec && !Array.isArray(rec) ? rec.version : undefined;
 }
 
 const MANIFEST_REL = join(".kimi-boost", "installed.json");
@@ -51,6 +63,13 @@ function readManifest(root: string): ProjectManifest {
   } catch {
     return { presets: {} };
   }
+}
+
+/** 列出项目级已安装预设(含 manifest 记录的版本;旧格式版本为 undefined) */
+export function projectInstalledPresets(cwd?: string): Array<{ id: string; version?: string }> {
+  const { root } = findProjectRoot(cwd);
+  const manifest = readManifest(root);
+  return Object.entries(manifest.presets).map(([id, rec]) => ({ id, version: versionOf(rec) }));
 }
 
 function writeManifest(root: string, m: ProjectManifest): void {
@@ -134,7 +153,7 @@ export async function installProjectPreset(id: string, opts: ProjectOptions = {}
   setDryRun(Boolean(opts.dryRun));
   const reports: InstallReport[] = [];
   const manifest = readManifest(root);
-  const writtenAll = new Set(manifest.presets[id] ?? []);
+  const writtenAll = new Set(filesOf(manifest.presets[id]));
 
   try {
     for (const tool of targets) {
@@ -189,7 +208,7 @@ export async function installProjectPreset(id: string, opts: ProjectOptions = {}
         notes.push("hooks 未装:Kimi Code 仅支持用户级 hook(需要可全局安装: kboost install " + id + ")");
       }
 
-      manifest.presets[id] = [...writtenAll];
+      manifest.presets[id] = { files: [...writtenAll], version: preset.version };
       writeManifest(root, manifest);
 
       const base = `${tool}: skills/agents → ${tool === "kimi" ? ".agents/" : ".claude/"}`;
@@ -221,11 +240,11 @@ export async function installProjectPreset(id: string, opts: ProjectOptions = {}
 export async function removeProjectPreset(id: string, opts: ProjectOptions = {}): Promise<InstallReport[]> {
   const { root } = opts.root ? { root: resolve(opts.root) } : findProjectRoot();
   const manifest = readManifest(root);
-  const recorded = manifest.presets[id] ?? [];
 
   setDryRun(Boolean(opts.dryRun));
   try {
     const removed: string[] = [];
+    const recorded = filesOf(manifest.presets[id]);
     for (const relPath of recorded) {
       const abs = join(root, relPath);
       assertInsideProject(root, abs);

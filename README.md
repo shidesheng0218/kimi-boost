@@ -133,7 +133,8 @@ presets/<id>/
 | `kimi-boost list` | Show available + installed presets |
 | `kimi-boost remove <preset>` | Uninstall cleanly |
 | `kimi-boost update [--repo owner/repo]` | Pull latest versions and re-apply (works on forks) |
-| `kimi-boost doctor [--fix]` | Diagnose config, hooks, mounted dirs, manifest consistency |
+| `kimi-boost outdated [--project] [--json]` | Show installed presets with newer registry versions |
+| `kimi-boost doctor [--fix]` | Diagnose config, hooks, mounted dirs, manifest consistency, duplicate hooks |
 | `kimi-boost marketplace [--source-mode repo\|zip]` | Generate a Kimi Code custom marketplace JSON |
 | `kimi-boost usage [-d N]` | Show session/prompt/tool-call usage tracked by the `usage` preset |
 | `kimi-boost status` | Detect installed CLIs & platform |
@@ -210,6 +211,7 @@ flowchart TD
 - 🗄️ Backed up to `<config>.kboost.bak` before every change
 - 🚧 Managed-roots whitelist — refuses to delete anything outside `~/.kimi-boost`, `~/.kimi-code`, `~/.claude`, `~/.codex`
 - 🛡️ Dual-channel guard — already installed via Kimi `/plugins`? No duplicate hooks.
+- ♻️ **Content-aware hook dedup** — presets bundling the same guard script (e.g. `protect-main.mjs`) share a single config entry; uninstalling one preset retargets the entry to the next owner instead of breaking the rest. `doctor` flags redundant or diverging hook copies.
 - ⚡ Fail-open hooks — a crashing hook never blocks your work (exit `0` allow · exit `2` block)
 
 ## Roadmap
@@ -217,7 +219,7 @@ flowchart TD
 - [x] MCP server presets
 - [x] Token/cost usage guard hooks
 - [x] Official-channel distribution (single-plugin repo mirrors)
-- [ ] Per-project (`.kimi-boost/`) presets
+- [x] Per-project (`.kimi-boost/`) presets
 - [ ] More stack presets (vote in [issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1))
 - [ ] Mirror every preset to its own official repo
 

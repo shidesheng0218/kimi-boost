@@ -133,7 +133,8 @@ presets/<id>/
 | `kimi-boost list` | 查看可用与已安装预设 |
 | `kimi-boost remove <预设>` | 干净卸载 |
 | `kimi-boost update [--repo owner/repo]` | 拉取最新版本并重新应用（支持 fork） |
-| `kimi-boost doctor [--fix]` | 诊断配置、hooks、挂载目录、manifest 一致性 |
+| `kimi-boost outdated [--project] [--json]` | 查看已安装预设中有新版本的清单 |
+| `kimi-boost doctor [--fix]` | 诊断配置、hooks、挂载目录、manifest 一致性、重复 hook |
 | `kimi-boost marketplace [--source-mode repo\|zip]` | 生成 Kimi Code 自定义市场 JSON |
 | `kimi-boost usage [-d N]` | 查看 usage 预设记录的会话/提示/工具调用量 |
 | `kimi-boost status` | 检测已安装的 CLI 与平台 |
@@ -210,6 +211,7 @@ flowchart TD
 - 🗄️ 每次修改前备份到 `<config>.kboost.bak`
 - 🚧 受管目录白名单——拒绝删除 `~/.kimi-boost`、`~/.kimi-code`、`~/.claude`、`~/.codex` 之外的任何内容
 - 🛡️ 双渠道防重——已经通过 Kimi `/plugins` 装过？不会重复注册 hook
+- ♻️ **按内容去重 hook**——多个预设携带相同守卫脚本（如 `protect-main.mjs`）时只注册一条共享条目；卸载其中一个预设会自动把条目重定向到下一个共享者，其余预设不受影响。`doctor` 会标记冗余或内容分叉的 hook 副本
 - ⚡ Hooks fail-open——hook 崩溃也不会阻塞你的工作（退出码 `0` 放行 · `2` 拦截）
 
 ## 路线图
@@ -217,7 +219,7 @@ flowchart TD
 - [x] MCP server 预设
 - [x] Token/成本用量守卫 hooks
 - [x] 官方渠道分发（单插件镜像仓）
-- [ ] 项目级（`.kimi-boost/`）预设
+- [x] 项目级（`.kimi-boost/`）预设
 - [ ] 更多技术栈预设（[issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1) 投票）
 - [ ] 全部预设镜像为官方插件仓
 

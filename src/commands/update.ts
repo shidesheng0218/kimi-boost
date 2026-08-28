@@ -1,8 +1,8 @@
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
 import * as tar from "tar";
-import { presetsDir } from "../core/config.js";
+import { presetsDir, storedPresetVersion } from "../core/config.js";
 import { copyDirIfWritable } from "../core/fsguard.js";
 import { listStatus } from "./list.js";
 import { installPreset } from "./install.js";
@@ -39,14 +39,9 @@ export async function fetchRemotePreset(id: string, opts: UpdateOptions = {}): P
   }
 }
 
-function localVersion(id: string): string | undefined {
-  const file = join(presetsDir(), id, "preset.json");
-  if (!existsSync(file)) return undefined;
-  try {
-    return (JSON.parse(readFileSync(file, "utf8")) as { version?: string }).version;
-  } catch {
-    return undefined;
-  }
+/** 本地安装的预设版本(读取用户级预设存储),供 update/outdated 共用 */
+export function localVersion(id: string): string | undefined {
+  return storedPresetVersion(id);
 }
 
 export async function updatePreset(id: string, opts: UpdateOptions = {}): Promise<UpdateResult> {

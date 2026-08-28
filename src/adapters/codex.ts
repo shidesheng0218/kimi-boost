@@ -4,9 +4,11 @@ import { join } from "node:path";
 import { parse, stringify } from "smol-toml";
 import type { Adapter, AdapterContext, InstallReport } from "./types.js";
 import { backupFile } from "../core/config.js";
-import { clearInstall, installedFilesFor, recordInstall } from "../core/manifest.js";
+import { clearInstall, installedFilesFor, readHookRegistry, recordInstall, writeHookRegistry } from "../core/manifest.js";
+import { claimPresetHooks, fingerprintPresetHooks, hookCommandOwner, releasePresetRefs } from "../core/hookRegistry.js";
 import { copyDirIfWritable, removeIfWritable, writeFileIfWritable } from "../core/fsguard.js";
 import { assertManagedPath } from "../core/safety.js";
+import type { PresetHook } from "../core/types.js";
 
 const CODEX_HOME = process.env.CODEX_HOME ?? join(homedir(), ".codex");
 const CODEX_SKILLS = join(CODEX_HOME, "skills");
@@ -47,6 +49,40 @@ function upsertCodexHooks(data: Record<string, unknown>, event: string, matcher:
   return true;
 }
 
+/** 对 config 中每条 hook command 应用变换:返回新 command 改写、undefined 删除、原值保留 */
+function transformCodexHooks(data: Record<string, unknown>, fn: (command: string) => string | undefined): boolean {
+  let changed = false;
+  const hooks = hooksOf(data);
+  for (const event of Object.keys(hooks)) {
+    const groups = (hooks[event] ?? [])
+      .map((g) => ({
+        ...g,
+        hooks: g.hooks.flatMap((h) => {
+          const cmd = String(h.command);
+          const next = fn(cmd);
+          if (next === undefined) {
+            changed = true;
+            return [];
+          }
+          if (next !== cmd) {
+            changed = true;
+            return [{ ...h, command: next }];
+          }
+          return [h];
+        }),
+      }))
+      .filter((g) => g.hooks.length > 0);
+    if (groups.length !== (hooks[event] ?? []).length) changed = true;
+    hooks[event] = groups;
+  }
+  if (changed) data.hooks = hooks;
+  return changed;
+}
+
+function buildHookCommand(hooksBase: string, h: PresetHook): string {
+  return `node "${join(hooksBase, h.script)}"${h.args && h.args.length ? ` ${h.args.join(" ")}` : ""}`;
+}
+
 function copyDir(src: string, dest: string): string[] {
   return copyDirIfWritable(src, dest);
 }
@@ -66,23 +102,36 @@ export const codexAdapter: Adapter = {
       written.push(skillRoot);
     }
 
-    if (preset.hooks.length > 0) {
+    // hook 内容去重:与 claude adapter 相同的释放→重定向/清理→认领流程
+    const registry = readHookRegistry();
+    const fps = fingerprintPresetHooks(sourceDir, preset.hooks);
+    const released = releasePresetRefs(registry, preset.id, new Set(fps.filter((f): f is string => Boolean(f))));
+
+    if (preset.hooks.length > 0 || released.length > 0) {
       const { path, data } = readConfig();
       const backup = backupFile(path);
       if (backup) configChanges.push(backup);
-      let any = false;
-      for (const h of preset.hooks) {
-        const scriptPath = join(boostHooksDir(), preset.id, h.script);
-        const cmd = `node "${scriptPath}"${h.args && h.args.length ? ` ${h.args.join(" ")}` : ""}`;
-        if (upsertCodexHooks(data, h.event, h.matcher ?? "", cmd, h.timeout)) any = true;
+
+      const retargets = new Map(released.filter((r) => r.newCommand).map((r) => [r.oldCommand, r.newCommand!]));
+      transformCodexHooks(data, (cmd) => {
+        const t = retargets.get(cmd);
+        if (t) return t;
+        return hookCommandOwner(cmd) === preset.id ? undefined : cmd;
+      });
+
+      const claim = claimPresetHooks(registry, preset.id, fps, preset.hooks, (pid, h) =>
+        buildHookCommand(join(boostHooksDir(), pid), h),
+      );
+      for (const w of claim.entries) {
+        upsertCodexHooks(data, w.event, w.matcher ?? "", w.command, w.timeout);
       }
-      if (any) {
-        writeFileIfWritable(path, stringify(data));
-        configChanges.push(path);
-      }
+      if (claim.registryChanged || released.length > 0) writeHookRegistry(registry);
+
+      writeFileIfWritable(path, stringify(data));
+      configChanges.push(path);
     }
 
-    recordInstall(preset.id, "codex", written);
+    recordInstall(preset.id, "codex", written, preset.version);
 
     const all = [...written, ...configChanges];
     return {
@@ -118,23 +167,21 @@ export const codexAdapter: Adapter = {
     }
     clearInstall(presetId, "codex");
 
+    // hook 共享注册表:先重定向仍被共享的条目,再删除本预设拥有的条目(顺序不能反)
+    const registry = readHookRegistry();
+    const released = releasePresetRefs(registry, presetId);
+    if (released.length > 0) writeHookRegistry(registry);
+
     const { path, data } = readConfig();
     const backup = backupFile(path);
     if (backup) changed.push(backup);
-    const hooks = hooksOf(data);
-    let removed = false;
-    for (const event of Object.keys(hooks)) {
-      const groups = hooks[event]
-        .map((g) => ({
-          ...g,
-          hooks: g.hooks.filter((h) => !String(h.command).includes(`hooks${process.platform === "win32" ? "\\" : "/"}${presetId}${process.platform === "win32" ? "\\" : "/"}`)),
-        }))
-        .filter((g) => g.hooks.length > 0);
-      if (groups.length !== hooks[event].length) removed = true;
-      hooks[event] = groups;
-    }
+    const retargets = new Map(released.filter((r) => r.newCommand).map((r) => [r.oldCommand, r.newCommand!]));
+    const removed = transformCodexHooks(data, (cmd) => {
+      const t = retargets.get(cmd);
+      if (t) return t;
+      return hookCommandOwner(cmd) === presetId ? undefined : cmd;
+    });
     if (removed) {
-      data.hooks = hooks;
       writeFileIfWritable(path, stringify(data));
       changed.push(path);
     }

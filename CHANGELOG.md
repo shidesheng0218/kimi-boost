@@ -1,3 +1,25 @@
+## 0.8.0 (2026-08-28)
+
+### Content-aware hook dedup
+
+- Presets bundling functionally identical hooks (e.g. `vue3` + `nextjs` both ship `protect-main.mjs`) now share a **single config entry** per tool instead of registering duplicates. Identity = event + matcher + args + timeout + sha256 of the script content.
+- Shared registry lives in the user manifest (`~/.kimi-boost/installed.json`, new `hooks` key) with refcounting per preset
+- Uninstalling one of several presets sharing a hook **retargets** the config entry to the next owner's script copy — remaining presets keep working; the entry is removed only when the last ref goes away
+- `install`/`update` re-runs release stale refs first, so content changes converge to one fresh entry; idempotent for unchanged reinstalls
+- `doctor` detects cross-preset hook problems on all three tools: *duplicate hook content* (redundant, converges on next update) and *diverging copies* (same event + same script name, different content). v1 diagnoses only — no auto-merge in `--fix`
+- No directory-layout change: per-preset script copies under `~/.kimi-boost/hooks/<id>/` are kept (self-sufficient uninstalls); legacy installs without a registry keep working and converge on the next install/update
+
+### Version tracking + `outdated`
+
+- `kimi-boost outdated`: compares installed presets against the remote registry (`--repo`/`--branch` for forks, `--project` for project-level presets, `--json` for scripting); statuses: up-to-date / update available / local version unknown / not in remote registry
+- User manifest records the installed preset version per tool (legacy `string[]` records read transparently, migrated on next write); project manifest (`.kimi-boost/installed.json`) does the same
+- `kboost status` matrix now shows an **Installed** column next to Latest
+- Local-version lookup unified into `storedPresetVersion()` (shared by `update`, `outdated`, `status`)
+
+### Fixed
+
+- `doctor --project --fix`: restoring a missing single file (e.g. `agents/<name>.md`) no longer crashes with ENOTDIR — files and directories are restored by their actual type
+
 ## 0.7.0 (2026-08-19)
 
 ### Project-level presets
