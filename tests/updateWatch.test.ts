@@ -7,6 +7,11 @@ vi.mock("node:child_process", () => ({
   execFileSync: vi.fn(),
 }));
 
+vi.mock("../src/core/fsguard.js", () => ({
+  writeFileIfWritable: vi.fn(),
+  removeIfWritable: vi.fn(),
+}));
+
 let tmp: string;
 let boostHome: string;
 

@@ -24,7 +24,10 @@ describe("generateBootstrap", () => {
     const content = readFileSync(result.path, "utf8");
     expect(content).toContain("command -v kimi");
     expect(content).toContain("未检测到项目级预设记录");
-    expect(statSync(result.path).mode & 0o111).not.toBe(0);
+    // chmod 的执行位在 Windows 上没有 POSIX 语义,跳过该断言
+    if (process.platform !== "win32") {
+      expect(statSync(result.path).mode & 0o111).not.toBe(0);
+    }
   });
 
   it("includes an install line per project-installed preset", async () => {
