@@ -203,13 +203,10 @@ export function upsertManagedHooks(text: string, hooks: ManagedHook[]): { text: 
 }
 
 /**
- * 移除属于某 preset 的 hooks(command 路径含 hooks/<id>/),并清理空 managed 区块。
+ * 移除满足 matches() 的 [[hooks]] 条目,并清理空 managed 区块。
  * 兼容两种来源:managed 标记块内的(从标记块剔除)与块外的(旧版写入,直接删块)。
  */
-export function removePresetHooks(text: string, presetId: string): { text: string; removed: number } {
-  // + 匹配一个或多个分隔符:文本里的路径可能是 TOML 转义形态(Windows 下
-  // hooks\\<id>\\ 为两个连续反斜杠),单分隔符正则会漏匹配导致 hook 清不掉
-  const needleRe = new RegExp(`hooks[\\\\/]+${presetId}[\\\\/]+`);
+function removeHookBlocks(text: string, matches: (block: string) => boolean): { text: string; removed: number } {
   const block = findManagedBlock(text);
 
   // 1) 块外的 [[hooks]]:整块删除(旧版兼容)
@@ -219,7 +216,7 @@ export function removePresetHooks(text: string, presetId: string): { text: strin
   let m: RegExpExecArray | null;
   while ((m = hookRe.exec(text)) !== null) {
     const inManaged = block !== undefined && m.index >= block.start && m.index < block.end;
-    if (!inManaged && needleRe.test(m[0])) {
+    if (!inManaged && matches(m[0])) {
       deletions.push({ start: m.index, end: m.index + m[0].length });
       removed++;
     }
@@ -238,7 +235,7 @@ export function removePresetHooks(text: string, presetId: string): { text: strin
   const keep: string[] = [];
   let m2: RegExpExecArray | null;
   while ((m2 = re.exec(b2.body)) !== null) {
-    if (needleRe.test(m2[0])) removed++;
+    if (matches(m2[0])) removed++;
     else keep.push(m2[0]);
   }
   if (removed === 0) return { text: out, removed };
@@ -253,6 +250,28 @@ export function removePresetHooks(text: string, presetId: string): { text: strin
 
   const newBlock = [MANAGED_BEGIN, ...keep, MANAGED_END].join("\n");
   return { text: out.slice(0, b2.start) + newBlock + out.slice(b2.end), removed };
+}
+
+/**
+ * 移除属于某 preset 的 hooks(command 路径含 hooks/<id>/),并清理空 managed 区块。
+ */
+export function removePresetHooks(text: string, presetId: string): { text: string; removed: number } {
+  // + 匹配一个或多个分隔符:文本里的路径可能是 TOML 转义形态(Windows 下
+  // hooks\\<id>\\ 为两个连续反斜杠),单分隔符正则会漏匹配导致 hook 清不掉
+  const needleRe = new RegExp(`hooks[\\\\/]+${presetId}[\\\\/]+`);
+  return removeHookBlocks(text, (block) => needleRe.test(block));
+}
+
+/**
+ * 移除 command 精确等于 command 的 [[hooks]] 条目(doctor --fix 合并完全重复的 hook 时使用)。
+ * 同时尝试原始与 TOML 转义两种形态。
+ */
+export function removeHookByCommand(text: string, command: string): { text: string; removed: number } {
+  const candidates = new Set([command, tomlStr(command)]);
+  return removeHookBlocks(text, (block) => {
+    const cmd = commandOfBlock(block);
+    return cmd !== undefined && candidates.has(cmd);
+  });
 }
 
 /**

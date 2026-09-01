@@ -138,6 +138,9 @@ presets/<id>/
 | `kimi-boost marketplace [--source-mode repo\|zip]` | 生成 Kimi Code 自定义市场 JSON |
 | `kimi-boost usage [-d N]` | 查看 usage 预设记录的会话/提示/工具调用量 |
 | `kimi-boost status` | 检测已安装的 CLI 与平台 |
+| `kimi-boost bootstrap [--makefile]` | 生成团队 onboarding 用的 `setup.sh`（或 Makefile 的 `setup` target） |
+| `kimi-boost update --check` | 只检查预设是否有更新，不安装；发现更新会通知并以非零码退出 |
+| `kimi-boost update --watch [--interval 小时] [--uninstall]` | 注册/移除周期性后台更新检查 |
 
 ### 项目级安装（团队共享）
 

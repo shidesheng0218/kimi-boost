@@ -13,6 +13,12 @@ node dist/cli.js create mypreset --name "My Stack" --tags "frontend,vue"
 
 This generates `presets/<id>/` with `preset.json`, `kimi.plugin.json`, a SKILL.md stub, a reviewer-agent stub and the default `protect-main` hook. Fill in the SKILL.md with real rules and the agent with real review criteria, then open a PR.
 
+Two extra flags for presets that don't fit the skill+agent+hook shape:
+
+- `--shape mcp` — skip skills/agents/hooks, scaffold `preset.json`'s `mcpServers` instead (see the `mcp-tools` preset for the pattern).
+- `--shape command` — keep the skill+agent, but scaffold a `commands/<id>-report.md` slash command instead of a hook (see the `usage` preset).
+- `--force` — overwrite an existing `presets/<id>/` directory instead of erroring.
+
 Or hand-write a preset:
 
 ```

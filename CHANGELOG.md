@@ -1,3 +1,40 @@
+## Unreleased
+
+### Team onboarding
+
+- `kimi-boost bootstrap`: generates a `setup.sh` (or appends an idempotent `setup:` target to an existing `Makefile` with `--makefile`) that detects Kimi Code/Claude Code and installs every project-level preset recorded in `.kimi-boost/installed.json` — one command for new team members after `git clone`
+
+### Background update checks
+
+- `kimi-boost update --check`: diffs installed preset versions against the registry without touching disk; exits non-zero and fires a desktop notification (`osascript`/`notify-send`, terminal-only on Windows) when updates are found
+- `kimi-boost update --watch [--interval <hours>]`: registers a periodic `--check` run via native OS scheduling — `launchctl`/LaunchAgent on macOS, `crontab` on Linux, prints a `schtasks` command to run manually on Windows; default interval 6h, idempotent re-registration
+- `kimi-boost update --watch --uninstall`: removes the scheduled check
+- No new runtime dependencies (no `node-cron`/`pm2`/`node-notifier`) — same shell-out philosophy as the rest of the CLI
+
+### `create` scaffolding
+
+- `kimi-boost create <id> --shape mcp`: scaffolds an MCP-server preset (`mcpServers` stub, no skills/agents/hooks) instead of the default skill+agent+hook shape
+- `kimi-boost create <id> --shape command`: scaffolds a slash-command preset (`commands/<id>-report.md`) instead of a hook, keeping the skill+agent
+- `kimi-boost create <id> --force`: overwrite an existing `presets/<id>/` directory instead of erroring
+
+### `doctor --fix` hook auto-merge
+
+- Exact-duplicate hooks (same event+matcher+byte-identical script content across presets) are now merged by `doctor --fix`: the first owner's config entry is kept, redundant entries are removed from `config.toml` (kimi/codex) or `settings.json` (claude) — closes the "v1 diagnoses only" gap noted in 0.8.0 for this specific, lossless case
+- Diverging copies (same event+matcher+script name, different content) remain diagnose-only by design — `--fix` won't guess which version is correct; the warning now names both owning presets and suggests running `kimi-boost update <id>` on the stale one
+
+### Fixed
+
+- `detect()` now respects `CLAUDE_CODE_HOME`/`CODEX_HOME` env overrides for the claude/codex home directories, matching the existing `KIMI_CODE_HOME` behavior for kimi — previously only kimi's detection honored a sandboxed home dir, which made `doctor`/`status` blind to env-overridden claude/codex setups (found while adding hook-conflict test coverage)
+
+### Test coverage
+
+- Added dedicated test files for `create`, `list`, `status`, `update` (command layer), `detect`, `safety`, `hookRegistry`, and `doctor`'s hook-conflict detection — previously untested despite being in active use
+
+### Release pipeline
+
+- `prepublishOnly` now runs typecheck, the full test suite and preset validation before `build`, matching what CI already gates on
+- New `publish.yml` workflow: on `v*` tag push, runs the same checks then `npm publish --provenance --access public`. Requires an `NPM_TOKEN` repo secret to actually publish — inert (fails safely) until that secret is added
+
 ## 0.8.0 (2026-08-28)
 
 ### Content-aware hook dedup

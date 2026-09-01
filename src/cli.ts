@@ -4,6 +4,8 @@ import pc from "picocolors";
 import { installPreset } from "./commands/install.js";
 import { listStatus } from "./commands/list.js";
 import { runUpdate } from "./commands/update.js";
+import { generateBootstrap } from "./commands/bootstrap.js";
+import { checkUpdates, installWatch, notify, uninstallWatch } from "./commands/updateWatch.js";
 import { getPresetMatrix, getStatus, renderPresetMatrix } from "./commands/status.js";
 import { marketplaceCommand } from "./commands/marketplace.js";
 import { runDoctor } from "./commands/doctor.js";
@@ -136,8 +138,37 @@ program
   .description("Update installed presets to the latest versions")
   .option("--repo <owner/repo>", "registry repository (default: shidesheng0218/kimi-boost, or $KIMI_BOOST_REPO)")
   .option("--branch <ref>", "registry branch (default: main)")
-  .action(async (opts?: { repo?: string; branch?: string }) => {
+  .option("--check", "check for updates without installing (exits non-zero if updates found)")
+  .option("--watch", "register a periodic background update check (LaunchAgent/cron/schtasks)")
+  .option("--uninstall", "with --watch, remove the registered background check")
+  .option("--interval <hours>", "check interval in hours for --watch (default 6)")
+  .action(async (opts?: { repo?: string; branch?: string; check?: boolean; watch?: boolean; uninstall?: boolean; interval?: string }) => {
     try {
+      if (opts?.watch) {
+        const result = opts.uninstall ? uninstallWatch() : installWatch({ interval: opts.interval ? Number(opts.interval) : undefined });
+        console.log(`${pc.green("✓")} ${result.message}`);
+        return;
+      }
+      if (opts?.check) {
+        const { rows, updateCount } = await checkUpdates({ repo: opts.repo, branch: opts.branch });
+        if (rows.length === 0) {
+          console.log("No presets installed.");
+          return;
+        }
+        console.log(renderOutdated(rows));
+        for (const r of rows) {
+          if (r.message) console.log(`   ${pc.dim(`${r.id}: ${r.message}`)}`);
+        }
+        if (updateCount > 0) {
+          console.log("");
+          console.log(pc.yellow(`${updateCount} update(s) available.`) + ` Run 'kimi-boost update' to apply.`);
+          notify(`${updateCount} 个预设有更新，运行 kimi-boost update 应用`);
+          process.exitCode = 1;
+        } else {
+          process.exitCode = 0;
+        }
+        return;
+      }
       const results = await runUpdate(opts as { repo?: string; branch?: string });
       for (const r of results) {
         if (r.status === "updated") {
@@ -147,6 +178,30 @@ program
         } else {
           console.log(`${pc.red("✗")} ${r.id}: ${r.message ?? "failed"}`);
         }
+      }
+    } catch (err) {
+      console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("bootstrap")
+  .description("Generate a team onboarding script (setup.sh or Makefile target) for project-level presets")
+  .option("--makefile", "append a 'setup' target to Makefile instead of generating setup.sh")
+  .action((opts?: { makefile?: boolean }) => {
+    try {
+      const result = generateBootstrap({ makefile: opts?.makefile });
+      console.log(`${pc.green("✓")} ${result.created ? "Generated" : "Updated"} ${result.path}`);
+      if (result.presetIds.length > 0) {
+        console.log(`   presets: ${result.presetIds.join(", ")}`);
+      } else {
+        console.log(pc.yellow("   warning: no project presets recorded (.kimi-boost/installed.json) — install some with --project first"));
+      }
+      if (result.mode === "setup.sh") {
+        console.log(`   团队成员 clone 后运行: bash setup.sh`);
+      } else {
+        console.log(`   团队成员 clone 后运行: make setup`);
       }
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
@@ -216,9 +271,14 @@ program
   .description("Scaffold a new preset directory under presets/ (for contributors)")
   .option("--name <name>", "display name (default: the id)")
   .option("--tags <a,b,c>", "comma-separated tags")
-  .action((id: string, opts?: { name?: string; tags?: string }) => {
+  .option("--shape <skill|mcp|command>", "preset shape (default: skill)")
+  .option("--force", "overwrite an existing preset directory")
+  .action((id: string, opts?: { name?: string; tags?: string; shape?: string; force?: boolean }) => {
     try {
-      const files = createPreset(id, opts ?? {});
+      if (opts?.shape && !["skill", "mcp", "command"].includes(opts.shape)) {
+        throw new Error(`Invalid --shape '${opts.shape}'. Expected: skill | mcp | command.`);
+      }
+      const files = createPreset(id, { ...opts, shape: opts?.shape as "skill" | "mcp" | "command" | undefined });
       console.log(pc.green(`✓ Created preset '${id}' in presets/${id}/`));
       for (const f of files) console.log(`   ${pc.dim(f)}`);
       console.log(`\nNext: edit the SKILL.md and reviewer agent, then open a PR.`);
