@@ -75,7 +75,7 @@ function toolEnv(tool: ToolName): ToolEnv {
   }
   if (tool === "claude") {
     const bin = findBin(["claude"]);
-    const dir = join(homedir(), ".claude");
+    const dir = process.env.CLAUDE_CODE_HOME ?? join(homedir(), ".claude");
     return {
       tool,
       // VM/桌面版 Claude 可能没有 claude bin,但 ~/.claude 活跃存在即视为已安装
@@ -86,7 +86,7 @@ function toolEnv(tool: ToolName): ToolEnv {
     };
   }
   const bin = findBin(["codex"]);
-  const dir = join(homedir(), ".codex");
+  const dir = process.env.CODEX_HOME ?? join(homedir(), ".codex");
   return {
     tool,
     installed: Boolean(bin),

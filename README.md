@@ -138,6 +138,9 @@ presets/<id>/
 | `kimi-boost marketplace [--source-mode repo\|zip]` | Generate a Kimi Code custom marketplace JSON |
 | `kimi-boost usage [-d N]` | Show session/prompt/tool-call usage tracked by the `usage` preset |
 | `kimi-boost status` | Detect installed CLIs & platform |
+| `kimi-boost bootstrap [--makefile]` | Generate a `setup.sh` (or Makefile `setup` target) for team onboarding |
+| `kimi-boost update --check` | Check for preset updates without installing; notifies + exits non-zero if found |
+| `kimi-boost update --watch [--interval h] [--uninstall]` | Register/remove a periodic background update check |
 
 ### Project-level installs (team sharing)
 
