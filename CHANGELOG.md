@@ -1,5 +1,12 @@
 ## Unreleased
 
+### Quality gates
+
+- ESLint (flat config) + `typescript-eslint` now lint `src/`, `tests/`, `presets/**/*.mjs` and `scripts/*.mjs`, wired into `npm run lint`, a `Lint` CI step, and `prepublishOnly`. `no-unused-vars` is on and already caught dead imports in `presets/python/hooks/block-dangerous.mjs` (fixed). `no-empty` allows intentional `catch { /* fail-open */ }` blocks; `no-explicit-any` is warn-only for now.
+- Pre-commit hook via `husky` + `lint-staged`: runs `tsc --noEmit` and `eslint --fix` on staged files before every commit.
+- Added `engines.node >= 20` to `package.json` (matches CI).
+- Pinned the `typescript` dev-dependency (used only for `tsc --noEmit`; builds use esbuild) to `~6.0.3`, because `typescript-eslint` does not yet support TS 7 (typescript-eslint#10940). This keeps `tsc` and ESLint on one supported TS API. Revert to TS 7 once typescript-eslint supports it.
+
 ### Project-aware setup
 
 - `kimi-boost init`: detects the current project's stack from marker files (`go.mod`, `Cargo.toml`, `pubspec.yaml`, `pom.xml`/`build.gradle`, `pages.json`/`project.config.json`, `package.json` dependencies, Python requirements/pyproject) and recommends the matching presets, then installs the ones you pick via an interactive multi-select (already-installed presets are marked and not pre-selected). `--yes` installs everything detected without prompting (CI/scripts), `--dry-run` previews, `--project` installs into the project for team sharing. Multi-stack repos surface every match. Closes the "which preset do I need?" onboarding gap.

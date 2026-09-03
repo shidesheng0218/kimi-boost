@@ -1,6 +1,3 @@
-import { readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
-
 let input = "";
 process.stdin.on("data", (c) => (input += c));
 process.stdin.on("end", () => {
