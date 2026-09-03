@@ -111,6 +111,8 @@ npx kimi-boost install
 |---|---|---|
 | `usage` | 会话/提示/工具调用统计到 `~/.kimi-boost/usage.json`；`KIMI_BOOST_DAILY_LIMIT` 每日阈值提醒；`kimi-boost usage` 查看 | [✅ kimi-boost-usage](https://github.com/shidesheng0218/kimi-boost-usage) |
 | `mcp-tools` | 零配置 MCP servers：`fetch`（网页抓取）+ `time`（时区）——写入 `~/.kimi-code/mcp.json` | 经 CLI 安装 |
+| `security` | 跨栈守卫：写入文件即扫描硬编码密钥、拦截危险 `git push`（`--force`/`--delete`，放行 `--force-with-lease`）；外加 `security-reviewer` 审查 agent | 经 CLI 安装 |
+| `git-workflow` | 约定式提交、分支命名与 PR 规范（自动加载的 skill）+ `git-workflow-reviewer` 审查 agent；无 hooks | 经 CLI 安装 |
 
 > 每个预设都内置一份最佳实践 SKILL.md（自动加载）+ 一个审查 Agent。新技术栈由投票驱动——[issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1)。"经 CLI 安装"的预设会随需求增长陆续镜像为官方插件仓。
 

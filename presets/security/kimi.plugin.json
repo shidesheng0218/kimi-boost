@@ -1,0 +1,21 @@
+{
+  "name": "security",
+  "version": "1.0.0",
+  "description": "跨栈安全最佳实践 + 密钥/危险 git 守卫。",
+  "keywords": ["security", "secrets", "audit", "cross-stack"],
+  "license": "MIT",
+  "interface": {
+    "displayName": "安全守卫",
+    "shortDescription": "Secret scanning + dangerous-git guards, cross-stack",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "skillInstructions": "本 skill 为通用安全规范,适用于所有项目,无需按技术栈门控。",
+  "hooks": [
+    { "event": "PreToolUse", "matcher": "Write", "command": "node ./hooks/secret-scan.mjs", "timeout": 5 },
+    { "event": "PreToolUse", "matcher": "Edit", "command": "node ./hooks/secret-scan.mjs", "timeout": 5 },
+    { "event": "PreToolUse", "matcher": "Bash", "command": "node ./hooks/block-force-push.mjs", "timeout": 5 }
+  ]
+}

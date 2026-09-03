@@ -111,6 +111,8 @@ npx kimi-boost install
 |---|---|---|
 | `usage` | Tracks sessions / prompts / tool calls into `~/.kimi-boost/usage.json`; daily limit hint via `KIMI_BOOST_DAILY_LIMIT`; view with `kimi-boost usage` | [✅ kimi-boost-usage](https://github.com/shidesheng0218/kimi-boost-usage) |
 | `mcp-tools` | Zero-config MCP servers: `fetch` (web scraping) + `time` (timezones) — written to `~/.kimi-code/mcp.json` | via CLI |
+| `security` | Cross-stack guard: scans Write/Edit for hardcoded secrets, blocks dangerous `git push` (`--force`/`--delete`, allows `--force-with-lease`); plus a `security-reviewer` agent | via CLI |
+| `git-workflow` | Conventional commits, branch naming & PR discipline (auto-loaded skill) + a `git-workflow-reviewer` agent; no hooks | via CLI |
 
 > Every preset bundles a best-practice SKILL.md (auto-loaded) + a reviewer agent. New stacks are vote-driven — [issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1). "via CLI" presets get their own official repo as demand grows.
 

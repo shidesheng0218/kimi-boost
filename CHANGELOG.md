@@ -1,5 +1,10 @@
 ## Unreleased
 
+### New presets
+
+- `security` (cross-stack, guard-style): scans `Write`/`Edit` content for hardcoded secrets (AWS keys, private-key blocks, GitHub/Slack tokens, `api_key=...`-style assignments) and blocks the write; blocks dangerous `git push` (`--force` / `-f` / `--delete`, while allowing the safer `--force-with-lease`); ships a `security-reviewer` agent. All hooks fail open.
+- `git-workflow` (cross-stack, guidance-style): conventional-commit, branch-naming and PR-discipline skill plus a `git-workflow-reviewer` agent. No hooks (kept non-intrusive). Ships as skill + agent only — note the CLI adapters currently install `skills/`+`agents/`+hooks but not `commands/`, so this preset deliberately avoids slash commands (see follow-up).
+
 ### Quality gates
 
 - ESLint (flat config) + `typescript-eslint` now lint `src/`, `tests/`, `presets/**/*.mjs` and `scripts/*.mjs`, wired into `npm run lint`, a `Lint` CI step, and `prepublishOnly`. `no-unused-vars` is on and already caught dead imports in `presets/python/hooks/block-dangerous.mjs` (fixed). `no-empty` allows intentional `catch { /* fail-open */ }` blocks; `no-explicit-any` is warn-only for now.
