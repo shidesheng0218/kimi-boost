@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Project-aware setup
+
+- `kimi-boost init`: detects the current project's stack from marker files (`go.mod`, `Cargo.toml`, `pubspec.yaml`, `pom.xml`/`build.gradle`, `pages.json`/`project.config.json`, `package.json` dependencies, Python requirements/pyproject) and recommends the matching presets, then installs the ones you pick via an interactive multi-select (already-installed presets are marked and not pre-selected). `--yes` installs everything detected without prompting (CI/scripts), `--dry-run` previews, `--project` installs into the project for team sharing. Multi-stack repos surface every match. Closes the "which preset do I need?" onboarding gap.
+
 ### Team onboarding
 
 - `kimi-boost bootstrap`: generates a `setup.sh` (or appends an idempotent `setup:` target to an existing `Makefile` with `--makefile`) that detects Kimi Code/Claude Code and installs every project-level preset recorded in `.kimi-boost/installed.json` — one command for new team members after `git clone`

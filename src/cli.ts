@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { createRequire } from "node:module";
 import pc from "picocolors";
 import { installPreset } from "./commands/install.js";
+import { runInit } from "./commands/init.js";
 import { listStatus } from "./commands/list.js";
 import { runUpdate } from "./commands/update.js";
 import { generateBootstrap } from "./commands/bootstrap.js";
@@ -64,6 +65,22 @@ program
           for (const c of r.changed) console.log(`   ${pc.dim("would write:")} ${c}`);
         }
       }
+    } catch (err) {
+      console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("init")
+  .description("Detect this project's stack and install matching presets (guided first-time setup)")
+  .option("-t, --tool <tool>", "target tool (kimi | claude | codex)")
+  .option("-p, --project", "install into the current project (.agents/, .claude/) for git-based team sharing")
+  .option("-y, --yes", "install all detected presets without prompting (for CI/scripts)")
+  .option("-n, --dry-run", "show what would be done without writing anything")
+  .action(async (opts?: { tool?: ToolName; project?: boolean; yes?: boolean; dryRun?: boolean }) => {
+    try {
+      await runInit({ tool: opts?.tool, project: opts?.project, yes: opts?.yes, dryRun: opts?.dryRun });
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
       process.exitCode = 1;

@@ -130,6 +130,7 @@ presets/<id>/
 | 命令 | 作用 |
 |---|---|
 | `kimi-boost install [预设]` | 安装预设（`--dry-run` 预览，`--with-hooks` 强制含 hooks，`--project` 装进当前项目） |
+| `kimi-boost init` | 识别当前项目技术栈并安装匹配预设（`--yes` 跳过交互，`--dry-run` 预览，`--project`） |
 | `kimi-boost list` | 查看可用与已安装预设 |
 | `kimi-boost remove <预设>` | 干净卸载 |
 | `kimi-boost update [--repo owner/repo]` | 拉取最新版本并重新应用（支持 fork） |
