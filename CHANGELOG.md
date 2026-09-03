@@ -1,5 +1,12 @@
 ## Unreleased
 
+### Update preview & correctness
+
+- `kimi-boost update --dry-run`: previews what an update would change without writing — per preset it shows the version bump plus a file-level diff (`added` / `modified` / `removed`) between the remote registry and your local store. Exits non-zero when updates are available (same contract as `--check`).
+- **Fixed — update now actually applies remote content.** Previously `update` downloaded the registry tarball but then re-activated the CLI's *bundled* preset (`installPreset` read from the packed `presets/` dir), so a content update effectively only refreshed the version string. `installPreset` now accepts a `sourceDir` override and `update` activates from the freshly downloaded registry, so what `--dry-run` previews is what `update` applies.
+- **Fixed — update internals**: the whole-repo tarball is now downloaded **once** per run instead of once per preset; the temp dir moved to the OS temp dir and is always cleaned up (no more leaked `.tmp-update`); and the extracted repo root is located by scanning for `presets/` instead of the hardcoded `kimi-boost-<branch>` name, so `--repo` forks whose repo isn't named `kimi-boost` work.
+- New `src/core/diffDirs.ts` (pure, unit-tested) powers the content diff.
+
 ### Quality gates
 
 - ESLint (flat config) + `typescript-eslint` now lint `src/`, `tests/`, `presets/**/*.mjs` and `scripts/*.mjs`, wired into `npm run lint`, a `Lint` CI step, and `prepublishOnly`. `no-unused-vars` is on and already caught dead imports in `presets/python/hooks/block-dangerous.mjs` (fixed). `no-empty` allows intentional `catch { /* fail-open */ }` blocks; `no-explicit-any` is warn-only for now.

@@ -4,7 +4,7 @@ import pc from "picocolors";
 import { installPreset } from "./commands/install.js";
 import { runInit } from "./commands/init.js";
 import { listStatus } from "./commands/list.js";
-import { runUpdate } from "./commands/update.js";
+import { runUpdate, previewUpdate } from "./commands/update.js";
 import { generateBootstrap } from "./commands/bootstrap.js";
 import { checkUpdates, installWatch, notify, uninstallWatch } from "./commands/updateWatch.js";
 import { getPresetMatrix, getStatus, renderPresetMatrix } from "./commands/status.js";
@@ -156,14 +156,48 @@ program
   .option("--repo <owner/repo>", "registry repository (default: shidesheng0218/kimi-boost, or $KIMI_BOOST_REPO)")
   .option("--branch <ref>", "registry branch (default: main)")
   .option("--check", "check for updates without installing (exits non-zero if updates found)")
+  .option("-n, --dry-run", "preview what an update would change (version + file diff) without writing anything")
   .option("--watch", "register a periodic background update check (LaunchAgent/cron/schtasks)")
   .option("--uninstall", "with --watch, remove the registered background check")
   .option("--interval <hours>", "check interval in hours for --watch (default 6)")
-  .action(async (opts?: { repo?: string; branch?: string; check?: boolean; watch?: boolean; uninstall?: boolean; interval?: string }) => {
+  .action(async (opts?: { repo?: string; branch?: string; check?: boolean; dryRun?: boolean; watch?: boolean; uninstall?: boolean; interval?: string }) => {
     try {
       if (opts?.watch) {
         const result = opts.uninstall ? uninstallWatch() : installWatch({ interval: opts.interval ? Number(opts.interval) : undefined });
         console.log(`${pc.green("✓")} ${result.message}`);
+        return;
+      }
+      if (opts?.dryRun) {
+        const previews = await previewUpdate(opts as { repo?: string; branch?: string });
+        if (previews.length === 0) {
+          console.log("No presets installed.");
+          return;
+        }
+        let updates = 0;
+        for (const p of previews) {
+          if (p.status === "update-available") {
+            updates++;
+            console.log(`${pc.green("↑")} ${p.id}: ${p.from} -> ${p.to}`);
+            const d = p.diff;
+            if (d) {
+              if (d.added.length) console.log(`   ${pc.green("added:")}    ${d.added.join(", ")}`);
+              if (d.modified.length) console.log(`   ${pc.yellow("modified:")} ${d.modified.join(", ")}`);
+              if (d.removed.length) console.log(`   ${pc.red("removed:")}  ${d.removed.join(", ")}`);
+              if (!d.added.length && !d.modified.length && !d.removed.length) {
+                console.log(`   ${pc.dim("(content unchanged; version bump only)")}`);
+              }
+            }
+          } else if (p.status === "up-to-date") {
+            console.log(`${pc.dim("·")} ${p.id}: up to date`);
+          } else {
+            console.log(`${pc.red("✗")} ${p.id}: ${p.message ?? "error"}`);
+          }
+        }
+        if (updates > 0) {
+          console.log("");
+          console.log(pc.yellow(`${updates} update(s) available.`) + ` Run 'kimi-boost update' to apply.`);
+          process.exitCode = 1;
+        }
         return;
       }
       if (opts?.check) {
