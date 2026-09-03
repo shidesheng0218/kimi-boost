@@ -1,0 +1,8 @@
+{
+  "id": "git-workflow",
+  "name": "Git 工作流",
+  "description": "约定式提交、分支命名与 PR 规范,外加提交/PR 视角 reviewer。跨栈通用。",
+  "tags": ["git", "workflow", "conventional-commits", "cross-stack"],
+  "version": "1.0.0",
+  "hooks": []
+}

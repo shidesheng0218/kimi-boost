@@ -1,0 +1,16 @@
+{
+  "name": "git-workflow",
+  "version": "1.0.0",
+  "description": "约定式提交、分支命名与 PR 规范 + 提交视角 reviewer。",
+  "keywords": ["git", "workflow", "conventional-commits", "cross-stack"],
+  "license": "MIT",
+  "interface": {
+    "displayName": "Git 工作流",
+    "shortDescription": "Conventional commits, branching & PR discipline",
+    "developerName": "kimi-boost",
+    "websiteURL": "https://github.com/shidesheng0218/kimi-boost"
+  },
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "skillInstructions": "本 skill 为通用 Git 工作流规范,适用于所有使用 git 的项目。"
+}

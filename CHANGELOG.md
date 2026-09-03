@@ -1,5 +1,10 @@
 ## Unreleased
 
+### New presets
+
+- `security` (cross-stack, guard-style): scans `Write`/`Edit` content for hardcoded secrets (AWS keys, private-key blocks, GitHub/Slack tokens, `api_key=...`-style assignments) and blocks the write; blocks dangerous `git push` (`--force` / `-f` / `--delete`, while allowing the safer `--force-with-lease`); ships a `security-reviewer` agent. All hooks fail open.
+- `git-workflow` (cross-stack, guidance-style): conventional-commit, branch-naming and PR-discipline skill plus a `git-workflow-reviewer` agent. No hooks (kept non-intrusive). Ships as skill + agent only — note the CLI adapters currently install `skills/`+`agents/`+hooks but not `commands/`, so this preset deliberately avoids slash commands (see follow-up).
+
 ### Update preview & correctness
 
 - `kimi-boost update --dry-run`: previews what an update would change without writing — per preset it shows the version bump plus a file-level diff (`added` / `modified` / `removed`) between the remote registry and your local store. Exits non-zero when updates are available (same contract as `--check`).
