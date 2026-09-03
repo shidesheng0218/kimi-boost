@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { getPreset, listPresets, presetSourceDir } from "../registry/presets.js";
 import { hooksDir, presetsDir } from "../core/config.js";
@@ -15,6 +15,8 @@ export interface InstallOptions {
   dryRun?: boolean;
   /** 即使检测到官方 /plugins 已安装同 id,也强制写入 config.toml hooks */
   withHooks?: boolean;
+  /** 覆盖 preset 来源目录(update 流程用远端解包目录替代内置 presets/),preset 定义从 <sourceDir>/preset.json 读取 */
+  sourceDir?: string;
 }
 
 /** 公共步骤:把 preset 的 hooks 脚本复制到共享的 HOOKS_DIR/<id>,所有 adapter 的 hook 命令都指向这里 */
@@ -31,7 +33,16 @@ function syncHooks(preset: PresetDefinition, sourceDir: string): void {
 }
 
 export async function installPreset(id: string, opts: InstallOptions = {}): Promise<InstallReport[]> {
-  let preset = getPreset(id);
+  let preset: PresetDefinition | undefined;
+  if (opts.sourceDir) {
+    try {
+      preset = JSON.parse(readFileSync(join(opts.sourceDir, "preset.json"), "utf8")) as PresetDefinition;
+    } catch {
+      throw new Error(`preset.json not readable in sourceDir: ${opts.sourceDir}`);
+    }
+  } else {
+    preset = getPreset(id);
+  }
   if (!preset) {
     const available = listPresets().map((p) => p.id).join(", ");
     throw new Error(`Preset '${id}' not found. Available: ${available}`);
@@ -54,7 +65,7 @@ export async function installPreset(id: string, opts: InstallOptions = {}): Prom
     );
   }
 
-  const sourceDir = presetSourceDir(id);
+  const sourceDir = opts.sourceDir ?? presetSourceDir(id);
 
   // 双通道防护:Kimi 官方 /plugins 已装同 id 时,默认跳过 config.toml hooks
   // (plugin 自身声明 hooks),避免重复触发。--with-hooks 可强制写入。

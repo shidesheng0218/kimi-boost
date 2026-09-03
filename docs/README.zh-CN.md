@@ -134,6 +134,7 @@ presets/<id>/
 | `kimi-boost list` | 查看可用与已安装预设 |
 | `kimi-boost remove <预设>` | 干净卸载 |
 | `kimi-boost update [--repo owner/repo]` | 拉取最新版本并重新应用（支持 fork） |
+| `kimi-boost update --dry-run` | 预览更新会带来什么变化（版本号 + 文件级 diff），不写盘 |
 | `kimi-boost outdated [--project] [--json]` | 查看已安装预设中有新版本的清单 |
 | `kimi-boost doctor [--fix]` | 诊断配置、hooks、挂载目录、manifest 一致性、重复 hook |
 | `kimi-boost marketplace [--source-mode repo\|zip]` | 生成 Kimi Code 自定义市场 JSON |
