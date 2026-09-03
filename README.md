@@ -134,6 +134,7 @@ presets/<id>/
 | `kimi-boost list` | Show available + installed presets |
 | `kimi-boost remove <preset>` | Uninstall cleanly |
 | `kimi-boost update [--repo owner/repo]` | Pull latest versions and re-apply (works on forks) |
+| `kimi-boost update --dry-run` | Preview what an update would change (version + file-level diff) without writing |
 | `kimi-boost outdated [--project] [--json]` | Show installed presets with newer registry versions |
 | `kimi-boost doctor [--fix]` | Diagnose config, hooks, mounted dirs, manifest consistency, duplicate hooks |
 | `kimi-boost marketplace [--source-mode repo\|zip]` | Generate a Kimi Code custom marketplace JSON |
