@@ -130,6 +130,7 @@ presets/<id>/
 | Command | What it does |
 |---|---|
 | `kimi-boost install [preset]` | Install a preset (`--dry-run` preview, `--with-hooks` force, `--project` install into current project) |
+| `kimi-boost init` | Detect this project's stack and install matching presets (`--yes` skip prompt, `--dry-run` preview, `--project`) |
 | `kimi-boost list` | Show available + installed presets |
 | `kimi-boost remove <preset>` | Uninstall cleanly |
 | `kimi-boost update [--repo owner/repo]` | Pull latest versions and re-apply (works on forks) |
