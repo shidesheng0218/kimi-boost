@@ -1,0 +1,12 @@
+{
+  "id": "security",
+  "name": "安全守卫",
+  "description": "跨栈安全最佳实践:写入文件即扫描硬编码密钥、拦截危险 git 操作(force push / 删远程分支),外加安全视角 reviewer。",
+  "tags": ["security", "secrets", "audit", "cross-stack"],
+  "version": "1.0.0",
+  "hooks": [
+    { "event": "PreToolUse", "matcher": "Write", "script": "secret-scan.mjs", "timeout": 5 },
+    { "event": "PreToolUse", "matcher": "Edit", "script": "secret-scan.mjs", "timeout": 5 },
+    { "event": "PreToolUse", "matcher": "Bash", "script": "block-force-push.mjs", "timeout": 5 }
+  ]
+}
