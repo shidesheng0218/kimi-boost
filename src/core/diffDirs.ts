@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, sep } from "node:path";
 
 /**
  * 目录级内容 diff(update --dry-run 用):递归遍历 + sha256 比较,
@@ -23,7 +23,8 @@ function walk(dir: string, base: string, out: Map<string, string>): void {
       walk(full, base, out);
       continue;
     }
-    const rel = relative(base, full);
+    // 统一用正斜杠,保证 Windows 上 diff 输出与 *nix 一致(也便于测试与展示)
+    const rel = relative(base, full).split(sep).join("/");
     const hash = createHash("sha256").update(readFileSync(full)).digest("hex");
     out.set(rel, hash);
   }
