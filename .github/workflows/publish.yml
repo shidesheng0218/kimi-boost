@@ -18,13 +18,27 @@ jobs:
         run: npm ci
       - name: Typecheck
         run: npm run typecheck
+      - name: Lint
+        run: npm run lint
       - name: Unit tests
         run: npm test
       - name: Preset validation
         run: node scripts/validate-presets.mjs
       - name: Build
         run: npm run build
+      - name: Check npm token
+        id: token
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::NPM_TOKEN secret not set — skipping npm publish. Add it in repo Settings → Secrets → Actions, then re-run this workflow to publish."
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Publish to npm
+        if: steps.token.outputs.present == 'true'
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
