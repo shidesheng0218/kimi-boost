@@ -1,4 +1,4 @@
-## Unreleased
+## 0.10.0 (2026-09-04)
 
 ### Shareable stats
 
