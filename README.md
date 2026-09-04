@@ -131,16 +131,17 @@ presets/<id>/
 
 | Command | What it does |
 |---|---|
-| `kimi-boost install [preset]` | Install a preset (`--dry-run` preview, `--with-hooks` force, `--project` install into current project) |
+| `kimi-boost install [preset]` | Install a preset by id — or from any GitHub repo: `install github:owner/repo` (`--dry-run` preview, `--with-hooks` force, `--project` install into current project) |
 | `kimi-boost init` | Detect this project's stack and install matching presets (`--yes` skip prompt, `--dry-run` preview, `--project`) |
 | `kimi-boost list` | Show available + installed presets |
 | `kimi-boost remove <preset>` | Uninstall cleanly |
-| `kimi-boost update [--repo owner/repo]` | Pull latest versions and re-apply (works on forks) |
+| `kimi-boost update [--repo owner/repo]` | Pull latest versions and re-apply (works on forks; community presets update from their source repo) |
 | `kimi-boost update --dry-run` | Preview what an update would change (version + file-level diff) without writing |
 | `kimi-boost outdated [--project] [--json]` | Show installed presets with newer registry versions |
 | `kimi-boost doctor [--fix]` | Diagnose config, hooks, mounted dirs, manifest consistency, duplicate hooks |
 | `kimi-boost marketplace [--source-mode repo\|zip]` | Generate a Kimi Code custom marketplace JSON |
-| `kimi-boost usage [-d N]` | Show session/prompt/tool-call usage tracked by the `usage` preset |
+| `kimi-boost stats [-d N] [--share]` | Usage report with bar chart & streak; `--share` exports an SVG card (alias: `usage`) |
+| `kimi-boost badge [preset]` | Print a README badge (markdown) showing this project uses kimi-boost |
 | `kimi-boost status` | Detect installed CLIs & platform |
 | `kimi-boost bootstrap [--makefile]` | Generate a `setup.sh` (or Makefile `setup` target) for team onboarding |
 | `kimi-boost update --check` | Check for preset updates without installing; notifies + exits non-zero if found |
@@ -155,6 +156,38 @@ presets/<id>/
 - hooks → `.claude/settings.json` (Claude Code only — Kimi Code has no project-level hook mechanism; Codex is skipped)
 
 Everything lands inside the project root (nearest `.git` ancestor), so you can **commit the preset and share it with your team** — every clone gets the same AI behavior. Remove with `kimi-boost remove <preset> --project`.
+
+### Community presets — install from any GitHub repo
+
+Anyone can publish a preset as a plain GitHub repo (a `preset.json` at the repo root, plus `skills/`, `agents/`, `hooks/`):
+
+```bash
+kimi-boost install github:owner/repo          # or the full https://github.com/owner/repo URL
+kimi-boost install github:owner/repo@v1.2.0   # pin a branch or tag
+```
+
+kimi-boost shows you exactly what the preset will register — especially its hooks, which execute when the agent runs — and asks for confirmation before installing (`--yes` to skip in scripts, `--dry-run` to preview). Community presets are tracked in `update` / `outdated` against their source repo, so they stay current. **Only install presets from authors you trust** — hooks run shell commands with your agent's permissions.
+
+### Shareable stats — your AI-coding wrapped
+
+The `usage` preset quietly counts your sessions / prompts / tool calls. `stats` turns it into a report you'll want to screenshot:
+
+```bash
+$ kimi-boost stats -d 7
+📊 kimi-boost stats · last 7 days
+
+  128 prompts  ·  12 sessions  ·  856 tool calls  ·  5 active days  ·  streak 3 🔥
+
+09-01 ████████████ 24
+09-02 ██████ 12
+...
+
+$ kimi-boost stats --share   # → kimi-boost-stats.svg
+```
+
+`--share` exports a self-contained SVG card (no server, no upload — your data never leaves your machine). Post it, or embed it in your README next to a `kimi-boost badge`.
+
+![kimi-boost stats card](assets/stats-card.svg)
 
 ### `doctor` — know your setup is healthy
 

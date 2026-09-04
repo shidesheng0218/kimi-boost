@@ -1,3 +1,19 @@
+## Unreleased
+
+### Shareable stats
+
+- `kimi-boost stats` (the `usage` command, upgraded — `usage` remains an alias): a terminal report with a per-day bar chart, totals, active days, current streak 🔥, best day, and averages.
+- `kimi-boost stats --share [file.svg]`: exports a self-contained SVG share card (dark card, big numbers, mini bar chart) — generated locally with zero new dependencies; your data never leaves the machine. `--json` prints the raw aggregate.
+
+### Community presets
+
+- `kimi-boost install github:owner/repo[@ref]` (or a plain `https://github.com/owner/repo` URL): installs a preset from any GitHub repo whose root contains a `preset.json`. The CLI shows what the preset registers — especially its hooks, which execute as shell commands when the agent runs — and asks for explicit confirmation before installing (`--yes` skips, `--dry-run` previews). Community installs are recorded in `~/.kimi-boost/sources.json`, so `update` / `outdated` / `update --check` track them against their source repo instead of the official registry; `remove` cleans the record up.
+- New shared `src/core/github.ts` (single-download repo tarball + marker-based extraction) now backs both the registry fetch and community installs.
+
+### Badge
+
+- `kimi-boost badge [preset]`: prints a shields.io markdown badge linking back to the repo, for pasting into your project README.
+
 ## 0.9.0 (2026-09-04)
 
 ### New presets

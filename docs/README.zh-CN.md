@@ -131,16 +131,17 @@ presets/<id>/
 
 | 命令 | 作用 |
 |---|---|
-| `kimi-boost install [预设]` | 安装预设（`--dry-run` 预览，`--with-hooks` 强制含 hooks，`--project` 装进当前项目） |
+| `kimi-boost install [预设]` | 按 id 安装预设——或从任意 GitHub 仓库安装：`install github:owner/repo`（`--dry-run` 预览，`--with-hooks` 强制含 hooks，`--project` 装进当前项目） |
 | `kimi-boost init` | 识别当前项目技术栈并安装匹配预设（`--yes` 跳过交互，`--dry-run` 预览，`--project`） |
 | `kimi-boost list` | 查看可用与已安装预设 |
 | `kimi-boost remove <预设>` | 干净卸载 |
-| `kimi-boost update [--repo owner/repo]` | 拉取最新版本并重新应用（支持 fork） |
+| `kimi-boost update [--repo owner/repo]` | 拉取最新版本并重新应用（支持 fork；社区 preset 从其来源仓库更新） |
 | `kimi-boost update --dry-run` | 预览更新会带来什么变化（版本号 + 文件级 diff），不写盘 |
 | `kimi-boost outdated [--project] [--json]` | 查看已安装预设中有新版本的清单 |
 | `kimi-boost doctor [--fix]` | 诊断配置、hooks、挂载目录、manifest 一致性、重复 hook |
 | `kimi-boost marketplace [--source-mode repo\|zip]` | 生成 Kimi Code 自定义市场 JSON |
-| `kimi-boost usage [-d N]` | 查看 usage 预设记录的会话/提示/工具调用量 |
+| `kimi-boost stats [-d N] [--share]` | 用量报告：柱状图 + 连续天数；`--share` 导出 SVG 分享卡片（别名：`usage`） |
+| `kimi-boost badge [预设]` | 输出 README 徽章（markdown），展示本项目用 kimi-boost |
 | `kimi-boost status` | 检测已安装的 CLI 与平台 |
 | `kimi-boost bootstrap [--makefile]` | 生成团队 onboarding 用的 `setup.sh`（或 Makefile 的 `setup` target） |
 | `kimi-boost update --check` | 只检查预设是否有更新，不安装；发现更新会通知并以非零码退出 |
@@ -155,6 +156,38 @@ presets/<id>/
 - hooks → `.claude/settings.json`（仅 Claude Code——Kimi Code 暂无项目级 hook 机制；Codex 跳过）
 
 所有产物都落在项目根（最近的 `.git` 上级目录）内，因此可以**提交进 git 与团队共享**——每个 clone 都获得一致的 AI 行为。卸载用 `kimi-boost remove <预设> --project`。
+
+### 社区预设——从任意 GitHub 仓库安装
+
+任何人都可以把一个 preset 发布为普通 GitHub 仓库（仓库根含 `preset.json`，外加 `skills/`、`agents/`、`hooks/`）：
+
+```bash
+kimi-boost install github:owner/repo          # 也支持完整 https://github.com/owner/repo 链接
+kimi-boost install github:owner/repo@v1.2.0   # 可锁定分支或 tag
+```
+
+安装前 kimi-boost 会展示该 preset 将注册的内容——特别是 hooks（agent 运行时会执行的脚本）——并要求你显式确认（脚本场景用 `--yes` 跳过， `--dry-run` 只预览）。社区 preset 会被 `update` / `outdated` 跟踪其来源仓库，保持最新。**只安装你信任的作者发布的 preset**——hooks 会以你 agent 的权限执行 shell 命令。
+
+### 可分享的用量报告——你的 AI 编程 Wrapped
+
+`usage` 预设会默默记录你的 会话/提示/工具调用。`stats` 把它变成值得截图的报告：
+
+```bash
+$ kimi-boost stats -d 7
+📊 kimi-boost stats · last 7 days
+
+  128 prompts  ·  12 sessions  ·  856 tool calls  ·  5 active days  ·  streak 3 🔥
+
+09-01 ████████████ 24
+09-02 ██████ 12
+...
+
+$ kimi-boost stats --share   # → kimi-boost-stats.svg
+```
+
+`--share` 导出一张自包含的 SVG 卡片（纯本地生成，无服务器、不上传——数据不出本机）。发出来晒一晒，或嵌进 README 配一个 `kimi-boost badge`。
+
+![kimi-boost 用量卡片](../assets/stats-card.svg)
 
 ### `doctor`——随时确认环境健康
 
