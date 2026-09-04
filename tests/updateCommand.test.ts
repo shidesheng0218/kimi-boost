@@ -129,7 +129,7 @@ describe("runUpdate", () => {
     const results = await runUpdate();
     expect(results).toHaveLength(1);
     expect(results[0].status).toBe("error");
-    expect(results[0].message).toContain("tarball fetch failed");
+    expect(results[0].message).toContain("failed to fetch tarball");
   });
 });
 

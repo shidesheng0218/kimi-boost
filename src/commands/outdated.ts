@@ -1,6 +1,7 @@
 import { listStatus } from "./list.js";
-import { fetchRemotePreset, localVersion, updateSource, type UpdateOptions } from "./update.js";
+import { fetchRemotePreset, fetchRemoteRepoVersion, localVersion, updateSource, type UpdateOptions } from "./update.js";
 import { projectInstalledPresets } from "../core/project.js";
+import { readSources } from "../core/sources.js";
 
 export type OutdatedStatus = "up-to-date" | "update-available" | "unknown-local" | "unknown-remote" | "error";
 
@@ -40,13 +41,17 @@ export async function runOutdated(opts: OutdatedOptions = {}): Promise<OutdatedR
   }
 
   const { repo, branch } = updateSource(opts);
+  const sources = readSources();
   const rows: OutdatedRow[] = [];
   for (const id of ids) {
     const installed = manifestVersions.get(id) ?? localVersion(id);
+    const source = sources[id];
+    const fromLabel = source ? `${source.repo}@${source.ref}` : `${repo}@${branch}`;
     try {
-      const remote = await fetchRemotePreset(id, opts);
+      // 社区 preset 从来源仓库根目录读版本;官方 preset 走 registry
+      const remote = source ? await fetchRemoteRepoVersion(source) : await fetchRemotePreset(id, opts);
       if (!remote.ok) {
-        rows.push({ id, installed, status: "unknown-remote", message: `registry unreachable (${repo}@${branch})` });
+        rows.push({ id, installed, status: "unknown-remote", message: `remote unreachable (${fromLabel})` });
       } else if (!remote.version) {
         rows.push({ id, installed, status: "unknown-remote", message: "remote preset.json has no version field" });
       } else if (!installed) {

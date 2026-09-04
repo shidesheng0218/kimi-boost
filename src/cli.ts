@@ -2,6 +2,8 @@ import { Command } from "commander";
 import { createRequire } from "node:module";
 import pc from "picocolors";
 import { installPreset } from "./commands/install.js";
+import { installRemotePreset, parseRemoteSpec } from "./commands/installRemote.js";
+import { removeSource } from "./core/sources.js";
 import { runInit } from "./commands/init.js";
 import { listStatus } from "./commands/list.js";
 import { runUpdate, previewUpdate } from "./commands/update.js";
@@ -12,7 +14,8 @@ import { marketplaceCommand } from "./commands/marketplace.js";
 import { runDoctor } from "./commands/doctor.js";
 import { runProjectDoctor } from "./commands/doctorProject.js";
 import { createPreset } from "./commands/create.js";
-import { printUsage } from "./commands/usage.js";
+import { runStats } from "./commands/stats.js";
+import { runBadge } from "./commands/badge.js";
 import { runOutdated, renderOutdated } from "./commands/outdated.js";
 import { setDryRun } from "./core/fsguard.js";
 import { installProjectPreset, removeProjectPreset } from "./core/project.js";
@@ -32,12 +35,13 @@ program
 
 program
   .command("install [preset]")
-  .description("Install a preset into your AI coding CLI (interactive if no preset given)")
+  .description("Install a preset (id or github:owner/repo) into your AI coding CLI (interactive if none given)")
   .option("-t, --tool <tool>", "target tool (kimi | claude | codex)")
   .option("-n, --dry-run", "show what would be done without writing anything")
   .option("--with-hooks", "force config.toml hooks even if installed via /plugins")
   .option("-p, --project", "install into the current project (.agents/, .claude/) for git-based team sharing")
-  .action(async (preset?: string, opts?: { tool?: ToolName; dryRun?: boolean; withHooks?: boolean; project?: boolean }) => {
+  .option("-y, --yes", "skip the safety confirmation for community presets (github:owner/repo)")
+  .action(async (preset?: string, opts?: { tool?: ToolName; dryRun?: boolean; withHooks?: boolean; project?: boolean; yes?: boolean }) => {
     try {
       let id = preset;
       if (!id) {
@@ -55,6 +59,23 @@ program
         id = answer.preset;
         if (!id) return;
       }
+
+      // 社区 preset:install github:owner/repo(或 GitHub URL)
+      const spec = parseRemoteSpec(id);
+      if (spec) {
+        if (opts?.project) throw new Error("社区 preset 暂不支持 --project;请用用户级安装。");
+        const reports = await installRemotePreset(spec, { tool: opts?.tool, dryRun: opts?.dryRun, yes: opts?.yes, withHooks: opts?.withHooks });
+        if (!reports) return; // 用户取消
+        for (const r of reports) {
+          const prefix = opts?.dryRun ? pc.cyan("dry-run") : (r.ok ? pc.green("✓") : pc.red("✗"));
+          console.log(`${prefix} [${r.tool}] ${r.message}`);
+          if (opts?.dryRun) {
+            for (const c of r.changed) console.log(`   ${pc.dim("would write:")} ${c}`);
+          }
+        }
+        return;
+      }
+
       const reports = opts?.project
         ? await installProjectPreset(id, { tool: opts?.tool, dryRun: opts?.dryRun })
         : await installPreset(id, { tool: opts?.tool, dryRun: opts?.dryRun, withHooks: opts?.withHooks });
@@ -119,11 +140,13 @@ program
         }
         const r = await adapter.deactivate(preset);
         const prefix = opts?.dryRun ? pc.cyan("dry-run") : (r.ok ? pc.green("✓") : pc.red("✗"));
-        console.log(`${prefix} [${tool}] ${r.message}`);
+        console.log(`${prefix} [${r.tool}] ${r.message}`);
         if (opts?.dryRun) {
           for (const c of r.changed) console.log(`   ${pc.dim("would remove:")} ${c}`);
         }
       }
+      // 社区 preset 的来源登记一并清理(update 回退到官方 registry 语义)
+      removeSource(preset);
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
       process.exitCode = 1;
@@ -340,17 +363,30 @@ program
   });
 
 program
-  .command("usage")
-  .description("Show session/prompt/tool-call usage tracked by the 'usage' preset")
+  .command("stats")
+  .alias("usage")
+  .description("Show usage stats tracked by the 'usage' preset (chart + streak); --share exports an SVG card")
   .option("-d, --days <n>", "number of days to show", "7")
-  .action((opts?: { days?: string }) => {
+  .option("--json", "print machine-readable JSON")
+  .option("--share [file]", "export a shareable SVG stats card (default: kimi-boost-stats.svg)")
+  .action((opts?: { days?: string; json?: boolean; share?: string | boolean }) => {
     try {
-      const days = Math.min(30, Math.max(1, Number(opts?.days ?? 7) || 7));
-      printUsage(days);
+      runStats({
+        days: opts?.days ? Number(opts.days) : undefined,
+        json: opts?.json,
+        share: opts?.share,
+      });
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
       process.exitCode = 1;
     }
+  });
+
+program
+  .command("badge [preset]")
+  .description("Print a README badge (markdown) showing this project uses kimi-boost")
+  .action((preset?: string) => {
+    runBadge(preset);
   });
 
 program

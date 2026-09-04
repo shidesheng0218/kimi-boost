@@ -1,10 +1,10 @@
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import * as tar from "tar";
 import { presetsDir, storedPresetVersion } from "../core/config.js";
 import { diffDirs, type DirDiff } from "../core/diffDirs.js";
 import { removeIfWritable } from "../core/fsguard.js";
+import { downloadRepoTarball, findDirWith } from "../core/github.js";
+import { readSources, type SourceInfo } from "../core/sources.js";
 import { listStatus } from "./list.js";
 import { installPreset } from "./install.js";
 
@@ -37,11 +37,23 @@ export function updateSource(opts: UpdateOptions = {}): { repo: string; branch: 
   return { repo, branch };
 }
 
-/** 轻量版本探测:只读远端 preset.json 的 version 字段(outdated/--check 用,不下载 tarball) */
+/** 轻量版本探测:只读官方 registry 中 preset.json 的 version 字段(outdated/--check 用,不下载 tarball) */
 export async function fetchRemotePreset(id: string, opts: UpdateOptions = {}): Promise<{ version?: string; ok: boolean }> {
   const { repo, branch } = updateSource(opts);
   try {
     const res = await fetch(`https://raw.githubusercontent.com/${repo}/${branch}/presets/${id}/preset.json`);
+    if (!res.ok) return { ok: false };
+    const data = (await res.json()) as { version?: string };
+    return { version: data.version, ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
+
+/** 社区 preset 的远端版本:读其来源仓库根目录的 preset.json */
+export async function fetchRemoteRepoVersion(source: SourceInfo): Promise<{ version?: string; ok: boolean }> {
+  try {
+    const res = await fetch(`https://raw.githubusercontent.com/${source.repo}/${source.ref}/preset.json`);
     if (!res.ok) return { ok: false };
     const data = (await res.json()) as { version?: string };
     return { version: data.version, ok: true };
@@ -67,56 +79,48 @@ export interface RemoteRegistry {
   cleanup(): void;
 }
 
-/** 在解包根下定位包含 presets/ 的仓库目录(不硬编码 <repo>-<branch> 名,兼容 fork 改名) */
-function findRepoRoot(root: string): string | undefined {
-  for (const entry of readdirSync(root)) {
-    const full = join(root, entry);
-    try {
-      if (statSync(full).isDirectory() && existsSync(join(full, "presets"))) return full;
-    } catch {
-      /* 忽略不可读项 */
-    }
-  }
-  return undefined;
-}
-
 export async function fetchRemoteRegistry(opts: UpdateOptions = {}): Promise<RemoteRegistry> {
   const { repo, branch } = updateSource(opts);
-  const res = await fetch(`https://codeload.github.com/${repo}/tar.gz/refs/heads/${branch}`);
-  if (!res.ok) throw new Error(`tarball fetch failed: ${res.status} from ${repo}@${branch}`);
-  const buf = Buffer.from(await res.arrayBuffer());
-
-  const root = mkdtempSync(join(tmpdir(), "kboost-registry-"));
+  const dl = await downloadRepoTarball(repo, branch);
   try {
-    const tarballPath = join(root, "src.tgz");
-    writeFileSync(tarballPath, buf);
-    await tar.x({ file: tarballPath, cwd: root });
-    rmSync(tarballPath, { force: true });
-
-    const repoRoot = findRepoRoot(root);
+    const repoRoot = findDirWith(dl.root, "presets");
     if (!repoRoot) throw new Error(`presets/ not found in tarball of ${repo}@${branch}`);
     const base = join(repoRoot, "presets");
-
     return {
-      root,
+      root: dl.root,
       presetDir: (id) => {
         const d = join(base, id);
         return existsSync(d) ? d : undefined;
       },
-      version: (id) => {
-        try {
-          const p = JSON.parse(readFileSync(join(base, id, "preset.json"), "utf8")) as { version?: string };
-          return p.version;
-        } catch {
-          return undefined;
-        }
-      },
-      cleanup: () => rmSync(root, { recursive: true, force: true }),
+      version: (id) => readPresetVersionAt(join(base, id)),
+      cleanup: dl.cleanup,
     };
   } catch (err) {
-    rmSync(root, { recursive: true, force: true });
+    dl.cleanup();
     throw err;
   }
+}
+
+function readPresetVersionAt(dir: string): string | undefined {
+  try {
+    const p = JSON.parse(readFileSync(join(dir, "preset.json"), "utf8")) as { version?: string };
+    return p.version;
+  } catch {
+    return undefined;
+  }
+}
+
+/** 按 store 中的来源标记,把已安装 preset 分为 官方 registry 组 / 社区仓库组 */
+function partitionBySource(ids: string[]): { official: string[]; community: Array<{ id: string; source: SourceInfo }> } {
+  const sources = readSources();
+  const official: string[] = [];
+  const community: Array<{ id: string; source: SourceInfo }> = [];
+  for (const id of ids) {
+    const s = sources[id];
+    if (s?.repo) community.push({ id, source: s });
+    else official.push(id);
+  }
+  return { official, community };
 }
 
 /** 把解包出的远端 preset 应用到本地(store 刷新 + 各端激活),从远端内容而非内置目录激活 */
@@ -141,59 +145,129 @@ async function applyFromRegistry(id: string, registry: RemoteRegistry): Promise<
   }
 }
 
+/** 社区 preset 的更新:从其来源仓库(单 preset 仓库,preset.json 在根)下载并重装 */
+async function applyCommunity(id: string, source: SourceInfo): Promise<UpdateResult> {
+  const local = localVersion(id);
+  let dl;
+  try {
+    dl = await downloadRepoTarball(source.repo, source.ref);
+  } catch (err) {
+    return { id, status: "error", message: err instanceof Error ? err.message : String(err) };
+  }
+  try {
+    const presetRoot = findDirWith(dl.root, "preset.json");
+    if (!presetRoot) return { id, status: "error", message: `preset.json not found in ${source.repo}@${source.ref}` };
+    const remoteVersion = readPresetVersionAt(presetRoot);
+    if (remoteVersion && local === remoteVersion) {
+      return { id, status: "up-to-date", from: local, to: remoteVersion };
+    }
+    removeIfWritable(join(presetsDir(), id), { recursive: true, force: true });
+    const reports = await installPreset(id, { sourceDir: presetRoot });
+    for (const r of reports) {
+      if (!r.ok) throw new Error(`re-activation failed on ${r.tool}: ${r.message}`);
+    }
+    return { id, status: "updated", from: local ?? "unknown", to: remoteVersion ?? "latest" };
+  } catch (err) {
+    return { id, status: "error", message: err instanceof Error ? err.message : String(err) };
+  } finally {
+    dl.cleanup();
+  }
+}
+
 export async function runUpdate(opts: UpdateOptions = {}): Promise<UpdateResult[]> {
   const { installedOnly } = await listStatus();
   if (installedOnly.length === 0) {
     return [{ id: "(none)", status: "up-to-date", message: "no presets installed yet" }];
   }
-  let registry: RemoteRegistry;
+  const { official, community } = partitionBySource(installedOnly);
+  const results: UpdateResult[] = [];
+
+  if (official.length > 0) {
+    let registry: RemoteRegistry | undefined;
+    try {
+      registry = await fetchRemoteRegistry(opts);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      results.push(...official.map((id) => ({ id, status: "error" as const, message })));
+    }
+    if (registry) {
+      try {
+        for (const id of official) results.push(await applyFromRegistry(id, registry));
+      } finally {
+        registry.cleanup();
+      }
+    }
+  }
+
+  for (const { id, source } of community) {
+    results.push(await applyCommunity(id, source));
+  }
+  return results;
+}
+
+/** 社区 preset 的预览:源仓库根目录 vs 本地 store 的文件级 diff */
+async function previewCommunity(id: string, source: SourceInfo): Promise<UpdatePreview> {
+  const local = localVersion(id);
+  let dl;
   try {
-    registry = await fetchRemoteRegistry(opts);
+    dl = await downloadRepoTarball(source.repo, source.ref);
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return installedOnly.map((id) => ({ id, status: "error" as const, message }));
+    return { id, status: "error", message: err instanceof Error ? err.message : String(err) };
   }
   try {
-    const results: UpdateResult[] = [];
-    for (const id of installedOnly) {
-      results.push(await applyFromRegistry(id, registry));
+    const presetRoot = findDirWith(dl.root, "preset.json");
+    if (!presetRoot) return { id, status: "error", message: `preset.json not found in ${source.repo}@${source.ref}` };
+    const remoteVersion = readPresetVersionAt(presetRoot);
+    if (remoteVersion && local === remoteVersion) {
+      return { id, status: "up-to-date", from: local, to: remoteVersion };
     }
-    return results;
+    const diff = diffDirs(join(presetsDir(), id), presetRoot);
+    return { id, status: "update-available", from: local ?? "unknown", to: remoteVersion ?? "latest", diff };
   } finally {
-    registry.cleanup();
+    dl.cleanup();
   }
 }
 
-/** 只读预览:对每个有更新的 preset 给出 远端解包目录 vs 本地 store 的文件级 diff,不写盘 */
+/** 只读预览:对每个有更新的 preset 给出 远端 vs 本地 store 的文件级 diff,不写盘 */
 export async function previewUpdate(opts: UpdateOptions = {}): Promise<UpdatePreview[]> {
   const { installedOnly } = await listStatus();
   if (installedOnly.length === 0) return [];
-  let registry: RemoteRegistry;
-  try {
-    registry = await fetchRemoteRegistry(opts);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return installedOnly.map((id) => ({ id, status: "error" as const, message }));
-  }
-  try {
-    const out: UpdatePreview[] = [];
-    for (const id of installedOnly) {
-      const local = localVersion(id);
-      const remoteVersion = registry.version(id);
-      const srcDir = registry.presetDir(id);
-      if (!srcDir) {
-        out.push({ id, status: "error", message: `preset '${id}' not found in remote registry` });
-        continue;
-      }
-      if (remoteVersion && local === remoteVersion) {
-        out.push({ id, status: "up-to-date", from: local, to: remoteVersion });
-        continue;
-      }
-      const diff = diffDirs(join(presetsDir(), id), srcDir);
-      out.push({ id, status: "update-available", from: local ?? "unknown", to: remoteVersion ?? "latest", diff });
+  const { official, community } = partitionBySource(installedOnly);
+  const out: UpdatePreview[] = [];
+
+  if (official.length > 0) {
+    let registry: RemoteRegistry | undefined;
+    try {
+      registry = await fetchRemoteRegistry(opts);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      out.push(...official.map((id) => ({ id, status: "error" as const, message })));
     }
-    return out;
-  } finally {
-    registry.cleanup();
+    if (registry) {
+      try {
+        for (const id of official) {
+          const local = localVersion(id);
+          const remoteVersion = registry.version(id);
+          const srcDir = registry.presetDir(id);
+          if (!srcDir) {
+            out.push({ id, status: "error", message: `preset '${id}' not found in remote registry` });
+            continue;
+          }
+          if (remoteVersion && local === remoteVersion) {
+            out.push({ id, status: "up-to-date", from: local, to: remoteVersion });
+            continue;
+          }
+          const diff = diffDirs(join(presetsDir(), id), srcDir);
+          out.push({ id, status: "update-available", from: local ?? "unknown", to: remoteVersion ?? "latest", diff });
+        }
+      } finally {
+        registry.cleanup();
+      }
+    }
   }
+
+  for (const { id, source } of community) {
+    out.push(await previewCommunity(id, source));
+  }
+  return out;
 }
