@@ -1,4 +1,4 @@
-## Unreleased
+## 0.11.0 (2026-09-08)
 
 ### Export & import
 
