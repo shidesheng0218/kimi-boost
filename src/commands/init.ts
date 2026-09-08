@@ -3,9 +3,9 @@ import prompts from "prompts";
 import { detectProjectPresets, type ProjectSignal } from "../core/detectProject.js";
 import { findProjectRoot, installProjectPreset } from "../core/project.js";
 import type { ToolName } from "../core/types.js";
-import type { InstallReport } from "../adapters/types.js";
 import { installPreset } from "./install.js";
 import { listStatus } from "./list.js";
+import { renderReports } from "./reports.js";
 
 export interface InitOptions {
   tool?: ToolName;
@@ -13,16 +13,6 @@ export interface InitOptions {
   /** 跳过交互,直接安装全部检测到的 preset(CI/脚本场景) */
   yes?: boolean;
   dryRun?: boolean;
-}
-
-function renderReports(reports: InstallReport[], dryRun?: boolean): void {
-  for (const r of reports) {
-    const prefix = dryRun ? pc.cyan("dry-run") : r.ok ? pc.green("✓") : pc.red("✗");
-    console.log(`${prefix} [${r.tool}] ${r.message}`);
-    if (dryRun) {
-      for (const c of r.changed) console.log(`   ${pc.dim("would write:")} ${c}`);
-    }
-  }
 }
 
 export async function runInit(opts: InitOptions = {}): Promise<void> {
@@ -75,6 +65,6 @@ export async function runInit(opts: InitOptions = {}): Promise<void> {
     const reports = opts.project
       ? await installProjectPreset(s.id, { tool: opts.tool, dryRun: opts.dryRun })
       : await installPreset(s.id, { tool: opts.tool, dryRun: opts.dryRun });
-    renderReports(reports, opts.dryRun);
+    renderReports(reports, { dryRun: opts.dryRun });
   }
 }

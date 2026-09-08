@@ -68,7 +68,7 @@ describe("update with community presets", () => {
     const { runUpdate } = await import("../src/commands/update.js");
     const results = await runUpdate();
     expect(results[0].status).toBe("error");
-    expect(results[0].message).toContain("failed to fetch tarball");
+    expect(results[0].message).toContain("不存在");
   });
 
   it("previewUpdate diffs community presets without installing", async () => {

@@ -3,10 +3,10 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { parse, stringify } from "smol-toml";
 import type { Adapter, AdapterContext, InstallReport } from "./types.js";
-import { backupFile } from "../core/config.js";
+import { backupDir, backupFile } from "../core/config.js";
 import { clearInstall, installedFilesFor, readHookRegistry, recordInstall, writeHookRegistry } from "../core/manifest.js";
 import { claimPresetHooks, fingerprintPresetHooks, hookCommandOwner, releasePresetRefs } from "../core/hookRegistry.js";
-import { copyDirIfWritable, removeIfWritable, writeFileIfWritable } from "../core/fsguard.js";
+import { copyDirIfWritable, isDryRun, removeIfWritable, writeFileIfWritable } from "../core/fsguard.js";
 import { assertManagedPath } from "../core/safety.js";
 import type { PresetHook } from "../core/types.js";
 
@@ -94,53 +94,86 @@ export const codexAdapter: Adapter = {
     const { preset, sourceDir } = ctx;
     const written: string[] = [];
     const configChanges: string[] = [];
+    const backups: Array<{ orig: string; bak: string }> = [];
+    // 上次安装记录内的目标归本工具管理,直接覆盖;记录之外的用户目录先备份
+    const prevInstalled = new Set(installedFilesFor(preset.id, "codex"));
 
-    if (existsSync(join(sourceDir, "skills"))) {
-      const skillRoot = join(CODEX_SKILLS, preset.id);
-      removeIfWritable(skillRoot, { recursive: true, force: true });
-      written.push(...copyDir(join(sourceDir, "skills"), skillRoot));
-      written.push(skillRoot);
-    }
-
-    // hook 内容去重:与 claude adapter 相同的释放→重定向/清理→认领流程
-    const registry = readHookRegistry();
-    const fps = fingerprintPresetHooks(sourceDir, preset.hooks);
-    const released = releasePresetRefs(registry, preset.id, new Set(fps.filter((f): f is string => Boolean(f))));
-
-    if (preset.hooks.length > 0 || released.length > 0) {
-      const { path, data } = readConfig();
-      const backup = backupFile(path);
-      if (backup) configChanges.push(backup);
-
-      const retargets = new Map(released.filter((r) => r.newCommand).map((r) => [r.oldCommand, r.newCommand!]));
-      transformCodexHooks(data, (cmd) => {
-        const t = retargets.get(cmd);
-        if (t) return t;
-        return hookCommandOwner(cmd) === preset.id ? undefined : cmd;
-      });
-
-      const claim = claimPresetHooks(registry, preset.id, fps, preset.hooks, (pid, h) =>
-        buildHookCommand(join(boostHooksDir(), pid), h),
-      );
-      for (const w of claim.entries) {
-        upsertCodexHooks(data, w.event, w.matcher ?? "", w.command, w.timeout);
+    try {
+      if (existsSync(join(sourceDir, "skills"))) {
+        const skillRoot = join(CODEX_SKILLS, preset.id);
+        if (existsSync(skillRoot) && !prevInstalled.has(skillRoot)) {
+          const bak = backupDir(skillRoot);
+          if (bak) {
+            backups.push({ orig: skillRoot, bak });
+            configChanges.push(bak);
+          }
+        }
+        removeIfWritable(skillRoot, { recursive: true, force: true });
+        written.push(...copyDir(join(sourceDir, "skills"), skillRoot));
+        written.push(skillRoot);
       }
-      if (claim.registryChanged || released.length > 0) writeHookRegistry(registry);
 
-      writeFileIfWritable(path, stringify(data));
-      configChanges.push(path);
+      // hook 内容去重:与 claude adapter 相同的释放→重定向/清理→认领流程
+      const registry = readHookRegistry();
+      const fps = fingerprintPresetHooks(sourceDir, preset.hooks);
+      const released = releasePresetRefs(registry, preset.id, new Set(fps.filter((f): f is string => Boolean(f))));
+
+      if (preset.hooks.length > 0 || released.length > 0) {
+        const { path, data } = readConfig();
+        const backup = backupFile(path);
+        if (backup) configChanges.push(backup);
+
+        const retargets = new Map(released.filter((r) => r.newCommand).map((r) => [r.oldCommand, r.newCommand!]));
+        transformCodexHooks(data, (cmd) => {
+          const t = retargets.get(cmd);
+          if (t) return t;
+          return hookCommandOwner(cmd) === preset.id ? undefined : cmd;
+        });
+
+        const claim = claimPresetHooks(registry, preset.id, fps, preset.hooks, (pid, h) =>
+          buildHookCommand(join(boostHooksDir(), pid), h),
+        );
+        for (const w of claim.entries) {
+          upsertCodexHooks(data, w.event, w.matcher ?? "", w.command, w.timeout);
+        }
+        if (claim.registryChanged || released.length > 0) writeHookRegistry(registry);
+
+        writeFileIfWritable(path, stringify(data));
+        configChanges.push(path);
+      }
+    } finally {
+      // 增量记录:即使中途抛错,本轮已写文件也进 manifest,保证 remove 总能清理干净
+      recordInstall(preset.id, "codex", written, preset.version);
     }
-
-    recordInstall(preset.id, "codex", written, preset.version);
 
     const all = [...written, ...configChanges];
+
+    // 安装后自检:回读本轮记录的关键文件,缺失则标记失败
+    if (!isDryRun()) {
+      const missing = written.filter((p) => !existsSync(p));
+      if (missing.length > 0) {
+        return {
+          tool: "codex",
+          presetId: preset.id,
+          ok: false,
+          message: `Preset '${preset.id}' self-check failed for Codex CLI — missing after install: ${missing.join(", ")}`,
+          changed: all,
+        };
+      }
+    }
+
+    const backupText = backups.length
+      ? " " + backups.map((b) => isDryRun()
+          ? `would back up ${b.orig} → ${b.bak}`
+          : `Backed up existing ${b.orig} → ${b.bak} (restore: mv '${b.bak}' '${b.orig}')`).join("; ")
+      : "";
     return {
       tool: "codex",
       presetId: preset.id,
       ok: true,
       message: all.length
-        ? `Installed preset '${preset.id}' into Codex CLI (${all.length} changes). Restart codex to apply.`
-        : `Preset '${preset.id}' already active for Codex CLI.`,
+        ? `Installed preset '${preset.id}' into Codex CLI (${all.length} changes). Restart codex to apply.${backupText}`
+        : `Preset '${preset.id}' already active for Codex CLI.${backupText}`,
       changed: all,
     };
   },

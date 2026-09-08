@@ -14,13 +14,36 @@ export interface DownloadedRepo {
   cleanup(): void;
 }
 
+const FETCH_TIMEOUT_MS = 30_000;
+
 async function fetchTarballBuffer(repo: string, ref: string): Promise<Buffer> {
   // ref 可能是分支或 tag,两种 refs 路径都试
+  let lastUrl = "";
+  let lastFailure: Error | undefined;
   for (const kind of ["heads", "tags"] as const) {
-    const res = await fetch(`https://codeload.github.com/${repo}/tar.gz/refs/${kind}/${ref}`);
-    if (res.ok) return Buffer.from(await res.arrayBuffer());
+    const url = `https://codeload.github.com/${repo}/tar.gz/refs/${kind}/${ref}`;
+    lastUrl = url;
+    lastFailure = undefined;
+    // 网络类错误(超时/连接失败/非 404 状态码)重试 1 次;404 直接换另一种 ref 形态
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+        if (res.ok) return Buffer.from(await res.arrayBuffer());
+        if (res.status === 404) break;
+        lastFailure = new Error(`HTTP ${res.status}`);
+      } catch (err) {
+        lastFailure = err instanceof Error ? err : new Error(String(err));
+      }
+    }
   }
-  throw new Error(`failed to fetch tarball of ${repo}@${ref} (tried branch and tag)`);
+  if (lastFailure) {
+    throw new Error(
+      `网络请求失败,无法下载 ${repo}@${ref}(${lastUrl}):${lastFailure.message}。请检查网络/代理后重试。`,
+    );
+  }
+  throw new Error(
+    `仓库或 ref 不存在(404):${repo}@${ref}(${lastUrl},已尝试 branch 和 tag 两种形态)。请确认仓库名与 ref 是否正确。`,
+  );
 }
 
 export async function downloadRepoTarball(repo: string, ref: string): Promise<DownloadedRepo> {
