@@ -11,7 +11,6 @@ import type { InstallReport } from "../adapters/types.js";
 
 export interface InstallOptions {
   tool?: ToolName;
-  force?: boolean;
   dryRun?: boolean;
   /** 即使检测到官方 /plugins 已安装同 id,也强制写入 config.toml hooks */
   withHooks?: boolean;

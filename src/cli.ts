@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import pc from "picocolors";
 import { installPreset } from "./commands/install.js";
 import { installRemotePreset, parseRemoteSpec } from "./commands/installRemote.js";
+import { renderReports } from "./commands/reports.js";
 import { removeSource } from "./core/sources.js";
 import { runInit } from "./commands/init.js";
 import { listStatus } from "./commands/list.js";
@@ -66,26 +67,16 @@ program
         if (opts?.project) throw new Error("社区 preset 暂不支持 --project;请用用户级安装。");
         const reports = await installRemotePreset(spec, { tool: opts?.tool, dryRun: opts?.dryRun, yes: opts?.yes, withHooks: opts?.withHooks });
         if (!reports) return; // 用户取消
-        for (const r of reports) {
-          const prefix = opts?.dryRun ? pc.cyan("dry-run") : (r.ok ? pc.green("✓") : pc.red("✗"));
-          console.log(`${prefix} [${r.tool}] ${r.message}`);
-          if (opts?.dryRun) {
-            for (const c of r.changed) console.log(`   ${pc.dim("would write:")} ${c}`);
-          }
-        }
+        renderReports(reports, { dryRun: opts?.dryRun });
+        if (!opts?.dryRun) console.log(pc.dim("验证安装:kboost doctor"));
         return;
       }
 
       const reports = opts?.project
         ? await installProjectPreset(id, { tool: opts?.tool, dryRun: opts?.dryRun })
         : await installPreset(id, { tool: opts?.tool, dryRun: opts?.dryRun, withHooks: opts?.withHooks });
-      for (const r of reports) {
-        const prefix = opts?.dryRun ? pc.cyan("dry-run") : (r.ok ? pc.green("✓") : pc.red("✗"));
-        console.log(`${prefix} [${r.tool}] ${r.message}`);
-        if (opts?.dryRun) {
-          for (const c of r.changed) console.log(`   ${pc.dim("would write:")} ${c}`);
-        }
-      }
+      renderReports(reports, { dryRun: opts?.dryRun });
+      if (!opts?.dryRun) console.log(pc.dim("验证安装:kboost doctor"));
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
       process.exitCode = 1;
@@ -121,13 +112,7 @@ program
       }
       if (opts?.project) {
         const reports = await removeProjectPreset(preset, { tool: opts?.tool, dryRun: opts?.dryRun });
-        for (const r of reports) {
-          const prefix = opts?.dryRun ? pc.cyan("dry-run") : (r.ok ? pc.green("✓") : pc.red("✗"));
-          console.log(`${prefix} [${r.tool}] ${r.message}`);
-          if (opts?.dryRun) {
-            for (const c of r.changed) console.log(`   ${pc.dim("would remove:")} ${c}`);
-          }
-        }
+        renderReports(reports, { dryRun: opts?.dryRun, action: "remove" });
         return;
       }
       setDryRun(Boolean(opts?.dryRun));
@@ -139,11 +124,7 @@ program
           continue;
         }
         const r = await adapter.deactivate(preset);
-        const prefix = opts?.dryRun ? pc.cyan("dry-run") : (r.ok ? pc.green("✓") : pc.red("✗"));
-        console.log(`${prefix} [${r.tool}] ${r.message}`);
-        if (opts?.dryRun) {
-          for (const c of r.changed) console.log(`   ${pc.dim("would remove:")} ${c}`);
-        }
+        renderReports([r], { dryRun: opts?.dryRun, action: "remove" });
       }
       // 社区 preset 的来源登记一并清理(update 回退到官方 registry 语义)
       removeSource(preset);
@@ -197,6 +178,7 @@ program
           return;
         }
         let updates = 0;
+        let errors = 0;
         for (const p of previews) {
           if (p.status === "update-available") {
             updates++;
@@ -213,9 +195,11 @@ program
           } else if (p.status === "up-to-date") {
             console.log(`${pc.dim("·")} ${p.id}: up to date`);
           } else {
+            errors++;
             console.log(`${pc.red("✗")} ${p.id}: ${p.message ?? "error"}`);
           }
         }
+        if (errors > 0) process.exitCode = 1;
         if (updates > 0) {
           console.log("");
           console.log(pc.yellow(`${updates} update(s) available.`) + ` Run 'kimi-boost update' to apply.`);
@@ -253,6 +237,7 @@ program
           console.log(`${pc.red("✗")} ${r.id}: ${r.message ?? "failed"}`);
         }
       }
+      if (results.some((r) => r.status === "error")) process.exitCode = 1;
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
       process.exitCode = 1;

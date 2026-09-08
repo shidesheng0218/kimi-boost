@@ -3,7 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { parse } from "smol-toml";
 import { kimiHomeDir } from "./detect.js";
-import { copyFileIfWritable, ensureDir } from "./fsguard.js";
+import { copyFileIfWritable, ensureDir, removeIfWritable, renameIfWritable } from "./fsguard.js";
 
 /**
  * kimi-boost 管理的各目录。全部惰性求值(函数形式),以便测试环境在运行时
@@ -35,6 +35,15 @@ export function backupFile(file: string): string | undefined {
   if (!existsSync(file)) return undefined;
   const bak = `${file}.kboost.bak`;
   copyFileIfWritable(file, bak);
+  return bak;
+}
+
+/** 目录备份:整体重命名为 <dir>.kboost.bak(已有同名 bak 时先删旧 bak) */
+export function backupDir(dir: string): string | undefined {
+  if (!existsSync(dir)) return undefined;
+  const bak = `${dir}.kboost.bak`;
+  if (existsSync(bak)) removeIfWritable(bak, { recursive: true, force: true });
+  renameIfWritable(dir, bak);
   return bak;
 }
 

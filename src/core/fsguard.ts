@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 /**
@@ -30,6 +30,10 @@ export function copyFileIfWritable(src: string, dest: string): void {
 
 export function removeIfWritable(path: string, opts?: { recursive?: boolean; force?: boolean }): void {
   if (!_dryRun) rmSync(path, opts);
+}
+
+export function renameIfWritable(src: string, dest: string): void {
+  if (!_dryRun) renameSync(src, dest);
 }
 
 /**

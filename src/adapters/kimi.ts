@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { agentsDir, hooksDir, skillsDir, backupFile } from "../core/config.js";
-import { copyDirIfWritable, removeIfWritable, writeFileIfWritable, ensureDir } from "../core/fsguard.js";
+import { copyDirIfWritable, isDryRun, removeIfWritable, writeFileIfWritable, ensureDir } from "../core/fsguard.js";
 import { assertManagedPath } from "../core/safety.js";
 import { removePresetHooks, retargetHookCommand, upsertDirArray, upsertManagedHooks, type ManagedHook } from "../core/kimiTextEdit.js";
 import { parse as parseToml } from "smol-toml";
@@ -112,6 +112,23 @@ export const kimiAdapter: Adapter = {
     writeFileIfWritable(path, nextText);
 
     recordInstall(preset.id, "kimi", [sDir, aDir].filter((d) => existsSync(d)), preset.version);
+
+    // 安装后自检:回读本轮应写入的关键目录,缺失则标记失败
+    if (!isDryRun()) {
+      const expected: string[] = [];
+      if (existsSync(join(sourceDir, "skills"))) expected.push(sDir);
+      if (existsSync(join(sourceDir, "agents"))) expected.push(aDir);
+      const missing = expected.filter((d) => !existsSync(d));
+      if (missing.length > 0) {
+        return {
+          tool: "kimi",
+          presetId: preset.id,
+          ok: false,
+          message: `Preset '${preset.id}' self-check failed for Kimi Code — missing after install: ${missing.join(", ")}`,
+          changed,
+        };
+      }
+    }
 
     const sharedNote = sharedCount > 0 ? ` (${sharedCount} hook(s) shared with already-installed presets)` : "";
     const msg = changed.length
