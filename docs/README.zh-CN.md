@@ -140,8 +140,13 @@ presets/<id>/
 | `kimi-boost outdated [--project] [--json]` | 查看已安装预设中有新版本的清单 |
 | `kimi-boost doctor [--fix]` | 诊断配置、hooks、挂载目录、manifest 一致性、重复 hook |
 | `kimi-boost marketplace [--source-mode repo\|zip]` | 生成 Kimi Code 自定义市场 JSON |
-| `kimi-boost stats [-d N] [--share]` | 用量报告：柱状图 + 连续天数；`--share` 导出 SVG 分享卡片（别名：`usage`） |
+| `kimi-boost stats [-d N] [--share]` | 用量报告：柱状图 + 连续天数 + 工具拆解；`--share` 导出 SVG 分享卡片（别名：`usage`） |
 | `kimi-boost badge [预设]` | 输出 README 徽章（markdown），展示本项目用 kimi-boost |
+| `kimi-boost export [文件]` | 把你的 preset 配置导出为可分享的文件（`--embed-content` 离线复现，`--include-usage`） |
+| `kimi-boost import <文件>` | 在另一台机器上恢复此前导出的配置（`--yes`、`--dry-run`） |
+| `kimi-boost validate <目录>` | 校验 preset 目录（给 preset 作者用） |
+| `kimi-boost dev <目录>` | 校验 + 预览安装本地 preset（dry-run） |
+| `kimi-boost package <目录>` | 校验 + 打成 `<id>-<version>.zip` |
 | `kimi-boost status` | 检测已安装的 CLI 与平台 |
 | `kimi-boost bootstrap [--makefile]` | 生成团队 onboarding 用的 `setup.sh`（或 Makefile 的 `setup` target） |
 | `kimi-boost update --check` | 只检查预设是否有更新，不安装；发现更新会通知并以非零码退出 |
@@ -188,6 +193,34 @@ $ kimi-boost stats --share   # → kimi-boost-stats.svg
 `--share` 导出一张自包含的 SVG 卡片（纯本地生成，无服务器、不上传——数据不出本机）。发出来晒一晒，或嵌进 README 配一个 `kimi-boost badge`。
 
 ![kimi-boost 用量卡片](../assets/stats-card.svg)
+
+### 导出与导入——把 AI 配置克隆到任何机器
+
+`export` 把你的整套 kimi-boost 配置——已安装 preset（含版本）、社区 preset 来源、后台更新检查——导出为一个可分享的文件：
+
+```bash
+kimi-boost export                          # → kimi-boost-export.json
+kimi-boost export --embed-content          # → .tar.gz(含 preset 内容,精确离线复现)
+kimi-boost export --include-usage          # 顺带携带用量历史
+
+# 在新机器上:
+kimi-boost import kimi-boost-export.json   # 展示计划,确认一次,全部装回
+kimi-boost import kimi-boost-export.json --dry-run
+```
+
+官方 preset 从 registry 重装,社区 preset 按精确的 `repo@ref` 来源重装,后台检查也会重新注册。把这个文件提交进你的 dotfiles 仓库,或丢进团队群——一个文件,处处同款 AI 工作流。
+
+### 创作 preset
+
+想写自己的社区 preset？三个工具覆盖整个流程：
+
+```bash
+kimi-boost validate ./my-preset   # 校验 schema、hooks、skills、plugin manifest
+kimi-boost dev ./my-preset        # 校验 + dry-run 预览安装
+kimi-boost package ./my-preset    # 校验 + 打成 my-preset-1.0.0.zip
+```
+
+把目录推到 GitHub 仓库（根目录含 `preset.json`），任何人都能 `kimi-boost install github:you/my-preset` 安装。
 
 ### `doctor`——随时确认环境健康
 

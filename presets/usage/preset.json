@@ -1,13 +1,13 @@
 {
   "id": "usage",
   "name": "用量守卫",
-  "description": "会话/提示/工具调用用量统计与每日阈值提示(KIMI_BOOST_DAILY_LIMIT)。",
+  "description": "会话/提示/工具调用用量统计、按工具拆解与每日阈值提示(KIMI_BOOST_DAILY_LIMIT)。",
   "tags": [
     "usage",
     "cost",
     "monitoring"
   ],
-  "version": "1.0.0",
+  "version": "1.1.0",
   "hooks": [
     {
       "event": "SessionStart",
@@ -48,9 +48,48 @@
       "event": "PreToolUse",
       "script": "usage-track.mjs",
       "timeout": 5,
-      "matcher": "Bash",
       "args": [
         "--event=PreToolUse"
+      ]
+    },
+    {
+      "event": "PreToolUse",
+      "script": "usage-track.mjs",
+      "timeout": 5,
+      "matcher": "Bash",
+      "args": [
+        "--event=PreToolUse",
+        "--tool=bash"
+      ]
+    },
+    {
+      "event": "PreToolUse",
+      "script": "usage-track.mjs",
+      "timeout": 5,
+      "matcher": "Edit",
+      "args": [
+        "--event=PreToolUse",
+        "--tool=edit"
+      ]
+    },
+    {
+      "event": "PreToolUse",
+      "script": "usage-track.mjs",
+      "timeout": 5,
+      "matcher": "Write",
+      "args": [
+        "--event=PreToolUse",
+        "--tool=write"
+      ]
+    },
+    {
+      "event": "PreToolUse",
+      "script": "usage-track.mjs",
+      "timeout": 5,
+      "matcher": "Read",
+      "args": [
+        "--event=PreToolUse",
+        "--tool=read"
       ]
     }
   ]
