@@ -1,3 +1,30 @@
+## Unreleased
+
+### Export & import
+
+- `kimi-boost export [file]`: captures your installed presets (with versions and per-tool records), community preset sources (`sources.json`), and the background update check (new `getWatchState()` OS probe) into one shareable JSON file. `--embed-content` packs the preset store into a `.tar.gz` for exact, offline restores; `--include-usage` optionally carries `usage.json` history.
+- `kimi-boost import <file>`: shows a summary, asks once, then restores everything — official presets from the registry (warns on version drift), community presets from their exact `repo@ref` source, embedded content for archives, the update watch, and usage history (merged; local days win). `--dry-run` previews, `--yes` skips the prompt.
+- Install reports during import render through the shared reporter, so partial failures set a non-zero exit code (script-friendly).
+
+### Stats v2 — per-tool breakdown (and a data fix)
+
+- **Fixed a measurement gap**: the usage hook previously registered `PreToolUse` only for `Bash`, so `toolCalls` counted Bash invocations only. The usage preset (now **v1.1.0**) registers one matcher-less `PreToolUse` hook for the true total plus per-matcher entries (`Bash`/`Edit`/`Write`/`Read`, passed as `--tool=<name>`) for the breakdown — no double counting.
+- `usage.json` days now carry an optional `tools` map (backward compatible with old files).
+- `kimi-boost stats` shows a `top tools:` line in the terminal report and on the SVG share card.
+
+### Preset author tooling
+
+- `kimi-boost validate <dir>`: validate a preset directory (schema, hook events/scripts, `SKILL.md` presence, plugin manifest name) — same rules as the CI validator, now available to authors.
+- `kimi-boost dev <dir>`: validate, then preview the install as a dry-run before you publish.
+- `kimi-boost package <dir>`: validate, then pack `<id>-<version>.zip`, with a hint about the single-repo layout community installs expect.
+
+### Install robustness
+
+- Post-install self-check in the adapters: expected dirs/files are re-read after activation and a missing one fails the install loudly instead of silently half-installing.
+- Overwrites now back up first (`backupDir()` for directories, `renameIfWritable` primitive).
+- GitHub tarball fetches get a 30s timeout and one retry on network errors, with actionable error messages that distinguish 404 (wrong repo/ref) from network failures.
+- Non-dry-run partial install failures now set exit code 1 via the extracted `renderReports` reporter.
+
 ## 0.10.0 (2026-09-04)
 
 ### Shareable stats

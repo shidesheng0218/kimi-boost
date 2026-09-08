@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { detectPlatform } from "../core/detect.js";
@@ -142,6 +142,43 @@ export function uninstallWatch(): { platform: string; message: string } {
   }
 
   return { platform, message: "当前平台不支持自动检查" };
+}
+
+export interface WatchState {
+  enabled: boolean;
+  intervalHours?: number;
+}
+
+/** 探测周期性检查的注册状态与间隔(尽力而为,任何失败都 fail-open 返回 disabled) */
+export function getWatchState(): WatchState {
+  const platform = detectPlatform();
+  try {
+    if (platform === "darwin") {
+      const path = launchAgentPath();
+      if (!existsSync(path)) return { enabled: false };
+      const content = readFileSync(path, "utf8");
+      const m = content.match(/<key>StartInterval<\/key>\s*<integer>(\d+)<\/integer>/);
+      const seconds = m ? Number(m[1]) : 0;
+      return { enabled: true, intervalHours: seconds > 0 ? Math.round(seconds / 3600) : undefined };
+    }
+    if (platform === "linux") {
+      const line = readCrontab().split("\n").find((l) => l.includes(CRON_MARKER));
+      if (!line) return { enabled: false };
+      const m = line.match(/\*\/(\d+)/);
+      return { enabled: true, intervalHours: m ? Number(m[1]) : undefined };
+    }
+    if (platform === "win32") {
+      try {
+        execFileSync("schtasks", ["/query", "/tn", "kimi-boost-watch"], { stdio: "ignore" });
+        return { enabled: true };
+      } catch {
+        return { enabled: false };
+      }
+    }
+  } catch {
+    return { enabled: false };
+  }
+  return { enabled: false };
 }
 
 export async function checkUpdates(opts: OutdatedOptions = {}): Promise<{ rows: OutdatedRow[]; updateCount: number }> {

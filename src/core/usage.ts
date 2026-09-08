@@ -6,6 +6,8 @@ export interface UsageDay {
   sessions: number;
   prompts: number;
   toolCalls: number;
+  /** 按工具名拆解的调用计数(v1.1 起由 --tool=<name> hook 写入) */
+  tools?: Record<string, number>;
   startedAt?: string;
   endedAt?: string;
 }
@@ -37,6 +39,8 @@ export interface UsageSummary {
   sessions: number;
   prompts: number;
   toolCalls: number;
+  /** 按工具名拆解的调用计数(无分工具数据时缺省) */
+  tools?: Record<string, number>;
   minutes: number;
 }
 
@@ -55,6 +59,7 @@ export function summarize(days: number): UsageSummary[] {
       sessions: day?.sessions ?? 0,
       prompts: day?.prompts ?? 0,
       toolCalls: day?.toolCalls ?? 0,
+      ...(day?.tools ? { tools: day.tools } : {}),
       minutes: day?.startedAt && day?.endedAt
         ? Math.max(1, Math.round((Date.parse(day.endedAt) - Date.parse(day.startedAt)) / 60000))
         : 0,

@@ -17,6 +17,9 @@ import { runProjectDoctor } from "./commands/doctorProject.js";
 import { createPreset } from "./commands/create.js";
 import { runStats } from "./commands/stats.js";
 import { runBadge } from "./commands/badge.js";
+import { runExport } from "./commands/export.js";
+import { runImport } from "./commands/import.js";
+import { runValidate, runDev, runPackage } from "./commands/devtools.js";
 import { runOutdated, renderOutdated } from "./commands/outdated.js";
 import { setDryRun } from "./core/fsguard.js";
 import { installProjectPreset, removeProjectPreset } from "./core/project.js";
@@ -372,6 +375,73 @@ program
   .description("Print a README badge (markdown) showing this project uses kimi-boost")
   .action((preset?: string) => {
     runBadge(preset);
+  });
+
+program
+  .command("export [file]")
+  .description("Export your preset setup (presets + sources + watch) to a shareable file")
+  .option("--embed-content", "embed preset contents for exact offline restore (outputs .tar.gz)")
+  .option("--include-usage", "include usage.json history in the export")
+  .action(async (file: string | undefined, opts?: { embedContent?: boolean; includeUsage?: boolean }) => {
+    try {
+      await runExport({ out: file, embedContent: opts?.embedContent, includeUsage: opts?.includeUsage, cliVersion: pkgVersion });
+    } catch (err) {
+      console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("import <file>")
+  .description("Import a previously exported kimi-boost setup file")
+  .option("-t, --tool <tool>", "target tool (kimi | claude | codex)")
+  .option("-y, --yes", "skip the confirmation prompt")
+  .option("-n, --dry-run", "show the restore plan without writing anything")
+  .action(async (file: string, opts?: { tool?: ToolName; yes?: boolean; dryRun?: boolean }) => {
+    try {
+      await runImport(file, { tool: opts?.tool, yes: opts?.yes, dryRun: opts?.dryRun });
+    } catch (err) {
+      console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("validate <dir>")
+  .description("Validate a preset directory (schema, hooks, skills, plugin manifest)")
+  .action((dir: string) => {
+    try {
+      if (!runValidate(dir)) process.exitCode = 1;
+    } catch (err) {
+      console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("dev <dir>")
+  .description("Validate a local preset dir and preview its install (dry-run)")
+  .option("-t, --tool <tool>", "target tool (kimi | claude | codex)")
+  .action(async (dir: string, opts?: { tool?: ToolName }) => {
+    try {
+      await runDev(dir, { tool: opts?.tool });
+    } catch (err) {
+      console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("package <dir>")
+  .description("Validate and pack a preset dir into <id>-<version>.zip for distribution")
+  .option("-o, --out <file>", "output zip path (default: <id>-<version>.zip)")
+  .action(async (dir: string, opts?: { out?: string }) => {
+    try {
+      await runPackage(dir, { out: opts?.out });
+    } catch (err) {
+      console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
+      process.exitCode = 1;
+    }
   });
 
 program

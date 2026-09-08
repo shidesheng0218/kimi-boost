@@ -26,6 +26,8 @@ export interface StatsData {
   bestDay?: { day: string; prompts: number };
   /** 每个活跃日的平均 prompts */
   avgPromptsPerActiveDay: number;
+  /** 窗口内按工具聚合的调用计数(降序,前 5) */
+  topTools: Array<{ tool: string; count: number }>;
 }
 
 function isActive(s: UsageSummary): boolean {
@@ -62,6 +64,19 @@ export function computeStats(days: number): StatsData {
     }
   }
 
+  // 按工具聚合(旧数据无 tools 字段时为空)
+  const toolTotals = new Map<string, number>();
+  for (const r of series) {
+    if (!r.tools) continue;
+    for (const [tool, count] of Object.entries(r.tools)) {
+      toolTotals.set(tool, (toolTotals.get(tool) ?? 0) + count);
+    }
+  }
+  const topTools = [...toolTotals.entries()]
+    .map(([tool, count]) => ({ tool, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
   return {
     days,
     series,
@@ -70,5 +85,6 @@ export function computeStats(days: number): StatsData {
     streak,
     bestDay,
     avgPromptsPerActiveDay: activeDays > 0 ? Math.round((totals.prompts / activeDays) * 10) / 10 : 0,
+    topTools,
   };
 }

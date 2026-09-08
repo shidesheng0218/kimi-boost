@@ -140,8 +140,13 @@ presets/<id>/
 | `kimi-boost outdated [--project] [--json]` | Show installed presets with newer registry versions |
 | `kimi-boost doctor [--fix]` | Diagnose config, hooks, mounted dirs, manifest consistency, duplicate hooks |
 | `kimi-boost marketplace [--source-mode repo\|zip]` | Generate a Kimi Code custom marketplace JSON |
-| `kimi-boost stats [-d N] [--share]` | Usage report with bar chart & streak; `--share` exports an SVG card (alias: `usage`) |
+| `kimi-boost stats [-d N] [--share]` | Usage report with bar chart, streak & top tools; `--share` exports an SVG card (alias: `usage`) |
 | `kimi-boost badge [preset]` | Print a README badge (markdown) showing this project uses kimi-boost |
+| `kimi-boost export [file]` | Export your preset setup to a shareable file (`--embed-content` for offline restore, `--include-usage`) |
+| `kimi-boost import <file>` | Restore a previously exported setup on another machine (`--yes`, `--dry-run`) |
+| `kimi-boost validate <dir>` | Validate a preset directory (for preset authors) |
+| `kimi-boost dev <dir>` | Validate + preview-install a local preset (dry-run) |
+| `kimi-boost package <dir>` | Validate + pack a preset into `<id>-<version>.zip` |
 | `kimi-boost status` | Detect installed CLIs & platform |
 | `kimi-boost bootstrap [--makefile]` | Generate a `setup.sh` (or Makefile `setup` target) for team onboarding |
 | `kimi-boost update --check` | Check for preset updates without installing; notifies + exits non-zero if found |
@@ -188,6 +193,34 @@ $ kimi-boost stats --share   # → kimi-boost-stats.svg
 `--share` exports a self-contained SVG card (no server, no upload — your data never leaves your machine). Post it, or embed it in your README next to a `kimi-boost badge`.
 
 ![kimi-boost stats card](assets/stats-card.svg)
+
+### Export & import — clone your AI setup to any machine
+
+`export` captures your whole kimi-boost setup — installed presets with versions, community preset sources, and the background update check — into one shareable file:
+
+```bash
+kimi-boost export                          # → kimi-boost-export.json
+kimi-boost export --embed-content          # → .tar.gz with preset contents (exact, offline)
+kimi-boost export --include-usage          # also carry your usage history
+
+# on the new machine:
+kimi-boost import kimi-boost-export.json   # shows the plan, asks once, restores everything
+kimi-boost import kimi-boost-export.json --dry-run
+```
+
+Official presets reinstall from the registry, community presets reinstall from their exact `repo@ref` source, and the update watch is re-registered. Commit the file to your dotfiles repo, or drop it in your team's chat — one file, same AI workflow everywhere.
+
+### Authoring presets
+
+Building a community preset? Three helpers cover the loop:
+
+```bash
+kimi-boost validate ./my-preset   # schema, hooks, skills, plugin manifest
+kimi-boost dev ./my-preset        # validate + preview the install (dry-run)
+kimi-boost package ./my-preset    # validate + pack my-preset-1.0.0.zip
+```
+
+Push the directory to a GitHub repo (with `preset.json` at its root) and anyone can install it with `kimi-boost install github:you/my-preset`.
 
 ### `doctor` — know your setup is healthy
 
