@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](/LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/shidesheng0218/kimi-boost/ci.yml?style=flat-square&label=CI)](https://github.com/shidesheng0218/kimi-boost/actions/workflows/ci.yml)
 [![插件兼容性](https://img.shields.io/github/actions/workflow/status/shidesheng0218/kimi-boost/verify.yml?style=flat-square&label=%E6%8F%92%E4%BB%B6%E5%85%BC%E5%AE%B9)](https://github.com/shidesheng0218/kimi-boost/actions/workflows/verify.yml)
-[![presets](https://img.shields.io/badge/presets-16-blueviolet?style=flat-square)](#预设目录)
+[![presets](https://img.shields.io/badge/presets-19-blueviolet?style=flat-square)](#预设目录)
 
 **[English](../README.md) · 中文文档**
 
@@ -109,7 +109,8 @@ npx kimi-boost install
 
 | 预设 | 能力 | 官方插件仓 |
 |---|---|---|
-| `usage` | 会话/提示/工具调用统计到 `~/.kimi-boost/usage.json`；`KIMI_BOOST_DAILY_LIMIT` 每日阈值提醒；`kimi-boost usage` 查看 | [✅ kimi-boost-usage](https://github.com/shidesheng0218/kimi-boost-usage) |
+| `usage` | 会话/提示/工具调用统计到 `~/.kimi-boost/usage.json`；`KIMI_BOOST_DAILY_LIMIT` 每日阈值提醒；`kimi-boost stats` 查看 | [✅ kimi-boost-usage](https://github.com/shidesheng0218/kimi-boost-usage) |
+| `core` | **任何项目都该装的最小保险**——拦直推 main/master、拦危险 shell 命令（`rm -rf /`、`mkfs`、`dd` 写盘、`curl\|sh`）、拦写入硬编码密钥。`kimi-boost init` 默认附带 | 经 CLI（init 默认） |
 | `mcp-tools` | 零配置 MCP servers：`fetch`（网页抓取）+ `time`（时区）——写入 `~/.kimi-code/mcp.json` | 经 CLI 安装 |
 | `security` | 跨栈守卫：写入文件即扫描硬编码密钥、拦截危险 `git push`（`--force`/`--delete`，放行 `--force-with-lease`）；外加 `security-reviewer` 审查 agent | 经 CLI 安装 |
 | `git-workflow` | 约定式提交、分支命名与 PR 规范（自动加载的 skill）+ `git-workflow-reviewer` 审查 agent；无 hooks | 经 CLI 安装 |
@@ -132,7 +133,7 @@ presets/<id>/
 | 命令 | 作用 |
 |---|---|
 | `kimi-boost install [预设]` | 按 id 安装预设——或从任意 GitHub 仓库安装：`install github:owner/repo`（`--dry-run` 预览，`--with-hooks` 强制含 hooks，`--project` 装进当前项目） |
-| `kimi-boost init` | 识别当前项目技术栈并安装匹配预设（`--yes` 跳过交互，`--dry-run` 预览，`--project`） |
+| `kimi-boost init` | 识别当前项目技术栈并安装匹配预设——默认附带 `core` 核心护栏（`--yes` 跳过交互，`--dry-run` 预览，`--project`） |
 | `kimi-boost list` | 查看可用与已安装预设 |
 | `kimi-boost remove <预设>` | 干净卸载 |
 | `kimi-boost update [--repo owner/repo]` | 拉取最新版本并重新应用（支持 fork；社区 preset 从其来源仓库更新） |

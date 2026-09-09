@@ -1,3 +1,14 @@
+## Unreleased
+
+### Guardrails by default
+
+- New `core` preset: the minimum insurance every project should have — blocks direct pushes to `main`/`master`, dangerous shell commands (`rm -rf /`, `mkfs`, `dd` to disk, `curl|sh`), and hardcoded secrets in written files. Its hook scripts are byte-identical to the ones in `go`/`python`/`security`, so the content-aware hook dedup shares entries instead of duplicating them.
+- `kimi-boost init` now always offers `core` first and pre-selects it — and it no longer leaves you empty-handed when no stack markers are found (it offers `core` as the fallback).
+
+### Fixed
+
+- `block-dangerous.mjs` (python preset, now also in `core`): the `rm` patterns never actually matched (`rm -rf /` and friends slipped through) — the regexes are fixed and verified against a behavior matrix (`rm -rf /|*|.|..|$VAR` blocked; `rm -rf /tmp/x`, `node_modules`, plain files allowed). Python preset bumped to 1.0.1.
+
 ## 0.11.0 (2026-09-08)
 
 ### Export & import
