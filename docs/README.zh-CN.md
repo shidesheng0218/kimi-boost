@@ -73,7 +73,7 @@ All checks passed.
 export KIMI_CODE_PLUGIN_MARKETPLACE_URL=https://raw.githubusercontent.com/shidesheng0218/kimi-boost/main/marketplace.json
 ```
 
-**② kimi-boost CLI——全部 16 个预设，三个平台。** 一个安装器同时支持 Kimi Code、Claude Code 和 Codex CLI，带更新、体检和干净卸载：
+**② kimi-boost CLI——全部 19 个预设，三个平台。** 一个安装器同时支持 Kimi Code、Claude Code 和 Codex CLI，带更新、体检和干净卸载：
 
 ```bash
 npx kimi-boost install
@@ -81,7 +81,7 @@ npx kimi-boost install
 
 | | 官方渠道 | kimi-boost CLI |
 |---|---|---|
-| 预设数量 | 5 个旗舰（镜像仓） | 全部 16 个 |
+| 预设数量 | 5 个旗舰（镜像仓） | 全部 19 个 |
 | 支持平台 | Kimi Code | Kimi Code · Claude Code · Codex |
 | 前置要求 | 只要 Kimi Code | Node.js |
 | 额外能力 | — | 更新 · doctor 体检 · 用量统计 · dry-run 预览 |
@@ -245,7 +245,7 @@ $ kimi-boost doctor
 
 ```mermaid
 flowchart TD
-    REG["<b>presets/ 注册表</b>（16 个预设）<br/>skills · agents · hooks · mcp"]
+    REG["<b>presets/ 注册表</b>（19 个预设）<br/>skills · agents · hooks · mcp"]
 
     subgraph CI["主仓 CI"]
       VERIFY["verify.yml<br/>把每个预设实装进<br/>真实 Kimi Code CLI 验证"]
@@ -277,7 +277,7 @@ flowchart TD
 - **Kimi Code**——CLI 以**文本级**方式编辑 `~/.kimi-code/config.toml`（一个 `# >>> kimi-boost managed >>>` 受管区块 + 原位数组合并），你的注释和格式原样保留。
 - **Claude Code 与 Codex**——以 manifest 驱动方式装入 `~/.claude` / `~/.codex`；Agent 文件采用原生 frontmatter 格式（按 Kimi 官方文档跨平台兼容）。
 - **Hooks 就是普通 Node `.mjs`**——与 Kimi Code 官方文档同款写法，macOS / Windows / Linux 行为一致。
-- **兼容性是测出来的，不是猜的**——CI 会在每个 PR 上把 16 个预设实装进真实的 Kimi Code CLI，并每周跑一次以捕捉上游变化。
+- **兼容性是测出来的，不是猜的**——CI 会在每个 PR 上把 19 个预设实装进真实的 Kimi Code CLI，并每周跑一次以捕捉上游变化。
 
 ## 默认安全
 

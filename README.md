@@ -73,7 +73,7 @@ Or browse them inside the `/plugins` panel via our marketplace feed:
 export KIMI_CODE_PLUGIN_MARKETPLACE_URL=https://raw.githubusercontent.com/shidesheng0218/kimi-boost/main/marketplace.json
 ```
 
-**② kimi-boost CLI — all 16 presets, three harnesses.** One installer for Kimi Code, Claude Code *and* Codex CLI, with updates, doctor checks and clean uninstalls:
+**② kimi-boost CLI — all 19 presets, three harnesses.** One installer for Kimi Code, Claude Code *and* Codex CLI, with updates, doctor checks and clean uninstalls:
 
 ```bash
 npx kimi-boost install
@@ -81,7 +81,7 @@ npx kimi-boost install
 
 | | Official channel | kimi-boost CLI |
 |---|---|---|
-| Presets | 5 flagship (mirrored) | All 16 |
+| Presets | 5 flagship (mirrored) | All 19 |
 | Harnesses | Kimi Code | Kimi Code · Claude Code · Codex |
 | Needs | Just Kimi Code | Node.js |
 | Extras | — | update · doctor · usage stats · dry-run |
@@ -245,7 +245,7 @@ $ kimi-boost doctor
 
 ```mermaid
 flowchart TD
-    REG["<b>presets/ registry</b> (16 presets)<br/>skills · agents · hooks · mcp"]
+    REG["<b>presets/ registry</b> (19 presets)<br/>skills · agents · hooks · mcp"]
 
     subgraph CI["Monorepo CI"]
       VERIFY["verify.yml<br/>live-installs every preset<br/>into a real Kimi Code CLI"]
@@ -277,7 +277,7 @@ flowchart TD
 - **Kimi Code** — the CLI edits `~/.kimi-code/config.toml` at **text level** (a managed `# >>> kimi-boost managed >>>` block plus in-place array merge). Your comments and formatting survive untouched.
 - **Claude Code & Codex** — manifest-driven install into `~/.claude` / `~/.codex`; agent files use the native frontmatter format (cross-compatible, per Kimi docs).
 - **Hooks are plain Node `.mjs`** — the same pattern Kimi Code's own docs use, identical behavior on macOS / Windows / Linux.
-- **Compatibility is tested, not assumed** — CI live-installs all 16 presets into a real Kimi Code CLI on every PR, and weekly against upstream drift.
+- **Compatibility is tested, not assumed** — CI live-installs all 19 presets into a real Kimi Code CLI on every PR, and weekly against upstream drift.
 
 ## Safety by default
 
