@@ -51,7 +51,8 @@ describe("core/protect-main.mjs", () => {
   });
 
   it("fails open when not in a git repo", () => {
-    expect(runHook(PROTECT_MAIN, { tool_input: { command: "git push" } }, "/tmp")).toBe(0);
+    // 用一个确定不是 git 仓的目录(tmpdir 全平台存在;/tmp 在 Windows 上不存在)
+    expect(runHook(PROTECT_MAIN, { tool_input: { command: "git push" } }, tmpdir())).toBe(0);
   });
 
   it("ignores non-push commands", () => {
