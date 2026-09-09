@@ -17,22 +17,25 @@ export interface InitOptions {
 
 export async function runInit(opts: InitOptions = {}): Promise<void> {
   const { root } = findProjectRoot();
-  const signals = detectProjectPresets(root);
+  const detected = detectProjectPresets(root);
 
-  if (signals.length === 0) {
-    console.log(pc.yellow("未识别出项目类型(未发现 go.mod / package.json / Cargo.toml 等标记文件)。"));
-    console.log(`可用 ${pc.cyan("kimi-boost list")} 查看全部 preset,或 ${pc.cyan("kimi-boost install")} 交互选择。`);
-    return;
-  }
+  // 核心护栏永远置顶推荐:与技术栈无关的最小保险(拦推主干/危险命令/密钥写入)
+  const coreSignal: ProjectSignal = { id: "core", evidence: "默认护栏:拦推 main / 危险命令 / 密钥写入" };
+  const signals = [coreSignal, ...detected.filter((s) => s.id !== "core")];
 
   // 标记已安装项:prompt 中默认不勾选,但允许重选(install 幂等)
   const { installedOnly } = await listStatus();
   const installed = new Set(installedOnly);
 
-  console.log(pc.bold(`检测到 ${signals.length} 个匹配的 preset(项目根: ${pc.dim(root)}):`));
+  if (detected.length === 0) {
+    console.log(pc.dim("未识别出项目技术栈;先装上核心护栏(任何项目都建议):"));
+  } else {
+    console.log(pc.bold(`检测到 ${signals.length} 个匹配的 preset(项目根: ${pc.dim(root)}):`));
+  }
   for (const s of signals) {
     const tag = installed.has(s.id) ? ` ${pc.dim("(已安装)")}` : "";
-    console.log(`  ${pc.green("●")} ${pc.bold(s.id)}  ${pc.dim(`依据: ${s.evidence}`)}${tag}`);
+    const rec = s.id === "core" ? ` ${pc.green("(推荐)")}` : "";
+    console.log(`  ${pc.green("●")} ${pc.bold(s.id)}${rec}  ${pc.dim(`依据: ${s.evidence}`)}${tag}`);
   }
   console.log();
 

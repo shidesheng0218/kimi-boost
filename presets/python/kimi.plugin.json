@@ -1,6 +1,6 @@
 {
   "name": "python",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Python 工程化最佳实践:类型标注、测试、依赖管理,外加危险 Shell 命令拦截 hook。",
   "keywords": [
     "python",

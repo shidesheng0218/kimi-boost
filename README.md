@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](/LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/shidesheng0218/kimi-boost/ci.yml?style=flat-square&label=CI)](https://github.com/shidesheng0218/kimi-boost/actions/workflows/ci.yml)
 [![Plugin compatibility](https://img.shields.io/github/actions/workflow/status/shidesheng0218/kimi-boost/verify.yml?style=flat-square&label=plugin%20compat)](https://github.com/shidesheng0218/kimi-boost/actions/workflows/verify.yml)
-[![presets](https://img.shields.io/badge/presets-16-blueviolet?style=flat-square)](#presets)
+[![presets](https://img.shields.io/badge/presets-19-blueviolet?style=flat-square)](#presets)
 
 **[English](README.md) · [中文文档](docs/README.zh-CN.md)**
 
@@ -109,7 +109,8 @@ npx kimi-boost install
 
 | Preset | What it gives you | Official repo |
 |---|---|---|
-| `usage` | Tracks sessions / prompts / tool calls into `~/.kimi-boost/usage.json`; daily limit hint via `KIMI_BOOST_DAILY_LIMIT`; view with `kimi-boost usage` | [✅ kimi-boost-usage](https://github.com/shidesheng0218/kimi-boost-usage) |
+| `usage` | Tracks sessions / prompts / tool calls into `~/.kimi-boost/usage.json`; daily limit hint via `KIMI_BOOST_DAILY_LIMIT`; view with `kimi-boost stats` | [✅ kimi-boost-usage](https://github.com/shidesheng0218/kimi-boost-usage) |
+| `core` | **The baseline insurance every project should have** — blocks direct pushes to `main`/`master`, dangerous shell commands (`rm -rf /`, `mkfs`, `dd` to disk, `curl\|sh`), and hardcoded secrets in written files. Included by default in `kimi-boost init` | via CLI (default in `init`) |
 | `mcp-tools` | Zero-config MCP servers: `fetch` (web scraping) + `time` (timezones) — written to `~/.kimi-code/mcp.json` | via CLI |
 | `security` | Cross-stack guard: scans Write/Edit for hardcoded secrets, blocks dangerous `git push` (`--force`/`--delete`, allows `--force-with-lease`); plus a `security-reviewer` agent | via CLI |
 | `git-workflow` | Conventional commits, branch naming & PR discipline (auto-loaded skill) + a `git-workflow-reviewer` agent; no hooks | via CLI |
@@ -132,7 +133,7 @@ presets/<id>/
 | Command | What it does |
 |---|---|
 | `kimi-boost install [preset]` | Install a preset by id — or from any GitHub repo: `install github:owner/repo` (`--dry-run` preview, `--with-hooks` force, `--project` install into current project) |
-| `kimi-boost init` | Detect this project's stack and install matching presets (`--yes` skip prompt, `--dry-run` preview, `--project`) |
+| `kimi-boost init` | Detect this project's stack and install matching presets — always includes the `core` guardrails by default (`--yes` skip prompt, `--dry-run` preview, `--project`) |
 | `kimi-boost list` | Show available + installed presets |
 | `kimi-boost remove <preset>` | Uninstall cleanly |
 | `kimi-boost update [--repo owner/repo]` | Pull latest versions and re-apply (works on forks; community presets update from their source repo) |
