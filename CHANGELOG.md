@@ -1,4 +1,4 @@
-## Unreleased
+## 0.13.0 (2026-09-12)
 
 ### Guardrails you can see
 
