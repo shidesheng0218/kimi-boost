@@ -140,6 +140,7 @@ presets/<id>/
 | `kimi-boost update --dry-run` | 预览更新会带来什么变化（版本号 + 文件级 diff），不写盘 |
 | `kimi-boost outdated [--project] [--json]` | 查看已安装预设中有新版本的清单 |
 | `kimi-boost doctor [--fix]` | 诊断配置、hooks、挂载目录、manifest 一致性、重复 hook |
+| `kimi-boost guard` | 护栏状态 + 拦截历史；`guard --log`、`--disable/--enable <名称>`、`--add-pattern <正则>`——不重装即可调护栏 |
 | `kimi-boost marketplace [--source-mode repo\|zip]` | 生成 Kimi Code 自定义市场 JSON |
 | `kimi-boost stats [-d N] [--share]` | 用量报告：柱状图 + 连续天数 + 工具拆解；`--share` 导出 SVG 分享卡片（别名：`usage`） |
 | `kimi-boost badge [预设]` | 输出 README 徽章（markdown），展示本项目用 kimi-boost |
@@ -194,6 +195,17 @@ $ kimi-boost stats --share   # → kimi-boost-stats.svg
 `--share` 导出一张自包含的 SVG 卡片（纯本地生成，无服务器、不上传——数据不出本机）。发出来晒一晒，或嵌进 README 配一个 `kimi-boost badge`。
 
 ![kimi-boost 用量卡片](../assets/stats-card.svg)
+
+### 看得见的护栏
+
+大多数"agent 安全"是隐形的——hook 默默拦了某个操作,你永远不知道 agent 差点跑了 `rm -rf /`。kimi-boost 让这条安全带可见:
+
+- 每次拦截都会记到 `~/.kimi-boost/guard-log.jsonl`（密钥摘要会脱敏——绝不记录密钥本身）。
+- `kimi-boost guard` 显示每个守卫的状态和累计拦截次数;`guard --log` 列出最近的拦截明细。
+- `kimi-boost stats` 会报告 `🛡️ N 次拦截`——你的分享卡片现在能讲"这周它帮我拦了 N 次"的故事。
+- 不重装即可调整:`guard --disable <名称>` / `--enable <名称>`,或用 `guard --add-pattern <正则>` 给危险命令守卫加你自己的模式。
+
+`core` preset 现在还守护凭证文件（`~/.ssh`、`~/.aws/credentials`、`*.pem` 等）不被读进模型上下文,并拦截会丢弃工作区的 git 操作（`reset --hard`、`clean -f`、`checkout -- .`）。
 
 ### 导出与导入——把 AI 配置克隆到任何机器
 

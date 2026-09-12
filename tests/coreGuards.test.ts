@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 /**
  * 直接测试 presets/core/hooks/ 下的三个护栏脚本。
@@ -19,10 +19,17 @@ const SECRET_SCAN = join(CORE_HOOKS, "secret-scan.mjs");
 const AWS_KEY = ["AKIA", "IOSFODNN7EXAMPLE"].join("");
 
 let dir = "";
+let home = ""; // hook 会写 guard-log,必须沙箱化 KIMI_BOOST_HOME
+
+beforeEach(() => {
+  home = mkdtempSync(join(tmpdir(), "kboost-hookhome-"));
+});
 
 afterEach(() => {
   if (dir) rmSync(dir, { recursive: true, force: true });
+  if (home) rmSync(home, { recursive: true, force: true });
   dir = "";
+  home = "";
 });
 
 function runHook(script: string, payload: unknown, cwd?: string): number | null {
@@ -30,6 +37,7 @@ function runHook(script: string, payload: unknown, cwd?: string): number | null 
     input: JSON.stringify(payload),
     encoding: "utf8",
     cwd,
+    env: { ...process.env, KIMI_BOOST_HOME: home },
   });
   return res.status;
 }

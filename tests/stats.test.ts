@@ -130,6 +130,7 @@ describe("generateSvg", () => {
       bestDay: { day: dayOffset(0), prompts: 30 },
       avgPromptsPerActiveDay: 20,
       topTools: [{ tool: "bash", count: 100 }],
+      blocks: 0,
     };
   }
 
@@ -156,6 +157,7 @@ describe("generateSvg", () => {
       bestDay: undefined,
       avgPromptsPerActiveDay: 0,
       topTools: [],
+      blocks: 0,
     });
     expect(svg).toContain("<svg");
     expect(svg).toContain("</svg>");

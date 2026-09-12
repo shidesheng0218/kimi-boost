@@ -3,7 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 // ---- kimi-boost guard runtime(各守卫脚本内联同一份逻辑) ----
-const GUARD_NAME = "secret-scan";
+const GUARD_NAME = "protect-credentials";
 const HOME = process.env.KIMI_BOOST_HOME ?? join(homedir(), ".kimi-boost");
 const GUARDS_FILE = join(HOME, "guards.json");
 const GUARD_LOG = join(HOME, "guard-log.jsonl");
@@ -33,34 +33,38 @@ function logBlock(name, tool, preview) {
 }
 // ---- end guard runtime ----
 
+// 高敏凭证文件(读进上下文=密钥外泄给模型)。普通 .env 不拦(开发中常用),只拦真正的凭证库。
+const SENSITIVE = [
+  /(^|[\\/])\.ssh([\\/]|$)/, // ~/.ssh/*
+  /(^|[\\/])\.aws[\\/]credentials$/, // ~/.aws/credentials
+  /(^|[\\/])\.gnupg([\\/]|$)/,
+  /(^|[\\/])\.netrc$/,
+  /(^|[\\/])id_rsa$/,
+  /\.pem$/,
+  /\.key$/,
+];
+
+// preset.json 用 --tool=read|bash 注册两条,脚本按此决定读哪个字段
+const toolArg = process.argv.slice(2).find((a) => a.startsWith("--tool="));
+const TOOL = toolArg ? toolArg.slice("--tool=".length).toLowerCase() : "";
+
 let input = "";
 process.stdin.on("data", (c) => (input += c));
 process.stdin.on("end", () => {
   try {
     if (guardDisabled(GUARD_NAME)) process.exit(0);
     const payload = JSON.parse(input);
-    // Write 工具用 tool_input.content,Edit 用 tool_input.new_string;都取不到则放行
     const ti = payload.tool_input ?? {};
-    const content = String(ti.content ?? ti.new_string ?? "");
-    if (!content) process.exit(0);
+    // Read 工具看 file_path;Bash 看 command(里面可能 cat 敏感文件)
+    const target = TOOL === "read" ? String(ti.file_path ?? "") : String(ti.command ?? "");
+    if (!target) process.exit(0);
 
-    const patterns = [
-      { name: "AWS Access Key ID", re: /\bAKIA[0-9A-Z]{16}\b/ },
-      { name: "private key block", re: /-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----/ },
-      { name: "GitHub token", re: /\bgh[pousr]_[A-Za-z0-9]{20,}\b/ },
-      { name: "Slack token", re: /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/ },
-      {
-        name: "hardcoded credential",
-        re: /\b(?:api[_-]?key|api[_-]?secret|client[_-]?secret|secret|access[_-]?token|auth[_-]?token|password|passwd)\b\s*[:=]\s*["'][A-Za-z0-9/_+=.-]{16,}["']/i,
-      },
-    ];
-    const hit = patterns.find((p) => p.re.test(content));
+    const hit = SENSITIVE.find((re) => re.test(target));
     if (hit) {
-      // 注意:日志只记命中的模式名,绝不记录密钥内容本身
-      logBlock(GUARD_NAME, "Write/Edit", `pattern:${hit.name}`);
+      logBlock(GUARD_NAME, TOOL || "read", target);
       console.error(
-        `[kimi-boost] Blocked: content looks like a hardcoded secret (${hit.name}). ` +
-          "Move it to an env var or a secrets manager instead of writing it into a file.",
+        `[kimi-boost] Blocked: reading sensitive credentials (${target}). ` +
+          "凭证绝不能进入 agent 上下文;需要时让 agent 用环境变量名引用,而不是读内容。",
       );
       process.exit(2);
     }

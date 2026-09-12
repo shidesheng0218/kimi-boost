@@ -20,6 +20,7 @@ import { runBadge } from "./commands/badge.js";
 import { runExport } from "./commands/export.js";
 import { runImport } from "./commands/import.js";
 import { runValidate, runDev, runPackage } from "./commands/devtools.js";
+import { runGuard } from "./commands/guard.js";
 import { runOutdated, renderOutdated } from "./commands/outdated.js";
 import { setDryRun } from "./core/fsguard.js";
 import { installProjectPreset, removeProjectPreset } from "./core/project.js";
@@ -438,6 +439,23 @@ program
   .action(async (dir: string, opts?: { out?: string }) => {
     try {
       await runPackage(dir, { out: opts?.out });
+    } catch (err) {
+      console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("guard")
+  .description("Show guardrail status and block history; toggle guards without reinstalling")
+  .option("--log", "show recent blocked actions")
+  .option("-n <count>", "number of log entries to show (with --log)", "20")
+  .option("--enable <name>", "enable a guard")
+  .option("--disable <name>", "disable a guard (takes effect on the next agent action)")
+  .option("--add-pattern <regex>", "add a custom block pattern to the block-dangerous guard")
+  .action((opts?: { log?: boolean; n?: string; enable?: string; disable?: string; addPattern?: string }) => {
+    try {
+      runGuard({ log: opts?.log, n: opts?.n, enable: opts?.enable, disable: opts?.disable, addPattern: opts?.addPattern });
     } catch (err) {
       console.error(pc.red(`✗ ${err instanceof Error ? err.message : String(err)}`));
       process.exitCode = 1;

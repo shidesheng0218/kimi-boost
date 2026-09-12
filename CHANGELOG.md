@@ -1,3 +1,16 @@
+## Unreleased
+
+### Guardrails you can see
+
+- Every guardrail block is now logged to `~/.kimi-boost/guard-log.jsonl` (timestamp, guard, tool, and a redacted preview — never the secret itself). The insurance finally tells you when it paid out.
+- New `kimi-boost guard` command: lists every guard with its status and block counts; `guard --log` shows recent blocks; `guard --disable/--enable <name>` toggles a guard live (guards consult `~/.kimi-boost/guards.json` at runtime — no reinstall); `guard --add-pattern <regex>` teaches `block-dangerous` your own patterns.
+- `kimi-boost stats` (report + SVG card + `--json`) now surfaces `🛡️ N blocks` for the window — the share card can say "it stopped my agent N times."
+
+### New guards in `core` (1.1.0)
+
+- `protect-credentials`: blocks reading high-sensitivity credential files (`~/.ssh/*`, `~/.aws/credentials`, `~/.gnupg`, `~/.netrc`, `*.pem`, `*.key`, `id_rsa`) into the model's context — secrets should be referenced by name, never read in. Plain `.env` reads stay allowed.
+- `git-destructive`: blocks workspace-destroying git ops (`git reset --hard`, `git clean -f…`, `git checkout -- .`, `git restore .`). protect-main guards the trunk, block-force-push guards the remote, this guards your uncommitted work.
+
 ## 0.12.0 (2026-09-09)
 
 ### Guardrails by default

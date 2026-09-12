@@ -1,19 +1,33 @@
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 
 const PRESETS = join(dirname(fileURLToPath(import.meta.url)), "..", "presets");
 const SECRET_SCAN = join(PRESETS, "security", "hooks", "secret-scan.mjs");
 const FORCE_PUSH = join(PRESETS, "security", "hooks", "block-force-push.mjs");
 
+// hook 拦截时会写 guard-log.jsonl,必须沙箱化 KIMI_BOOST_HOME,不碰真机
+const SANDBOX_HOME = mkdtempSync(join(tmpdir(), "kboost-preset-hooks-"));
+afterAll(() => rmSync(SANDBOX_HOME, { recursive: true, force: true }));
+
 function runHook(script: string, payload: unknown): { status: number | null; stderr: string } {
-  const res = spawnSync(process.execPath, [script], { input: JSON.stringify(payload), encoding: "utf8" });
+  const res = spawnSync(process.execPath, [script], {
+    input: JSON.stringify(payload),
+    encoding: "utf8",
+    env: { ...process.env, KIMI_BOOST_HOME: SANDBOX_HOME },
+  });
   return { status: res.status, stderr: res.stderr ?? "" };
 }
 
 function runRaw(script: string, stdin: string): number | null {
-  return spawnSync(process.execPath, [script], { input: stdin, encoding: "utf8" }).status;
+  return spawnSync(process.execPath, [script], {
+    input: stdin,
+    encoding: "utf8",
+    env: { ...process.env, KIMI_BOOST_HOME: SANDBOX_HOME },
+  }).status;
 }
 
 // 说明:示例密钥一律用拼接构造,不让字面量密钥出现在文件里——否则会触发 GitHub
