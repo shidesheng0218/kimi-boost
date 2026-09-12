@@ -1,3 +1,4 @@
+import { guardStats } from "./guards.js";
 import { summarize, today, type UsageSummary } from "./usage.js";
 
 /**
@@ -28,6 +29,8 @@ export interface StatsData {
   avgPromptsPerActiveDay: number;
   /** 窗口内按工具聚合的调用计数(降序,前 5) */
   topTools: Array<{ tool: string; count: number }>;
+  /** 窗口内护栏拦截次数(读 guard-log.jsonl) */
+  blocks: number;
 }
 
 function isActive(s: UsageSummary): boolean {
@@ -86,5 +89,6 @@ export function computeStats(days: number): StatsData {
     bestDay,
     avgPromptsPerActiveDay: activeDays > 0 ? Math.round((totals.prompts / activeDays) * 10) / 10 : 0,
     topTools,
+    blocks: guardStats(days).total,
   };
 }

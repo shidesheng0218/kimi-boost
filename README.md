@@ -140,6 +140,7 @@ presets/<id>/
 | `kimi-boost update --dry-run` | Preview what an update would change (version + file-level diff) without writing |
 | `kimi-boost outdated [--project] [--json]` | Show installed presets with newer registry versions |
 | `kimi-boost doctor [--fix]` | Diagnose config, hooks, mounted dirs, manifest consistency, duplicate hooks |
+| `kimi-boost guard` | Guardrail status + block history; `guard --log`, `--disable/--enable <name>`, `--add-pattern <regex>` — tune guards live, no reinstall |
 | `kimi-boost marketplace [--source-mode repo\|zip]` | Generate a Kimi Code custom marketplace JSON |
 | `kimi-boost stats [-d N] [--share]` | Usage report with bar chart, streak & top tools; `--share` exports an SVG card (alias: `usage`) |
 | `kimi-boost badge [preset]` | Print a README badge (markdown) showing this project uses kimi-boost |
@@ -194,6 +195,17 @@ $ kimi-boost stats --share   # → kimi-boost-stats.svg
 `--share` exports a self-contained SVG card (no server, no upload — your data never leaves your machine). Post it, or embed it in your README next to a `kimi-boost badge`.
 
 ![kimi-boost stats card](assets/stats-card.svg)
+
+### Guardrails you can actually see
+
+Most "agent safety" is invisible — a hook silently blocks something and you never know your agent almost ran `rm -rf /`. kimi-boost makes the seatbelt visible:
+
+- Every blocked action is logged to `~/.kimi-boost/guard-log.jsonl` (secret previews are redacted — never the secret itself).
+- `kimi-boost guard` shows every guard's status and how many times it fired; `guard --log` lists recent blocks with timestamps.
+- `kimi-boost stats` reports `🛡️ N blocks` — your share card can now say *"it stopped my agent N times this week."*
+- Tune live without reinstalling: `guard --disable <name>` / `--enable <name>`, or teach `block-dangerous` your own patterns with `guard --add-pattern <regex>`.
+
+The `core` preset now also shields credential files (`~/.ssh`, `~/.aws/credentials`, `*.pem`…) from being read into the model's context, and blocks workspace-destroying git ops (`reset --hard`, `clean -f`, `checkout -- .`).
 
 ### Export & import — clone your AI setup to any machine
 

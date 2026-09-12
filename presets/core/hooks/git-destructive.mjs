@@ -3,7 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 // ---- kimi-boost guard runtime(各守卫脚本内联同一份逻辑) ----
-const GUARD_NAME = "secret-scan";
+const GUARD_NAME = "git-destructive";
 const HOME = process.env.KIMI_BOOST_HOME ?? join(homedir(), ".kimi-boost");
 const GUARDS_FILE = join(HOME, "guards.json");
 const GUARD_LOG = join(HOME, "guard-log.jsonl");
@@ -33,34 +33,27 @@ function logBlock(name, tool, preview) {
 }
 // ---- end guard runtime ----
 
+// 丢弃本地未提交工作的操作(protect-main 管主干、block-force-push 管远端,这个管本地)
+const DESTRUCTIVE = [
+  /(^|[\s|;&])git\s+reset\s+--hard\b/, // git reset --hard(丢工作区+暂存区)
+  /(^|[\s|;&])git\s+clean\s+-[a-zA-Z]*f/, // git clean -f / -fd / -fdx(删未跟踪文件)
+  /(^|[\s|;&])git\s+checkout\s+(--\s+)?\.(\s|$)/, // git checkout -- . / git checkout .
+  /(^|[\s|;&])git\s+restore\s+(--worktree\s+)?\.(\s|$)/, // git restore . / git restore --worktree .
+];
+
 let input = "";
 process.stdin.on("data", (c) => (input += c));
 process.stdin.on("end", () => {
   try {
     if (guardDisabled(GUARD_NAME)) process.exit(0);
     const payload = JSON.parse(input);
-    // Write 工具用 tool_input.content,Edit 用 tool_input.new_string;都取不到则放行
-    const ti = payload.tool_input ?? {};
-    const content = String(ti.content ?? ti.new_string ?? "");
-    if (!content) process.exit(0);
-
-    const patterns = [
-      { name: "AWS Access Key ID", re: /\bAKIA[0-9A-Z]{16}\b/ },
-      { name: "private key block", re: /-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----/ },
-      { name: "GitHub token", re: /\bgh[pousr]_[A-Za-z0-9]{20,}\b/ },
-      { name: "Slack token", re: /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/ },
-      {
-        name: "hardcoded credential",
-        re: /\b(?:api[_-]?key|api[_-]?secret|client[_-]?secret|secret|access[_-]?token|auth[_-]?token|password|passwd)\b\s*[:=]\s*["'][A-Za-z0-9/_+=.-]{16,}["']/i,
-      },
-    ];
-    const hit = patterns.find((p) => p.re.test(content));
+    const command = String(payload.tool_input?.command ?? "");
+    const hit = DESTRUCTIVE.find((re) => re.test(command));
     if (hit) {
-      // 注意:日志只记命中的模式名,绝不记录密钥内容本身
-      logBlock(GUARD_NAME, "Write/Edit", `pattern:${hit.name}`);
+      logBlock(GUARD_NAME, "Bash", command);
       console.error(
-        `[kimi-boost] Blocked: content looks like a hardcoded secret (${hit.name}). ` +
-          "Move it to an env var or a secrets manager instead of writing it into a file.",
+        `[kimi-boost] Blocked: destructive git op (${command.slice(0, 60)}) 会丢弃未提交的工作。` +
+          "如确需丢弃,请先 git stash 或确认改动已提交。",
       );
       process.exit(2);
     }
