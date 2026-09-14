@@ -65,7 +65,7 @@ All checks passed.
 /plugins install https://github.com/shidesheng0218/kimi-boost-vue3
 ```
 
-Available mirrors: [vue3](https://github.com/shidesheng0218/kimi-boost-vue3) · [react](https://github.com/shidesheng0218/kimi-boost-react) · [go](https://github.com/shidesheng0218/kimi-boost-go) · [python](https://github.com/shidesheng0218/kimi-boost-python) · [usage](https://github.com/shidesheng0218/kimi-boost-usage)
+Available mirrors: [vue3](https://github.com/shidesheng0218/kimi-boost-vue3) · [react](https://github.com/shidesheng0218/kimi-boost-react) · [go](https://github.com/shidesheng0218/kimi-boost-go) · [python](https://github.com/shidesheng0218/kimi-boost-python) · [usage](https://github.com/shidesheng0218/kimi-boost-usage) · **[core](https://github.com/shidesheng0218/kimi-boost-core)** (the guardrails — install them in Kimi Code with no CLI at all)
 
 Or browse them inside the `/plugins` panel via our marketplace feed:
 
@@ -110,7 +110,7 @@ npx kimi-boost install
 | Preset | What it gives you | Official repo |
 |---|---|---|
 | `usage` | Tracks sessions / prompts / tool calls into `~/.kimi-boost/usage.json`; daily limit hint via `KIMI_BOOST_DAILY_LIMIT`; view with `kimi-boost stats` | [✅ kimi-boost-usage](https://github.com/shidesheng0218/kimi-boost-usage) |
-| `core` | **The baseline insurance every project should have** — blocks direct pushes to `main`/`master`, dangerous shell commands (`rm -rf /`, `mkfs`, `dd` to disk, `curl\|sh`), and hardcoded secrets in written files. Included by default in `kimi-boost init` | via CLI (default in `init`) |
+| `core` | **The baseline insurance every project should have** — blocks direct pushes to `main`/`master`, dangerous shell commands (`rm -rf /`, `mkfs`, `dd` to disk, `curl\|sh`), hardcoded secrets in written files, credential reads and workspace-destroying git ops. Included by default in `kimi-boost init` | [✅ kimi-boost-core](https://github.com/shidesheng0218/kimi-boost-core) |
 | `mcp-tools` | Zero-config MCP servers: `fetch` (web scraping) + `time` (timezones) — written to `~/.kimi-code/mcp.json` | via CLI |
 | `security` | Cross-stack guard: scans Write/Edit for hardcoded secrets, blocks dangerous `git push` (`--force`/`--delete`, allows `--force-with-lease`); plus a `security-reviewer` agent | via CLI |
 | `git-workflow` | Conventional commits, branch naming & PR discipline (auto-loaded skill) + a `git-workflow-reviewer` agent; no hooks | via CLI |
