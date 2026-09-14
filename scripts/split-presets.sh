@@ -24,7 +24,11 @@ cd "$(dirname "$0")/.."
 # truth, also read by the CLI's marketplace command).
 if [[ -f presets/flagship.json ]]; then
   PRESETS=()
-  while IFS= read -r line; do PRESETS+=("$line"); done < <(
+  # `|| [[ -n "$line" ]]` 必须保留:node 输出无结尾换行,否则 read 在最后一行
+  # 返回非零、循环体不执行 —— 最后一个旗舰 preset 会被静默丢掉。
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -n "$line" ]] && PRESETS+=("$line")
+  done < <(
     node -e "process.stdout.write(JSON.parse(require('node:fs').readFileSync('presets/flagship.json','utf8')).join('\n'))"
   )
 else
