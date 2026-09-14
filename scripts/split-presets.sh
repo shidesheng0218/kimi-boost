@@ -43,9 +43,13 @@ fi
 # creation stays a rare manual step: detect missing mirrors and print the
 # exact one-liner instead of failing the push with a cryptic error.
 repo_exists() {
-  local auth=()
-  [[ -n "${GH_TOKEN:-}" ]] && auth=(-H "Authorization: Bearer ${GH_TOKEN}")
-  curl -sf -o /dev/null -m 15 "${auth[@]}" "https://api.github.com/repos/$1"
+  # 注意:不能用 auth=() + "${auth[@]}"——macOS 自带 bash 3.2 在 set -u 下
+  # 展开空数组会报 unbound variable(CI 的 bash 5 无此问题,本地会踩)
+  if [[ -n "${GH_TOKEN:-}" ]]; then
+    curl -sf -o /dev/null -m 15 -H "Authorization: Bearer ${GH_TOKEN}" "https://api.github.com/repos/$1"
+  else
+    curl -sf -o /dev/null -m 15 "https://api.github.com/repos/$1"
+  fi
 }
 
 MISSING=0
