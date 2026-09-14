@@ -16,6 +16,8 @@ on:
       - "presets/go/**"
       - "presets/python/**"
       - "presets/usage/**"
+      - "presets/core/**"
+      - "presets/flagship.json"
       - "scripts/split-presets.sh"
       - ".github/workflows/split-presets.yml"
   workflow_dispatch:

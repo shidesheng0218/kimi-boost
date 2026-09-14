@@ -2,6 +2,11 @@
   "version": "2",
   "plugins": [
     {
+      "id": "core",
+      "displayName": "核心护栏",
+      "source": "https://github.com/shidesheng0218/kimi-boost-core"
+    },
+    {
       "id": "go",
       "displayName": "Go",
       "source": "https://github.com/shidesheng0218/kimi-boost-go"
