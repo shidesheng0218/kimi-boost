@@ -65,7 +65,7 @@ All checks passed.
 /plugins install https://github.com/shidesheng0218/kimi-boost-vue3
 ```
 
-现有镜像：[vue3](https://github.com/shidesheng0218/kimi-boost-vue3) · [react](https://github.com/shidesheng0218/kimi-boost-react) · [go](https://github.com/shidesheng0218/kimi-boost-go) · [python](https://github.com/shidesheng0218/kimi-boost-python) · [usage](https://github.com/shidesheng0218/kimi-boost-usage)
+现有镜像：[vue3](https://github.com/shidesheng0218/kimi-boost-vue3) · [react](https://github.com/shidesheng0218/kimi-boost-react) · [go](https://github.com/shidesheng0218/kimi-boost-go) · [python](https://github.com/shidesheng0218/kimi-boost-python) · [usage](https://github.com/shidesheng0218/kimi-boost-usage) · **[core](https://github.com/shidesheng0218/kimi-boost-core)**（护栏——在 Kimi Code 里无需任何 CLI 即可安装）
 
 也可以接入我们的市场源，在 `/plugins` 面板里浏览安装：
 
@@ -110,7 +110,7 @@ npx kimi-boost install
 | 预设 | 能力 | 官方插件仓 |
 |---|---|---|
 | `usage` | 会话/提示/工具调用统计到 `~/.kimi-boost/usage.json`；`KIMI_BOOST_DAILY_LIMIT` 每日阈值提醒；`kimi-boost stats` 查看 | [✅ kimi-boost-usage](https://github.com/shidesheng0218/kimi-boost-usage) |
-| `core` | **任何项目都该装的最小保险**——拦直推 main/master、拦危险 shell 命令（`rm -rf /`、`mkfs`、`dd` 写盘、`curl\|sh`）、拦写入硬编码密钥。`kimi-boost init` 默认附带 | 经 CLI（init 默认） |
+| `core` | **任何项目都该装的最小保险**——拦直推 main/master、拦危险 shell 命令（`rm -rf /`、`mkfs`、`dd` 写盘、`curl\|sh`）、拦写入硬编码密钥、拦凭证读取与丢弃工作区的 git 操作。`kimi-boost init` 默认附带 | [✅ kimi-boost-core](https://github.com/shidesheng0218/kimi-boost-core) |
 | `mcp-tools` | 零配置 MCP servers：`fetch`（网页抓取）+ `time`（时区）——写入 `~/.kimi-code/mcp.json` | 经 CLI 安装 |
 | `security` | 跨栈守卫：写入文件即扫描硬编码密钥、拦截危险 `git push`（`--force`/`--delete`，放行 `--force-with-lease`）；外加 `security-reviewer` 审查 agent | 经 CLI 安装 |
 | `git-workflow` | 约定式提交、分支命名与 PR 规范（自动加载的 skill）+ `git-workflow-reviewer` 审查 agent；无 hooks | 经 CLI 安装 |

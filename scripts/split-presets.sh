@@ -24,7 +24,11 @@ cd "$(dirname "$0")/.."
 # truth, also read by the CLI's marketplace command).
 if [[ -f presets/flagship.json ]]; then
   PRESETS=()
-  while IFS= read -r line; do PRESETS+=("$line"); done < <(
+  # `|| [[ -n "$line" ]]` 必须保留:node 输出无结尾换行,否则 read 在最后一行
+  # 返回非零、循环体不执行 —— 最后一个旗舰 preset 会被静默丢掉。
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -n "$line" ]] && PRESETS+=("$line")
+  done < <(
     node -e "process.stdout.write(JSON.parse(require('node:fs').readFileSync('presets/flagship.json','utf8')).join('\n'))"
   )
 else
@@ -43,9 +47,13 @@ fi
 # creation stays a rare manual step: detect missing mirrors and print the
 # exact one-liner instead of failing the push with a cryptic error.
 repo_exists() {
-  local auth=()
-  [[ -n "${GH_TOKEN:-}" ]] && auth=(-H "Authorization: Bearer ${GH_TOKEN}")
-  curl -sf -o /dev/null -m 15 "${auth[@]}" "https://api.github.com/repos/$1"
+  # 注意:不能用 auth=() + "${auth[@]}"——macOS 自带 bash 3.2 在 set -u 下
+  # 展开空数组会报 unbound variable(CI 的 bash 5 无此问题,本地会踩)
+  if [[ -n "${GH_TOKEN:-}" ]]; then
+    curl -sf -o /dev/null -m 15 -H "Authorization: Bearer ${GH_TOKEN}" "https://api.github.com/repos/$1"
+  else
+    curl -sf -o /dev/null -m 15 "https://api.github.com/repos/$1"
+  fi
 }
 
 MISSING=0

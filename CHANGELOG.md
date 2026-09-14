@@ -1,3 +1,15 @@
+## Unreleased
+
+### Guardrails on the official /plugins channel
+
+- `core` is now a flagship preset: it gets a [kimi-boost-core](https://github.com/shidesheng0218/kimi-boost-core) mirror repo, so Kimi Code users can install the guardrails with `/plugins install https://github.com/shidesheng0218/kimi-boost-core` — no npm, no CLI.
+- `core` now appears in the custom marketplace feed (`marketplace.json` regenerated in repo mode); `presets/core/README.md` added as the mirror's landing page.
+
+### Fixed
+
+- `scripts/split-presets.sh` crashed on macOS's bash 3.2: `repo_exists()` expanded an empty array under `set -u` (bash 5 in CI never hit it).
+- `scripts/split-presets.sh` silently dropped the **last** entry of `presets/flagship.json` — the while-read loop skipped the final line because node's output has no trailing newline. The last flagship preset was therefore never mirrored (this is why adding `core` produced no `split/core` branch until fixed).
+
 ## 0.13.0 (2026-09-12)
 
 ### Guardrails you can see

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="400" viewBox="0 0 720 400" font-family="'SF Mono',Menlo,Consolas,monospace">
+  <rect width="720" height="400" rx="12" fill="#0d1117" stroke="#30363d"/>
+  <circle cx="30" cy="30" r="6" fill="#ff5f57"/>
+  <circle cx="50" cy="30" r="6" fill="#febc2e"/>
+  <circle cx="70" cy="30" r="6" fill="#28c840"/>
+  <text x="360" y="35" font-size="12" fill="#6e7681" text-anchor="middle">kimi — agent 正在执行</text>
+
+  <text x="32" y="90" font-size="15" fill="#8b949e"># agent 想清理"无用文件"</text>
+  <text x="32" y="126" font-size="16" fill="#79c0ff">➜ Bash</text>
+  <text x="110" y="126" font-size="16" fill="#f0f6fc">rm -rf ./dist ./node_modules /</text>
+
+  <rect x="24" y="152" width="672" height="58" rx="8" fill="#3d1f1f" stroke="#f85149"/>
+  <text x="40" y="176" font-size="15" font-weight="700" fill="#f85149">✗ Blocked by kimi-boost · block-dangerous</text>
+  <text x="40" y="198" font-size="13" fill="#ffa198">拦截危险命令:目标是根目录 / —— 已阻止,agent 继续正常工作</text>
+
+  <text x="32" y="252" font-size="15" fill="#8b949e"># 它还想把改动直接推上主干</text>
+  <text x="32" y="288" font-size="16" fill="#79c0ff">➜ Bash</text>
+  <text x="110" y="288" font-size="16" fill="#f0f6fc">git push origin main</text>
+
+  <rect x="24" y="314" width="672" height="58" rx="8" fill="#3d1f1f" stroke="#f85149"/>
+  <text x="40" y="338" font-size="15" font-weight="700" fill="#f85149">✗ Blocked by kimi-boost · protect-main</text>
+  <text x="40" y="360" font-size="13" fill="#ffa198">拦截直推主干:main 分支受保护 —— 已引导 agent 走分支 + PR</text>
+</svg>
