@@ -76,6 +76,9 @@ for id in "${PRESETS[@]}"; do
 
   branch="split/$id"
   echo "== $id: subtree split $prefix -> $branch"
+  # 每次从零重算:先删掉可能存在的旧 split 分支。旧分支可能来自被重写过的历史
+  # (如 squash 合并后的 main),此时 git subtree 会因 "not an ancestor" 拒绝更新。
+  git branch -D "$branch" >/dev/null 2>&1 || true
   # --rejoin is not used: splits are recomputed from scratch each run,
   # which keeps history one-directional and idempotent.
   git subtree split --prefix="$prefix" -b "$branch"
