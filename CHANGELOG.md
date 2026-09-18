@@ -1,4 +1,4 @@
-## Unreleased
+## 0.14.0 (2026-09-18)
 
 ### Guardrails on the official /plugins channel
 
@@ -8,7 +8,10 @@
 ### Fixed
 
 - `scripts/split-presets.sh` crashed on macOS's bash 3.2: `repo_exists()` expanded an empty array under `set -u` (bash 5 in CI never hit it).
-- `scripts/split-presets.sh` silently dropped the **last** entry of `presets/flagship.json` — the while-read loop skipped the final line because node's output has no trailing newline. The last flagship preset was therefore never mirrored (this is why adding `core` produced no `split/core` branch until fixed).
+- `scripts/split-presets.sh` silently dropped the **last** entry of `presets/flagship.json` — the while-read loop skipped the final line because node's output has no trailing newline. The last flagship preset was never mirrored (this is why adding `core` produced no `split/core` branch until fixed).
+- `scripts/split-presets.sh`: a single mirror failing to push (e.g. a token missing that repo) aborted the whole run and skipped the remaining presets. Failures are now collected per preset, the run continues, and the summary prints the exact token fix.
+- `scripts/split-presets.sh`: cached `split/<id>` branches could be unrelated to a rewritten history (e.g. after a squash merge), making `git subtree` abort with "not an ancestor". The branch is now recreated from scratch each run.
+- `npm audit fix`: resolved the `vitest`/`@vitest/mocker` path-traversal advisory (lockfile only). One low `esbuild` advisory remains — dev-only and Windows-dev-server-only, which this project does not use.
 
 ## 0.13.0 (2026-09-12)
 
