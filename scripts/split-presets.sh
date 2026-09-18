@@ -61,7 +61,8 @@ for id in "${PRESETS[@]}"; do
   if ! repo_exists "${ORG}/kimi-boost-${id}"; then
     echo "MISSING mirror repo: ${ORG}/kimi-boost-${id}" >&2
     echo "  create it with:" >&2
-    echo "  gh repo create ${ORG}/kimi-boost-${id} --public --description \"kimi-boost preset '${id}' (auto-synced mirror; contribute at ${ORG}/kimi-boost)\"" >&2
+    echo "  gh repo create ${ORG}/kimi-boost-${id} --public --description \"<preset 描述>（kimi-boost 自动同步镜像）\"" >&2
+    echo "  (description 与现有 6 个镜像保持一致:取 presets/${id}/preset.json 的 description + '（kimi-boost 自动同步镜像）')" >&2
     MISSING=1
   fi
 done
