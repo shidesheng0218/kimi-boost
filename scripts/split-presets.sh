@@ -68,6 +68,8 @@ for id in "${PRESETS[@]}"; do
 done
 [[ "$MISSING" == "1" ]] && exit 2
 
+FAILED_PUSHES=()
+
 for id in "${PRESETS[@]}"; do
   prefix="presets/$id"
   [[ -d "$prefix" ]] || { echo "skip $id: $prefix not found"; continue; }
@@ -85,10 +87,22 @@ for id in "${PRESETS[@]}"; do
       remote="https://github.com/${ORG}/kimi-boost-${id}.git"
     fi
     echo "== $id: force-push to ${ORG}/kimi-boost-${id} main"
-    git push "$remote" "$branch:main" --force
+    # 不在失败处直接退出:一个镜像 403 不该挡住其余 preset 的同步
+    if ! git push "$remote" "$branch:main" --force; then
+      FAILED_PUSHES+=("$id")
+      echo "!! push failed for ${ORG}/kimi-boost-${id}" >&2
+      echo "   若为 403/permission denied:说明 GH_TOKEN(CI 里的 SPLIT_TOKEN)没有该仓的写权限。" >&2
+      echo "   修复:GitHub → Settings → Developer settings → Fine-grained tokens → 该 token" >&2
+      echo "         → Repository access 勾上 kimi-boost-${id} → Contents: Read and write。" >&2
+    fi
   else
     echo "   dry-run: git push https://github.com/${ORG}/kimi-boost-${id}.git ${branch}:main --force"
   fi
 done
+
+if [[ ${#FAILED_PUSHES[@]} -gt 0 ]]; then
+  echo "done with failures: ${FAILED_PUSHES[*]}" >&2
+  exit 1
+fi
 
 echo "done."
