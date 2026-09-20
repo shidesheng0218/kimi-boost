@@ -1,4 +1,4 @@
-## Unreleased
+## 0.15.0 (2026-09-20)
 
 ### Guardrails v2 — absorb what the other guardrail projects got right
 
