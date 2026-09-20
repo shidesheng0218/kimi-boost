@@ -4,6 +4,8 @@
 
 **`npx kimi-boost init` → 识别你的技术栈 → 装好护栏与规范。**
 
+如果它帮你拦住过一次危险的 `rm -rf` 或一次误推主干，**点个 ⭐ 让别人也能找到它**。
+
 [![GitHub stars](https://img.shields.io/github/stars/shidesheng0218/kimi-boost?style=flat-square)](https://github.com/shidesheng0218/kimi-boost)
 [![npm](https://img.shields.io/npm/v/kimi-boost?style=flat-square)](https://www.npmjs.com/package/kimi-boost)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](/LICENSE)

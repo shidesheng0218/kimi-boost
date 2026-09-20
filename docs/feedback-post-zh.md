@@ -113,7 +113,7 @@ CI 会把全部 16 个预设**实装进真实的 Kimi Code CLI** 逐个验证(�
 
 除了护栏，还能按项目类型一键装规范：npx kimi-boost init 会自动识别 Vue / React / Go / Python 等 19 个技术栈，把规范 skill + 审查 agent 一起装好，Kimi Code / Claude Code / Codex 三端通用。
 
-GitHub 搜 kimi-boost。你的 AI 闯过什么祸？评论区聊聊👇
+GitHub 搜 kimi-boost。如果它帮你拦住过一次事故,顺手点个 ⭐ 让别人也能找到它。你的 AI 闯过什么祸？评论区聊聊👇
 ```
 
 **话题**：#Kimi #Kimi Code #AI编程 #开源

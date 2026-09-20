@@ -2,7 +2,9 @@
 
 ![kimi-boost](assets/hero.svg)
 
-**`npx kimi-boost init` → 识别你的技术栈 → 装好护栏与规范。**
+**`npx kimi-boost init` → detects your stack → installs guardrails + conventions.**
+
+If it's ever saved you from a bad `rm -rf` or a push to `main`, **a ⭐ tells others it's worth finding**.
 
 [![GitHub stars](https://img.shields.io/github/stars/shidesheng0218/kimi-boost?style=flat-square)](https://github.com/shidesheng0218/kimi-boost)
 [![npm](https://img.shields.io/npm/v/kimi-boost?style=flat-square)](https://www.npmjs.com/package/kimi-boost)
