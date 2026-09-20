@@ -1,10 +1,8 @@
 <div align="center">
 
-# ⚡ kimi-boost
+![kimi-boost](assets/hero.svg)
 
-**Battle-tested skills · hooks · agents — one command, for Kimi Code, Claude Code and Codex CLI.**
-
-`npx kimi-boost install` → pick a preset → done.
+**`npx kimi-boost init` → 识别你的技术栈 → 装好护栏与规范。**
 
 [![GitHub stars](https://img.shields.io/github/stars/shidesheng0218/kimi-boost?style=flat-square)](https://github.com/shidesheng0218/kimi-boost)
 [![npm](https://img.shields.io/npm/v/kimi-boost?style=flat-square)](https://www.npmjs.com/package/kimi-boost)
@@ -19,20 +17,18 @@
 
 ---
 
-## Why
+## ⚡ Why
 
-Your AI coding agent only knows what you teach it. Without guidance it writes generic, unidiomatic code, pushes straight to `main`, and runs `rm -rf` on things you liked. Hand-configuring skills, hooks and agents takes hours — so nobody ever does it.
+Your AI coding agent only knows what you teach it. Unguided, it writes generic code, pushes straight to `main`, and runs `rm -rf` without flinching. Hand-configuring skills, hooks and agents takes hours — so nobody does it.
 
-**kimi-boost installs a complete, opinionated development workflow in seconds:**
+**kimi-boost installs a complete, opinionated workflow in seconds:**
 
 | You get | What it does |
 |---|---|
 | 🧠 **Skills** | Best-practice rules your agent **auto-loads** — no prompting required |
 | 🔍 **Reviewer agents** | Read-only subagents your agent delegates to before committing |
-| 🛡️ **Hooks** | Cross-platform Node guards: dangerous commands, main-branch protection |
+| 🛡️ **Guards** | Cross-platform Node hooks: dangerous commands, trunk protection, secret scanning |
 | 🔄 **One-command updates** | `kimi-boost update` keeps every preset current, even on forks |
-
-## Demo
 
 <div align="center">
 
@@ -40,7 +36,8 @@ Your AI coding agent only knows what you teach it. Without guidance it writes ge
 
 </div>
 
-GIF won't load (or you're behind a slow CDN)? Same session, as plain text:
+<details>
+<summary>GIF won't load (or slow CDN)? Same session as plain text.</summary>
 
 ```text
 $ kimi-boost install vue3
@@ -57,67 +54,47 @@ $ kimi-boost doctor
 All checks passed.
 ```
 
-## Two ways to install
+</details>
 
-**① Official Kimi Code plugin channel — no CLI required.** The five flagship presets are mirrored to single-plugin repos and install natively:
+---
 
-```
-/plugins install https://github.com/shidesheng0218/kimi-boost-vue3
-```
+## 🛡️ Guardrails — the seatbelt you can see
 
-Available mirrors: [vue3](https://github.com/shidesheng0218/kimi-boost-vue3) · [react](https://github.com/shidesheng0218/kimi-boost-react) · [go](https://github.com/shidesheng0218/kimi-boost-go) · [python](https://github.com/shidesheng0218/kimi-boost-python) · [usage](https://github.com/shidesheng0218/kimi-boost-usage) · **[core](https://github.com/shidesheng0218/kimi-boost-core)** (the guardrails — install them in Kimi Code with no CLI at all)
+Most agent safety is invisible: a hook silently blocks something and you never learn your agent almost ran `rm -rf /`. kimi-boost makes the seatbelt visible.
 
-Or browse them inside the `/plugins` panel via our marketplace feed:
+<div align="center">
 
-```bash
-export KIMI_CODE_PLUGIN_MARKETPLACE_URL=https://raw.githubusercontent.com/shidesheng0218/kimi-boost/main/marketplace.json
-```
+![guardrails blocking a dangerous command and a push to main](assets/guard-block.svg)
 
-**② kimi-boost CLI — all 19 presets, three harnesses.** One installer for Kimi Code, Claude Code *and* Codex CLI, with updates, doctor checks and clean uninstalls:
+</div>
 
-```bash
-npx kimi-boost install
-```
+**Eight guards in the `core` preset** (included by default in `kimi-boost init`, or `/plugins install …/kimi-boost-core` with no CLI at all):
 
-| | Official channel | kimi-boost CLI |
-|---|---|---|
-| Presets | 5 flagship (mirrored) | All 19 |
-| Harnesses | Kimi Code | Kimi Code · Claude Code · Codex |
-| Needs | Just Kimi Code | Node.js |
-| Extras | — | update · doctor · usage stats · dry-run |
+| Guard | What it blocks |
+|---|---|
+| `protect-main` | Direct pushes to `main`/`master` |
+| `block-dangerous` | `rm -rf /`, `mkfs`, `dd` to disk, `curl \| sh` |
+| `git-destructive` | `reset --hard`, `clean -f`, `checkout -- .` (workspace-wiping) |
+| `secret-scan` | Hardcoded secrets in written files (AWS keys, private keys, tokens) |
+| `protect-credentials` | Reading `~/.ssh`, `~/.aws/credentials`, `*.pem`… into model context |
+| `protect-paths` | Hand-editing lockfiles; writes into `node_modules/`, `dist/`, `.git/` |
+| `protect-guards` | The agent disabling guardrails or rewriting their config |
+| `secret-scan-post` | A PostToolUse re-scan that catches secrets written via shell redirection |
 
-## Presets
+**Visible, tunable, honest:**
 
-| Preset | Stack | Reviewer agent | Hooks | Official repo |
-|---|---|---|---|---|
-| `vue3` | Vue 3 + TypeScript | `vue3-reviewer` | 🛡️ main-branch guard | [✅ kimi-boost-vue3](https://github.com/shidesheng0218/kimi-boost-vue3) |
-| `react` | React + TypeScript | `react-reviewer` | 🛡️ main-branch guard | [✅ kimi-boost-react](https://github.com/shidesheng0218/kimi-boost-react) |
-| `go` | Go | `go-reviewer` | 🛡️ main-branch guard | [✅ kimi-boost-go](https://github.com/shidesheng0218/kimi-boost-go) |
-| `python` | Python | `python-reviewer` | 🛡️ dangerous-shell blocker | [✅ kimi-boost-python](https://github.com/shidesheng0218/kimi-boost-python) |
-| `nextjs` | Next.js (fullstack) | `nextjs-reviewer` | 🛡️ main-branch guard | via CLI |
-| `react-native` | React Native | `react-native-reviewer` | 🛡️ main-branch guard | via CLI |
-| `flutter` | Flutter / Dart | `flutter-reviewer` | 🛡️ main-branch guard | via CLI |
-| `uniapp` | uni-app (cross-platform) | `uniapp-reviewer` | 🛡️ main-branch guard | via CLI |
-| `weapp` | WeChat Mini Program | `weapp-reviewer` | — | via CLI |
-| `nestjs` | NestJS / TypeScript backend | `nestjs-reviewer` | 🛡️ main-branch guard | via CLI |
-| `express` | Express (Node.js) | `express-reviewer` | 🛡️ main-branch guard | via CLI |
-| `fastapi` | FastAPI (Python) | `fastapi-reviewer` | 🛡️ main-branch guard | via CLI |
-| `rust` | Rust | `rust-reviewer` | 🛡️ main-branch guard | via CLI |
-| `java` | Java (Spring Boot) | `java-reviewer` | 🛡️ main-branch guard | via CLI |
+- Every block lands in `~/.kimi-boost/guard-log.jsonl` (previews redacted — never the secret itself). `kimi-boost guard` shows status + block counts; `guard --log` lists recent blocks; `kimi-boost stats` reports **🛡️ N blocks** on your share card.
+- Tune live without reinstalling: `guard --disable/--enable <name>` toggles, `--warn/--block <name>` softens to warn-only, `--explain <name>` tells you what it blocks and the risk of disabling it, `--add-pattern <regex>` teaches `block-dangerous` your own patterns.
+- **Same guards in CI**: `guard --ci [--staged]` scans changed files for secrets and exits non-zero on findings; `guard --install-git-hook` wires that into a pre-commit hook.
 
-**Special presets:**
+> [!IMPORTANT]
+> **What the guardrails don't promise.** Pattern matching is not a security boundary — sandboxing is. These hooks raise the cost of accidents; a determined adversary (or a prompt-injected agent) can obfuscate around them (`base64 | sh`, scripts, runtime-assembled secrets). Everything fails open on purpose: a hook error never blocks your work. `secret-scan-post` informs — the write already happened. Guards are per-tool. Layer them with host-side secret scanning, review, and a sandbox.
 
-| Preset | What it gives you | Official repo |
-|---|---|---|
-| `usage` | Tracks sessions / prompts / tool calls into `~/.kimi-boost/usage.json`; daily limit hint via `KIMI_BOOST_DAILY_LIMIT`; view with `kimi-boost stats` | [✅ kimi-boost-usage](https://github.com/shidesheng0218/kimi-boost-usage) |
-| `core` | **The baseline insurance every project should have** — blocks direct pushes to `main`/`master`, dangerous shell commands (`rm -rf /`, `mkfs`, `dd` to disk, `curl\|sh`), hardcoded secrets in written files, credential reads and workspace-destroying git ops. Included by default in `kimi-boost init` | [✅ kimi-boost-core](https://github.com/shidesheng0218/kimi-boost-core) |
-| `mcp-tools` | Zero-config MCP servers: `fetch` (web scraping) + `time` (timezones) — written to `~/.kimi-code/mcp.json` | via CLI |
-| `security` | Cross-stack guard: scans Write/Edit for hardcoded secrets, blocks dangerous `git push` (`--force`/`--delete`, allows `--force-with-lease`); plus a `security-reviewer` agent | via CLI |
-| `git-workflow` | Conventional commits, branch naming & PR discipline (auto-loaded skill) + a `git-workflow-reviewer` agent; no hooks | via CLI |
+---
 
-> Every preset bundles a best-practice SKILL.md (auto-loaded) + a reviewer agent. New stacks are vote-driven — [issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1). "via CLI" presets get their own official repo as demand grows.
+## 📦 Presets
 
-Each preset is **one directory** in this repo — a valid `kimi.plugin.json` plugin AND a kimi-boost preset. Contributions welcome:
+Each preset is **one directory** — a valid `kimi.plugin.json` plugin AND a kimi-boost preset:
 
 ```
 presets/<id>/
@@ -128,147 +105,170 @@ presets/<id>/
 └── hooks/<name>.mjs     # cross-platform Node, fail-open by design
 ```
 
-## Commands
+**By stack:**
+
+| Preset | Stack | Reviewer | Guard | Mirror |
+|---|---|---|---|---|
+| `vue3` | Vue 3 + TypeScript | ✅ | 🛡️ main | [✅](https://github.com/shidesheng0218/kimi-boost-vue3) |
+| `react` | React + TypeScript | ✅ | 🛡️ main | [✅](https://github.com/shidesheng0218/kimi-boost-react) |
+| `go` | Go | ✅ | 🛡️ main | [✅](https://github.com/shidesheng0218/kimi-boost-go) |
+| `python` | Python | ✅ | 🛡️ dangerous shell | [✅](https://github.com/shidesheng0218/kimi-boost-python) |
+| `nextjs` | Next.js (fullstack) | ✅ | 🛡️ main | via CLI |
+| `react-native` | React Native | ✅ | 🛡️ main | via CLI |
+| `flutter` | Flutter / Dart | ✅ | 🛡️ main | via CLI |
+| `uniapp` | uni-app (cross-platform) | ✅ | 🛡️ main | via CLI |
+| `weapp` | WeChat Mini Program | ✅ | — | via CLI |
+| `nestjs` | NestJS backend | ✅ | 🛡️ main | via CLI |
+| `express` | Express (Node.js) | ✅ | 🛡️ main | via CLI |
+| `fastapi` | FastAPI | ✅ | 🛡️ main | via CLI |
+| `rust` | Rust | ✅ | 🛡️ main | via CLI |
+| `java` | Java (Spring Boot) | ✅ | 🛡️ main | via CLI |
+
+**Special:**
+
+| Preset | What it gives you | Mirror |
+|---|---|---|
+| `core` 🛡️ | **The baseline insurance every project should have** — the 8 guardrails above. Default in `init` | [✅](https://github.com/shidesheng0218/kimi-boost-core) |
+| `usage` | Sessions / prompts / tool calls tracked into `~/.kimi-boost/usage.json`; daily limit hint via `KIMI_BOOST_DAILY_LIMIT`; view with `kimi-boost stats` | [✅](https://github.com/shidesheng0218/kimi-boost-usage) |
+| `security` | Deeper guard pack: scans Write/Edit for secrets, blocks `git push --force`/`--delete` + `security-reviewer` agent | via CLI |
+| `git-workflow` | Conventional commits, branch naming & PR discipline (skill) + reviewer agent | via CLI |
+| `mcp-tools` | Zero-config MCP servers: `fetch` + `time` | via CLI |
+
+> [!NOTE]
+> Every preset bundles a best-practice SKILL.md (auto-loaded) + a reviewer agent. New stacks are vote-driven — [issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1). "via CLI" presets get their own official repo as demand grows.
+
+---
+
+## 🔧 Commands
+
+**Install & manage**
 
 | Command | What it does |
 |---|---|
-| `kimi-boost install [preset]` | Install a preset by id — or from any GitHub repo: `install github:owner/repo` (`--dry-run` preview, `--with-hooks` force, `--project` install into current project) |
-| `kimi-boost init` | Detect this project's stack and install matching presets — always includes the `core` guardrails by default (`--yes` skip prompt, `--dry-run` preview, `--project`) |
-| `kimi-boost list` | Show available + installed presets |
-| `kimi-boost remove <preset>` | Uninstall cleanly |
-| `kimi-boost update [--repo owner/repo]` | Pull latest versions and re-apply (works on forks; community presets update from their source repo) |
-| `kimi-boost update --dry-run` | Preview what an update would change (version + file-level diff) without writing |
-| `kimi-boost outdated [--project] [--json]` | Show installed presets with newer registry versions |
-| `kimi-boost doctor [--fix]` | Diagnose config, hooks, mounted dirs, manifest consistency, duplicate hooks |
-| `kimi-boost guard` | Guardrail status + block history; `--log`, `--disable/--enable`, `--warn/--block`, `--explain <name>`, `--add-pattern <regex>`, `--ci [--staged]`, `--install-git-hook` — tune and run guards without reinstalling |
-| `kimi-boost marketplace [--source-mode repo\|zip]` | Generate a Kimi Code custom marketplace JSON |
-| `kimi-boost stats [-d N] [--share]` | Usage report with bar chart, streak & top tools; `--share` exports an SVG card (alias: `usage`) |
-| `kimi-boost badge [preset]` | Print a README badge (markdown) showing this project uses kimi-boost |
-| `kimi-boost export [file]` | Export your preset setup to a shareable file (`--embed-content` for offline restore, `--include-usage`) |
-| `kimi-boost import <file>` | Restore a previously exported setup on another machine (`--yes`, `--dry-run`) |
-| `kimi-boost validate <dir>` | Validate a preset directory (for preset authors) |
-| `kimi-boost dev <dir>` | Validate + preview-install a local preset (dry-run) |
-| `kimi-boost package <dir>` | Validate + pack a preset into `<id>-<version>.zip` |
-| `kimi-boost status` | Detect installed CLIs & platform |
-| `kimi-boost bootstrap [--makefile]` | Generate a `setup.sh` (or Makefile `setup` target) for team onboarding |
-| `kimi-boost update --check` | Check for preset updates without installing; notifies + exits non-zero if found |
-| `kimi-boost update --watch [--interval h] [--uninstall]` | Register/remove a periodic background update check |
+| `init` | Detect this project's stack and install matching presets — always includes the `core` guardrails (`--yes`, `--dry-run`, `--project`) |
+| `install [preset]` | Install by id — or from any GitHub repo: `install github:owner/repo` (`--dry-run`, `--with-hooks`, `--project`) |
+| `remove <preset>` | Uninstall cleanly |
+| `list` | Show available + installed presets |
+| `status` | Detect installed CLIs & platform |
+| `doctor [--fix]` | Diagnose config, hooks, mounted dirs, manifest consistency, duplicate hooks |
 
-### Project-level installs (team sharing)
+**Guardrails**
 
-`kimi-boost install <preset> --project` writes the preset into the current project instead of your user config:
+| Command | What it does |
+|---|---|
+| `guard` | Guardrail status + block history |
+| `guard --log [-n N]` | Recent blocked actions |
+| `guard --disable/--enable <name>` | Turn a guard off/on — live, no reinstall |
+| `guard --warn/--block <name>` | Soften to warn-only / restore blocking |
+| `guard --explain <name>` | What it blocks, how to bypass, the risk of disabling |
+| `guard --add-pattern <regex>` | Teach `block-dangerous` a custom pattern |
+| `guard --ci [--staged]` | Scan changed/staged files for secrets; non-zero exit on findings |
+| `guard --install-git-hook` | Wire `--ci --staged` into a pre-commit hook (`--uninstall-git-hook` removes it) |
 
-- skills → `.agents/skills/` (Kimi Code + the cross-tool `.agents/` convention) and `.claude/skills/`
-- agents → `.agents/agents/` and `.claude/agents/`
-- hooks → `.claude/settings.json` (Claude Code only — Kimi Code has no project-level hook mechanism; Codex is skipped)
+**Updates**
 
-Everything lands inside the project root (nearest `.git` ancestor), so you can **commit the preset and share it with your team** — every clone gets the same AI behavior. Remove with `kimi-boost remove <preset> --project`.
+| Command | What it does |
+|---|---|
+| `update` | Pull latest versions and re-apply (works on forks; community presets update from source repo) |
+| `update --dry-run` | Preview the version + file-level diff without writing |
+| `update --check` | Check without installing; notifies + exits non-zero if found |
+| `update --watch [--interval h] [--uninstall]` | Periodic background check (LaunchAgent/cron/schtasks) |
+| `outdated [--project] [--json]` | Installed presets with newer registry versions |
 
-### Community presets — install from any GitHub repo
+**Stats & sharing**
 
-Anyone can publish a preset as a plain GitHub repo (a `preset.json` at the repo root, plus `skills/`, `agents/`, `hooks/`):
+| Command | What it does |
+|---|---|
+| `stats [-d N] [--share]` | Usage report with bar chart, streak & top tools; `--share` exports an SVG card (alias: `usage`) |
+| `badge [preset]` | Print a README badge (markdown) |
+| `export [file]` | Export your preset setup to a shareable file (`--embed-content`, `--include-usage`) |
+| `import <file>` | Restore a previously exported setup (`--yes`, `--dry-run`) |
+
+**Authoring & team**
+
+| Command | What it does |
+|---|---|
+| `create <id>` | Scaffold a new preset under `presets/` (`--shape skill\|mcp\|command`) |
+| `validate <dir>` | Validate a preset directory |
+| `dev <dir>` | Validate + preview-install a local preset (dry-run) |
+| `package <dir>` | Validate + pack a preset into `<id>-<version>.zip` |
+| `marketplace` | Generate a Kimi Code custom marketplace JSON |
+| `bootstrap [--makefile]` | Generate a `setup.sh` / Makefile target for team onboarding |
+
+---
+
+## 🌐 Install channels
+
+**① Official Kimi Code plugin channel — no CLI required.** Flagship presets are mirrored to single-plugin repos:
+
+```
+/plugins install https://github.com/shidesheng0218/kimi-boost-vue3
+```
+
+Mirrors: [vue3](https://github.com/shidesheng0218/kimi-boost-vue3) · [react](https://github.com/shidesheng0218/kimi-boost-react) · [go](https://github.com/shidesheng0218/kimi-boost-go) · [python](https://github.com/shidesheng0218/kimi-boost-python) · [usage](https://github.com/shidesheng0218/kimi-boost-usage) · **[core](https://github.com/shidesheng0218/kimi-boost-core)** — the guardrails, installable in Kimi Code with no CLI at all.
+
+Or browse them in the `/plugins` panel via our marketplace feed:
 
 ```bash
-kimi-boost install github:owner/repo          # or the full https://github.com/owner/repo URL
+export KIMI_CODE_PLUGIN_MARKETPLACE_URL=https://raw.githubusercontent.com/shidesheng0218/kimi-boost/main/marketplace.json
+```
+
+**② kimi-boost CLI — all 19 presets, three harnesses** (Kimi Code, Claude Code, Codex CLI), with updates, doctor checks and clean uninstalls:
+
+```bash
+npx kimi-boost install
+```
+
+| | Official channel | kimi-boost CLI |
+|---|---|---|
+| Presets | 6 flagship (mirrored) | All 19 |
+| Harnesses | Kimi Code | Kimi Code · Claude Code · Codex |
+| Needs | Just Kimi Code | Node.js |
+| Extras | — | update · doctor · stats · dry-run |
+
+**③ Community presets** — anyone can publish a preset as a plain GitHub repo (`preset.json` at the root):
+
+```bash
+kimi-boost install github:owner/repo          # or the full URL
 kimi-boost install github:owner/repo@v1.2.0   # pin a branch or tag
 ```
 
-kimi-boost shows you exactly what the preset will register — especially its hooks, which execute when the agent runs — and asks for confirmation before installing (`--yes` to skip in scripts, `--dry-run` to preview). Community presets are tracked in `update` / `outdated` against their source repo, so they stay current. **Only install presets from authors you trust** — hooks run shell commands with your agent's permissions.
+kimi-boost shows exactly what the preset registers (especially its hooks, which execute when the agent runs) and asks before installing. Community presets are tracked in `update` / `outdated` against their source repo. **Only install presets from authors you trust** — hooks run shell commands with your agent's permissions.
 
-### Shareable stats — your AI-coding wrapped
+---
 
-The `usage` preset quietly counts your sessions / prompts / tool calls. `stats` turns it into a report you'll want to screenshot:
+## 📊 Shareable stats — your AI-coding wrapped
+
+The `usage` preset quietly counts your sessions / prompts / tool calls. `stats` turns it into a report worth screenshotting:
 
 ```bash
 $ kimi-boost stats -d 7
 📊 kimi-boost stats · last 7 days
-
   128 prompts  ·  12 sessions  ·  856 tool calls  ·  5 active days  ·  streak 3 🔥
-
-09-01 ████████████ 24
-09-02 ██████ 12
-...
 
 $ kimi-boost stats --share   # → kimi-boost-stats.svg
 ```
 
-`--share` exports a self-contained SVG card (no server, no upload — your data never leaves your machine). Post it, or embed it in your README next to a `kimi-boost badge`.
+`--share` exports a self-contained SVG card (no server, no upload — your data never leaves your machine):
+
+<div align="center">
 
 ![kimi-boost stats card](assets/stats-card.svg)
 
-### Guardrails you can actually see
+</div>
 
-Most "agent safety" is invisible — a hook silently blocks something and you never know your agent almost ran `rm -rf /`. kimi-boost makes the seatbelt visible:
+---
 
-- Every blocked action is logged to `~/.kimi-boost/guard-log.jsonl` (secret previews are redacted — never the secret itself).
-- `kimi-boost guard` shows every guard's status and how many times it fired; `guard --log` lists recent blocks with timestamps.
-- `kimi-boost stats` reports `🛡️ N blocks` — your share card can now say *"it stopped my agent N times this week."*
-- Tune live without reinstalling: `guard --disable/--enable <name>` turns a guard off/on, `guard --warn/--block <name>` softens a guard to warn-only (still logged, no longer blocking), and `guard --explain <name>` tells you what it blocks, how to bypass it and what disabling it risks.
-- `guard --add-pattern <regex>` teaches `block-dangerous` your own patterns.
+## 📤 More
 
-**The `core` preset ships 8 guards:** `protect-main` (direct pushes to trunk), `block-dangerous` (dangerous shell), `git-destructive` (`reset --hard`, `clean -f`, `checkout -- .`), `secret-scan` (hardcoded secrets on write), `protect-credentials` (reading `~/.ssh`, `~/.aws/credentials`, `*.pem`… into context), `protect-paths` (hand-editing lockfiles, writes into `node_modules/`/`.git/`), `protect-guards` (the agent disabling guardrails or rewriting their config), and `secret-scan-post` (a PostToolUse re-scan that catches secrets written via shell redirection).
+- **Project-level installs (team sharing)** — `install <preset> --project` writes skills/agents into `.agents/` + `.claude/` inside your repo, commit it, and every clone gets the same AI behavior.
+- **Export & import** — `kimi-boost export` captures presets + versions + community sources + the update watch into one shareable file; `import` restores it on another machine. Dotfiles-friendly.
+- **Authoring presets** — `validate` / `dev` / `package` cover the loop; push the directory to GitHub and anyone can `install github:you/my-preset`.
+- **doctor** — `kimi-boost doctor` diagnoses config, hooks, mounted dirs and manifest consistency; `--fix` restores what's missing.
 
-**Same guards, in CI:** `kimi-boost guard --ci [--staged]` scans changed files for secrets and exits non-zero on findings; `guard --install-git-hook` wires that into a pre-commit hook so agent-authored code passes the same checks locally.
+---
 
-#### What the guardrails don't promise
-
-Read this before trusting them with anything important:
-
-- **Pattern matching is not a security boundary — sandboxing is.** These hooks raise the cost of accidents; they do not stop a determined adversary (or a prompt-injected agent) that obfuscates commands (`base64 | sh`), hides writes inside scripts, or assembles a secret at runtime. For real isolation, run your agent in a sandbox (e.g. Claude Code's `/sandbox`) or a container.
-- **Everything fails open by design.** If a hook errors, a runtime is missing, or the matcher doesn't cover a tool, the action is allowed. Availability beats strictness — that's the deliberate trade-off.
-- **`secret-scan-post` informs, it cannot undo.** The file is already written when it fires; it tells the agent to fix it.
-- **Guards are per-tool.** A guard registered for `Write`/`Edit` does not see a harness whose file tools have other names.
-- Use them as one layer: host-side secret scanning (GitHub push protection), review, and a sandbox are the others.
-
-### Export & import — clone your AI setup to any machine
-
-### Export & import — clone your AI setup to any machine
-
-`export` captures your whole kimi-boost setup — installed presets with versions, community preset sources, and the background update check — into one shareable file:
-
-```bash
-kimi-boost export                          # → kimi-boost-export.json
-kimi-boost export --embed-content          # → .tar.gz with preset contents (exact, offline)
-kimi-boost export --include-usage          # also carry your usage history
-
-# on the new machine:
-kimi-boost import kimi-boost-export.json   # shows the plan, asks once, restores everything
-kimi-boost import kimi-boost-export.json --dry-run
-```
-
-Official presets reinstall from the registry, community presets reinstall from their exact `repo@ref` source, and the update watch is re-registered. Commit the file to your dotfiles repo, or drop it in your team's chat — one file, same AI workflow everywhere.
-
-### Authoring presets
-
-Building a community preset? Three helpers cover the loop:
-
-```bash
-kimi-boost validate ./my-preset   # schema, hooks, skills, plugin manifest
-kimi-boost dev ./my-preset        # validate + preview the install (dry-run)
-kimi-boost package ./my-preset    # validate + pack my-preset-1.0.0.zip
-```
-
-Push the directory to a GitHub repo (with `preset.json` at its root) and anyone can install it with `kimi-boost install github:you/my-preset`.
-
-### `doctor` — know your setup is healthy
-
-```bash
-$ kimi-boost doctor
-✓ kimi: detected
-  version 0.36.1
-✓ kimi: config.toml parses
-✓ kimi: hook script valid
-  /Users/you/.kimi-boost/hooks/vue3/protect-main.mjs
-✓ kimi: mounted dir present
-⚠ codex: CLI not detected
-  Install codex or ignore if you don't use it.
-
-1 warning(s), no errors
-```
-
-`kimi-boost doctor --fix` restores missing mounted dirs and hook scripts automatically.
-
-## How it works
+## 🏗️ How it works
 
 ```mermaid
 flowchart TD
@@ -281,7 +281,7 @@ flowchart TD
 
     REG --> CI
     SPLIT -->|"auto-mirror"| M1["kimi-boost-vue3"]
-    SPLIT -->|"auto-mirror"| M2["react · go · python · usage"]
+    SPLIT -->|"auto-mirror"| M2["react · go · python · usage · core"]
     M1 & M2 -->|"/plugins install"| KP["Kimi Code /plugins"]
     REG -->|"builds (repo sources)"| MKT["marketplace.json"]
     MKT -->|"KIMI_CODE_PLUGIN_MARKETPLACE_URL"| KP
@@ -300,22 +300,24 @@ flowchart TD
     class KCF,CCS,CXC,KP out;
 ```
 
-- **Single source of truth** — presets live in this monorepo; the five flagship mirrors are read-only CI artifacts, re-synced on every push.
+- **Single source of truth** — presets live in this monorepo; the six flagship mirrors are read-only CI artifacts, re-synced on every push.
 - **Kimi Code** — the CLI edits `~/.kimi-code/config.toml` at **text level** (a managed `# >>> kimi-boost managed >>>` block plus in-place array merge). Your comments and formatting survive untouched.
-- **Claude Code & Codex** — manifest-driven install into `~/.claude` / `~/.codex`; agent files use the native frontmatter format (cross-compatible, per Kimi docs).
-- **Hooks are plain Node `.mjs`** — the same pattern Kimi Code's own docs use, identical behavior on macOS / Windows / Linux.
+- **Claude Code & Codex** — manifest-driven install into `~/.claude` / `~/.codex`; agent files use the native frontmatter format.
+- **Hooks are plain Node `.mjs`** — identical behavior on macOS / Windows / Linux.
 - **Compatibility is tested, not assumed** — CI live-installs all 19 presets into a real Kimi Code CLI on every PR, and weekly against upstream drift.
 
-## Safety by default
+## 🛡️ Safety by default
 
 - 🔒 **Never touches your config beyond its own managed section** — comments, ordering, formatting all preserved
 - 🗄️ Backed up to `<config>.kboost.bak` before every change
 - 🚧 Managed-roots whitelist — refuses to delete anything outside `~/.kimi-boost`, `~/.kimi-code`, `~/.claude`, `~/.codex`
 - 🛡️ Dual-channel guard — already installed via Kimi `/plugins`? No duplicate hooks.
-- ♻️ **Content-aware hook dedup** — presets bundling the same guard script (e.g. `protect-main.mjs`) share a single config entry; uninstalling one preset retargets the entry to the next owner instead of breaking the rest. `doctor` flags redundant or diverging hook copies.
+- ♻️ **Content-aware hook dedup** — presets bundling the same guard script share a single config entry; uninstalling one preset retargets the entry to the next owner. `doctor` flags redundant or diverging copies.
 - ⚡ Fail-open hooks — a crashing hook never blocks your work (exit `0` allow · exit `2` block)
 
-## Roadmap
+---
+
+## 🗺️ Roadmap
 
 - [x] MCP server presets
 - [x] Token/cost usage guard hooks
@@ -326,8 +328,12 @@ flowchart TD
 
 ## Contributing
 
-Preset catalog is PR-driven: add a directory under `presets/`, CI validates schema, hook events and file existence — then live-installs your preset into a real Kimi Code CLI. See [CONTRIBUTING.md](CONTRIBUTING.md).
+The preset catalog is PR-driven: add a directory under `presets/`, CI validates schema, hook events and file existence — then live-installs your preset into a real Kimi Code CLI. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## License
+---
 
-MIT
+<div align="center">
+
+MIT · built with ⚡ by [kimi-boost contributors](https://github.com/shidesheng0218/kimi-boost)
+
+</div>

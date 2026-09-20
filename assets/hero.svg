@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif">
+  <defs>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a78bfa"/>
+      <stop offset="1" stop-color="#3fb950"/>
+    </linearGradient>
+    <linearGradient id="sub" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8b949e"/>
+      <stop offset="1" stop-color="#c9d1d9"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#1f2430" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="0.5" cy="0.35" r="0.8">
+      <stop offset="0" stop-color="#7c3aed" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#0d1117" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1280" height="360" fill="#0d1117" rx="18"/>
+  <rect width="1280" height="360" fill="url(#grid)" rx="18"/>
+  <rect width="1280" height="360" fill="url(#glow)" rx="18"/>
+
+  <text x="640" y="128" text-anchor="middle" font-size="86" font-weight="800" fill="url(#word)" letter-spacing="-2">⚡ kimi-boost</text>
+  <text x="640" y="182" text-anchor="middle" font-size="26" fill="url(#sub)">Your AI agent's seatbelt — guardrails, presets &amp; one-command setup</text>
+  <text x="640" y="214" text-anchor="middle" font-size="17" fill="#6e7681" letter-spacing="1">KIMI CODE · CLAUDE CODE · CODEX CLI</text>
+
+  <g transform="translate(640,268)">
+    <g transform="translate(-330,0)">
+      <rect x="-128" y="-24" width="256" height="48" rx="10" fill="#161b26" stroke="#30363d"/>
+      <text x="0" y="6" text-anchor="middle" font-size="17" fill="#f0f6fc">🛡️ <tspan fill="#c9d1d9">8 guardrails</tspan></text>
+    </g>
+    <g transform="translate(0,0)">
+      <rect x="-128" y="-24" width="256" height="48" rx="10" fill="#161b26" stroke="#30363d"/>
+      <text x="0" y="6" text-anchor="middle" font-size="17" fill="#f0f6fc">📦 <tspan fill="#c9d1d9">19 presets</tspan></text>
+    </g>
+    <g transform="translate(330,0)">
+      <rect x="-128" y="-24" width="256" height="48" rx="10" fill="#161b26" stroke="#30363d"/>
+      <text x="0" y="6" text-anchor="middle" font-size="17" fill="#f0f6fc">⚡ <tspan fill="#c9d1d9">one command</tspan></text>
+    </g>
+  </g>
+</svg>
