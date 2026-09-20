@@ -140,7 +140,7 @@ presets/<id>/
 | `kimi-boost update --dry-run` | 预览更新会带来什么变化（版本号 + 文件级 diff），不写盘 |
 | `kimi-boost outdated [--project] [--json]` | 查看已安装预设中有新版本的清单 |
 | `kimi-boost doctor [--fix]` | 诊断配置、hooks、挂载目录、manifest 一致性、重复 hook |
-| `kimi-boost guard` | 护栏状态 + 拦截历史；`guard --log`、`--disable/--enable <名称>`、`--add-pattern <正则>`——不重装即可调护栏 |
+| `kimi-boost guard` | 护栏状态 + 拦截历史；`--log`、`--disable/--enable`、`--warn/--block`、`--explain <名称>`、`--add-pattern <正则>`、`--ci [--staged]`、`--install-git-hook`——不重装即可调整与接入 CI |
 | `kimi-boost marketplace [--source-mode repo\|zip]` | 生成 Kimi Code 自定义市场 JSON |
 | `kimi-boost stats [-d N] [--share]` | 用量报告：柱状图 + 连续天数 + 工具拆解；`--share` 导出 SVG 分享卡片（别名：`usage`） |
 | `kimi-boost badge [预设]` | 输出 README 徽章（markdown），展示本项目用 kimi-boost |
@@ -203,9 +203,23 @@ $ kimi-boost stats --share   # → kimi-boost-stats.svg
 - 每次拦截都会记到 `~/.kimi-boost/guard-log.jsonl`（密钥摘要会脱敏——绝不记录密钥本身）。
 - `kimi-boost guard` 显示每个守卫的状态和累计拦截次数;`guard --log` 列出最近的拦截明细。
 - `kimi-boost stats` 会报告 `🛡️ N 次拦截`——你的分享卡片现在能讲"这周它帮我拦了 N 次"的故事。
-- 不重装即可调整:`guard --disable <名称>` / `--enable <名称>`,或用 `guard --add-pattern <正则>` 给危险命令守卫加你自己的模式。
+- 不重装即可调整:`--disable/--enable <名称>` 开关守卫,`--warn/--block <名称>` 把守卫软化为"只记录不阻断"或恢复硬拦,`--explain <名称>` 解释它拦什么、如何放行、关掉有什么风险;`--add-pattern <正则>` 给危险命令守卫加自定义模式。
 
-`core` preset 现在还守护凭证文件（`~/.ssh`、`~/.aws/credentials`、`*.pem` 等）不被读进模型上下文,并拦截会丢弃工作区的 git 操作（`reset --hard`、`clean -f`、`checkout -- .`）。
+**`core` preset 现在共 8 个守卫**:`protect-main`（直推主干）、`block-dangerous`（危险 shell）、`git-destructive`（`reset --hard`/`clean -f`/`checkout -- .`）、`secret-scan`（写入硬编码密钥）、`protect-credentials`（把 `~/.ssh`、`~/.aws/credentials`、`*.pem` 读进上下文）、`protect-paths`（手改 lockfile、写 `node_modules/`/`.git/`）、`protect-guards`（agent 关闭护栏或改写护栏配置）、`secret-scan-post`（PostToolUse 补扫,捕获经 shell 重定向写入的密钥）。
+
+**同一套守卫,进 CI:** `kimi-boost guard --ci [--staged]` 扫描变更文件里的密钥,命中以非零码退出;`guard --install-git-hook` 把它接进 pre-commit,让 agent 写的代码在本地过同一套检查。
+
+#### 护栏不承诺什么
+
+在把重要的事托付给它之前,请读这一节:
+
+- **模式匹配不是安全边界,沙箱才是。** 这些 hook 抬高的是"事故成本",挡不住有心规避的对手（或被提示注入的 agent）——混淆命令（`base64 | sh`）、把写入藏进脚本、运行时拼装密钥都能绕过。要真隔离,请把 agent 跑进沙箱（如 Claude Code 的 `/sandbox`）或容器。
+- **一切 fail-open 是刻意的。** hook 自身出错、运行时缺失、matcher 没覆盖到某个工具时,动作会被放行——可用性优先于严格性。
+- **`secret-scan-post` 只能告知,无法撤销。** 它触发时文件已写入,作用是把问题立刻告诉 agent。
+- **守卫是按工具注册的。** 为 `Write`/`Edit` 注册的守卫,看不见文件工具命名不同的 harness。
+- 把它当一层:宿主侧密钥扫描（如 GitHub push protection）、代码审查、沙箱是另外几层。
+
+### 导出与导入——把 AI 配置克隆到任何机器
 
 ### 导出与导入——把 AI 配置克隆到任何机器
 

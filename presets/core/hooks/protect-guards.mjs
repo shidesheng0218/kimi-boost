@@ -1,10 +1,9 @@
-import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
 // ---- kimi-boost guard runtime(各守卫脚本内联同一份逻辑) ----
-const GUARD_NAME = "protect-main";
+const GUARD_NAME = "protect-guards";
 const HOME = process.env.KIMI_BOOST_HOME ?? join(homedir(), ".kimi-boost");
 const GUARDS_FILE = join(HOME, "guards.json");
 const GUARD_LOG = join(HOME, "guard-log.jsonl");
@@ -50,28 +49,57 @@ function blockOrWarn(name, tool, preview, message) {
 }
 // ---- end guard runtime ----
 
+// 自保护:agent 不该能改护栏自己的配置、或经 shell 关闭护栏。
+// 阻止的是 agent 的工具调用;你本人在终端里直接跑 kimi-boost guard --disable 不受影响。
+const PROTECTED_PATHS = [
+  /(^|[\\/])\.kimi-boost([\\/]|$)/, // guards.json / guard-log / preset 存储 / manifest
+  /(^|[\\/])\.kimi-code[\\/]config\.toml$/, // Kimi 的 hook 挂载配置
+  /(^|[\\/])\.claude[\\/]settings\.json$/, // Claude 的 hook 配置
+  /(^|[\\/])\.claude[\\/]commands([\\/]|$)/,
+  /(^|[\\/])\.codex[\\/]config\.toml$/,
+  /(^|[\\/])\.claude([\\/]|$)/, // 项目级 .claude/(hooks 就挂在这里)
+  /(^|[\\/])AGENTS\.md$/,
+];
+
+// Bash 通道:直接改写上述路径、或调用 kimi-boost guard 关闭守卫
+const SHELL_PATTERNS = [
+  /(^|[\s|;&])(cat|echo|printf|tee|sed|perl|python3?)\b[^|;&]*>{1,2}\s*["']?[^"'\s]*\.kimi-boost/,
+  /(^|[\s|;&])(cat|echo|printf|tee|sed|perl|python3?)\b[^|;&]*>{1,2}\s*["']?[^"'\s]*\.claude[\\/]settings\.json/,
+  /(^|[\s|;&])rm\s+[^|;&]*\.kimi-boost/,
+  /(^|[\s|;&])sed\s+-i[^|;&]*\.kimi-boost/,
+  /(^|[\s|;&])kimi-boost\s+guard\s+(--disable|--warn)/,
+];
+
+const toolArg = process.argv.slice(2).find((a) => a.startsWith("--tool="));
+const TOOL = toolArg ? toolArg.slice("--tool=".length).toLowerCase() : "";
+
 let input = "";
 process.stdin.on("data", (c) => (input += c));
 process.stdin.on("end", () => {
   try {
     if (guardDisabled(GUARD_NAME)) process.exit(0);
     const payload = JSON.parse(input);
-    const command = String(payload.tool_input?.command ?? "");
-    if (!/git push/i.test(command)) process.exit(0);
+    const ti = payload.tool_input ?? {};
 
-    let branch = "";
-    try {
-      branch = execFileSync("git", ["branch", "--show-current"], { encoding: "utf8" }).trim();
-    } catch {
-      /* not a git repo */
+    if (TOOL === "bash") {
+      const command = String(ti.command ?? "");
+      const hit = SHELL_PATTERNS.find((re) => re.test(command));
+      if (hit) {
+        blockOrWarn(GUARD_NAME, "Bash", command, "guardrails 自保护:检测到关闭/改写护栏配置的命令");
+      }
+      process.exit(0);
     }
 
-    if (branch === "main" || branch === "master") {
+    // Write/Edit:看目标路径
+    const target = String(ti.file_path ?? "");
+    if (!target) process.exit(0);
+    const hit = PROTECTED_PATHS.find((re) => re.test(target));
+    if (hit) {
       blockOrWarn(
         GUARD_NAME,
-        "Bash",
-        command,
-        `Blocked: direct push to ${branch}. Use a feature branch and open a PR instead.`,
+        "Write/Edit",
+        target,
+        `guardrails 自保护:${target} 属于护栏/CLI 配置,不应由 agent 改写。要调整护栏请在终端里自己运行 kimi-boost guard`,
       );
     }
   } catch {

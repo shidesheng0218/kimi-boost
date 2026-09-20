@@ -140,7 +140,7 @@ presets/<id>/
 | `kimi-boost update --dry-run` | Preview what an update would change (version + file-level diff) without writing |
 | `kimi-boost outdated [--project] [--json]` | Show installed presets with newer registry versions |
 | `kimi-boost doctor [--fix]` | Diagnose config, hooks, mounted dirs, manifest consistency, duplicate hooks |
-| `kimi-boost guard` | Guardrail status + block history; `guard --log`, `--disable/--enable <name>`, `--add-pattern <regex>` — tune guards live, no reinstall |
+| `kimi-boost guard` | Guardrail status + block history; `--log`, `--disable/--enable`, `--warn/--block`, `--explain <name>`, `--add-pattern <regex>`, `--ci [--staged]`, `--install-git-hook` — tune and run guards without reinstalling |
 | `kimi-boost marketplace [--source-mode repo\|zip]` | Generate a Kimi Code custom marketplace JSON |
 | `kimi-boost stats [-d N] [--share]` | Usage report with bar chart, streak & top tools; `--share` exports an SVG card (alias: `usage`) |
 | `kimi-boost badge [preset]` | Print a README badge (markdown) showing this project uses kimi-boost |
@@ -203,9 +203,24 @@ Most "agent safety" is invisible — a hook silently blocks something and you ne
 - Every blocked action is logged to `~/.kimi-boost/guard-log.jsonl` (secret previews are redacted — never the secret itself).
 - `kimi-boost guard` shows every guard's status and how many times it fired; `guard --log` lists recent blocks with timestamps.
 - `kimi-boost stats` reports `🛡️ N blocks` — your share card can now say *"it stopped my agent N times this week."*
-- Tune live without reinstalling: `guard --disable <name>` / `--enable <name>`, or teach `block-dangerous` your own patterns with `guard --add-pattern <regex>`.
+- Tune live without reinstalling: `guard --disable/--enable <name>` turns a guard off/on, `guard --warn/--block <name>` softens a guard to warn-only (still logged, no longer blocking), and `guard --explain <name>` tells you what it blocks, how to bypass it and what disabling it risks.
+- `guard --add-pattern <regex>` teaches `block-dangerous` your own patterns.
 
-The `core` preset now also shields credential files (`~/.ssh`, `~/.aws/credentials`, `*.pem`…) from being read into the model's context, and blocks workspace-destroying git ops (`reset --hard`, `clean -f`, `checkout -- .`).
+**The `core` preset ships 8 guards:** `protect-main` (direct pushes to trunk), `block-dangerous` (dangerous shell), `git-destructive` (`reset --hard`, `clean -f`, `checkout -- .`), `secret-scan` (hardcoded secrets on write), `protect-credentials` (reading `~/.ssh`, `~/.aws/credentials`, `*.pem`… into context), `protect-paths` (hand-editing lockfiles, writes into `node_modules/`/`.git/`), `protect-guards` (the agent disabling guardrails or rewriting their config), and `secret-scan-post` (a PostToolUse re-scan that catches secrets written via shell redirection).
+
+**Same guards, in CI:** `kimi-boost guard --ci [--staged]` scans changed files for secrets and exits non-zero on findings; `guard --install-git-hook` wires that into a pre-commit hook so agent-authored code passes the same checks locally.
+
+#### What the guardrails don't promise
+
+Read this before trusting them with anything important:
+
+- **Pattern matching is not a security boundary — sandboxing is.** These hooks raise the cost of accidents; they do not stop a determined adversary (or a prompt-injected agent) that obfuscates commands (`base64 | sh`), hides writes inside scripts, or assembles a secret at runtime. For real isolation, run your agent in a sandbox (e.g. Claude Code's `/sandbox`) or a container.
+- **Everything fails open by design.** If a hook errors, a runtime is missing, or the matcher doesn't cover a tool, the action is allowed. Availability beats strictness — that's the deliberate trade-off.
+- **`secret-scan-post` informs, it cannot undo.** The file is already written when it fires; it tells the agent to fix it.
+- **Guards are per-tool.** A guard registered for `Write`/`Edit` does not see a harness whose file tools have other names.
+- Use them as one layer: host-side secret scanning (GitHub push protection), review, and a sandbox are the others.
+
+### Export & import — clone your AI setup to any machine
 
 ### Export & import — clone your AI setup to any machine
 

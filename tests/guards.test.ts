@@ -18,7 +18,7 @@ afterEach(() => {
 describe("guards.json 配置", () => {
   it("默认配置为空(全部守卫启用)", async () => {
     const { readGuardsConfig } = await import("../src/core/guards.js");
-    expect(readGuardsConfig()).toEqual({ disabled: [], customPatterns: [] });
+    expect(readGuardsConfig()).toEqual({ disabled: [], customPatterns: [], modes: {} });
   });
 
   it("setGuardDisabled 写入并读回;重复 disable 幂等", async () => {
@@ -40,7 +40,7 @@ describe("guards.json 配置", () => {
   it("配置文件损坏时 fail-open 回默认", async () => {
     writeFileSync(join(tmp, "guards.json"), "{ not json", "utf8");
     const { readGuardsConfig } = await import("../src/core/guards.js");
-    expect(readGuardsConfig()).toEqual({ disabled: [], customPatterns: [] });
+    expect(readGuardsConfig()).toEqual({ disabled: [], customPatterns: [], modes: {} });
   });
 });
 

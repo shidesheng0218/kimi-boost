@@ -3,7 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 // ---- kimi-boost guard runtime(各守卫脚本内联同一份逻辑) ----
-const GUARD_NAME = "protect-credentials";
+const GUARD_NAME = "protect-paths";
 const HOME = process.env.KIMI_BOOST_HOME ?? join(homedir(), ".kimi-boost");
 const GUARDS_FILE = join(HOME, "guards.json");
 const GUARD_LOG = join(HOME, "guard-log.jsonl");
@@ -49,20 +49,47 @@ function blockOrWarn(name, tool, preview, message) {
 }
 // ---- end guard runtime ----
 
-// 高敏凭证文件(读进上下文=密钥外泄给模型)。普通 .env 不拦(开发中常用),只拦真正的凭证库。
-const SENSITIVE = [
-  /(^|[\\/])\.ssh([\\/]|$)/, // ~/.ssh/*
-  /(^|[\\/])\.aws[\\/]credentials$/, // ~/.aws/credentials
-  /(^|[\\/])\.gnupg([\\/]|$)/,
-  /(^|[\\/])\.netrc$/,
-  /(^|[\\/])id_rsa$/,
-  /\.pem$/,
-  /\.key$/,
+// 手改 lockfile / 生成物目录:lockfile 应由包管理器生成,手改会破坏依赖可复现性
+const LOCKFILES = [
+  /(^|[\\/])package-lock\.json$/,
+  /(^|[\\/])yarn\.lock$/,
+  /(^|[\\/])pnpm-lock\.yaml$/,
+  /(^|[\\/])go\.sum$/,
+  /(^|[\\/])Cargo\.lock$/,
+  /(^|[\\/])poetry\.lock$/,
+  /(^|[\\/])Pipfile\.lock$/,
+  /(^|[\\/])Gemfile\.lock$/,
+  /(^|[\\/])composer\.lock$/,
+  /(^|[\\/])bun\.lockb?$/,
 ];
 
-// preset.json 用 --tool=read|bash 注册两条,脚本按此决定读哪个字段
+const GENERATED_DIRS = [
+  /(^|[\\/])node_modules([\\/]|$)/,
+  /(^|[\\/])\.git([\\/]|$)/, // .git 内部(含 hooks)绝不该被 agent 直接写
+];
+
+// 经 shell 改写受保护路径(重定向 / tee);用捕获组直接取出目标文件
+const SHELL_REDIRECT = /(?:^|[\s|;&])(?:cat|echo|printf|perl|python3?|sed\s+-i)\b[^|;&]*?>{1,2}\s*["']?([^\s"'|;&<>]+)/;
+const SHELL_TEE = /(?:^|[\s|;&])tee\s+(?:-a\s+)?["']?([^\s"'|;&<>]+)/;
+
 const toolArg = process.argv.slice(2).find((a) => a.startsWith("--tool="));
 const TOOL = toolArg ? toolArg.slice("--tool=".length).toLowerCase() : "";
+
+function checkTarget(target) {
+  const lock = LOCKFILES.find((re) => re.test(target));
+  if (lock) {
+    blockOrWarn(
+      GUARD_NAME,
+      "Write/Edit",
+      target,
+      `lockfile 不应手改:${target}。请用包管理器重新生成(npm install / yarn / go mod tidy / cargo update)`,
+    );
+  }
+  const gen = GENERATED_DIRS.find((re) => re.test(target));
+  if (gen) {
+    blockOrWarn(GUARD_NAME, "Write/Edit", target, `生成物/内部目录不应直接写入:${target}`);
+  }
+}
 
 let input = "";
 process.stdin.on("data", (c) => (input += c));
@@ -71,19 +98,20 @@ process.stdin.on("end", () => {
     if (guardDisabled(GUARD_NAME)) process.exit(0);
     const payload = JSON.parse(input);
     const ti = payload.tool_input ?? {};
-    // Read 工具看 file_path;Bash 看 command(里面可能 cat 敏感文件)
-    const target = TOOL === "read" ? String(ti.file_path ?? "") : String(ti.command ?? "");
-    if (!target) process.exit(0);
 
-    const hit = SENSITIVE.find((re) => re.test(target));
-    if (hit) {
-      blockOrWarn(
-        GUARD_NAME,
-        TOOL || "read",
-        target,
-        `Blocked: reading sensitive credentials (${target}). 凭证绝不能进入 agent 上下文;需要时让 agent 用环境变量名引用,而不是读内容。`,
-      );
+    if (TOOL === "bash") {
+      const command = String(ti.command ?? "");
+      const m = command.match(SHELL_REDIRECT) ?? command.match(SHELL_TEE);
+      const target = m?.[1] ?? "";
+      if (target && (LOCKFILES.some((re) => re.test(target)) || GENERATED_DIRS.some((re) => re.test(target)))) {
+        blockOrWarn(GUARD_NAME, "Bash", command, `经 shell 改写受保护路径:${target}`);
+      }
+      process.exit(0);
     }
+
+    const target = String(ti.file_path ?? "");
+    if (!target) process.exit(0);
+    checkTarget(target);
   } catch {
     /* fail-open */
   }
