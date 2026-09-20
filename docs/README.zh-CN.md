@@ -1,10 +1,8 @@
 <div align="center">
 
-# ⚡ kimi-boost
+![kimi-boost](../assets/hero.svg)
 
-**久经实战的 skills · hooks · agents，一条命令装进 Kimi Code、Claude Code 和 Codex CLI。**
-
-`npx kimi-boost install` → 选一个预设 → 完成。
+**`npx kimi-boost init` → 识别你的技术栈 → 装好护栏与规范。**
 
 [![GitHub stars](https://img.shields.io/github/stars/shidesheng0218/kimi-boost?style=flat-square)](https://github.com/shidesheng0218/kimi-boost)
 [![npm](https://img.shields.io/npm/v/kimi-boost?style=flat-square)](https://www.npmjs.com/package/kimi-boost)
@@ -19,20 +17,18 @@
 
 ---
 
-## 为什么需要它
+## ⚡ 为什么需要它
 
 AI 编程助手只会做你教它的事。不加以引导，它会写出泛泛的代码、直接推 main 分支、对你还想保留的文件执行 `rm -rf`。手动配置 skills / hooks / agents 要花几个小时——大多数人永远不会去做。
 
-**kimi-boost 几秒钟内把完整、有主张的开发工作流装进你的助手：**
+**kimi-boost 几秒钟把完整、有主张的开发工作流装进你的助手：**
 
 | 你能得到 | 作用 |
 |---|---|
 | 🧠 **Skills** | 助手**自动加载**的最佳实践规则——无需每次提醒 |
 | 🔍 **审查 Agent** | 提交前可以委派的只读 subagent |
-| 🛡️ **Hooks** | 跨平台 Node 守卫：危险命令拦截、main 分支保护 |
+| 🛡️ **守卫** | 跨平台 Node 护栏：危险命令拦截、主干保护、密钥扫描 |
 | 🔄 **一键更新** | `kimi-boost update` 保持所有预设最新，支持 fork |
-
-## 演示
 
 <div align="center">
 
@@ -40,7 +36,8 @@ AI 编程助手只会做你教它的事。不加以引导，它会写出泛泛�
 
 </div>
 
-GIF 加载失败？同一段会话的纯文本版：
+<details>
+<summary>GIF 加载失败？同一段会话的纯文本版。</summary>
 
 ```text
 $ kimi-boost install vue3
@@ -57,67 +54,47 @@ $ kimi-boost doctor
 All checks passed.
 ```
 
-## 两种安装方式
+</details>
 
-**① 官方插件渠道——无需安装任何 CLI。** 五个旗舰预设已镜像为独立插件仓库，在 Kimi Code TUI 里直接装：
+---
 
-```
-/plugins install https://github.com/shidesheng0218/kimi-boost-vue3
-```
+## 🛡️ 护栏——看得见的安全带
 
-现有镜像：[vue3](https://github.com/shidesheng0218/kimi-boost-vue3) · [react](https://github.com/shidesheng0218/kimi-boost-react) · [go](https://github.com/shidesheng0218/kimi-boost-go) · [python](https://github.com/shidesheng0218/kimi-boost-python) · [usage](https://github.com/shidesheng0218/kimi-boost-usage) · **[core](https://github.com/shidesheng0218/kimi-boost-core)**（护栏——在 Kimi Code 里无需任何 CLI 即可安装）
+大多数"agent 安全"是隐形的：hook 默默拦了某个操作，你永远不知道 agent 差点跑了 `rm -rf /`。kimi-boost 让这条安全带可见。
 
-也可以接入我们的市场源，在 `/plugins` 面板里浏览安装：
+<div align="center">
 
-```bash
-export KIMI_CODE_PLUGIN_MARKETPLACE_URL=https://raw.githubusercontent.com/shidesheng0218/kimi-boost/main/marketplace.json
-```
+![护栏拦下危险命令与直推主干](../assets/guard-block.svg)
 
-**② kimi-boost CLI——全部 19 个预设，三个平台。** 一个安装器同时支持 Kimi Code、Claude Code 和 Codex CLI，带更新、体检和干净卸载：
+</div>
 
-```bash
-npx kimi-boost install
-```
+**`core` preset 内置 8 个守卫**（`kimi-boost init` 默认附带；也可以 `/plugins install …/kimi-boost-core` 零 CLI 安装）：
 
-| | 官方渠道 | kimi-boost CLI |
-|---|---|---|
-| 预设数量 | 5 个旗舰（镜像仓） | 全部 19 个 |
-| 支持平台 | Kimi Code | Kimi Code · Claude Code · Codex |
-| 前置要求 | 只要 Kimi Code | Node.js |
-| 额外能力 | — | 更新 · doctor 体检 · 用量统计 · dry-run 预览 |
+| 守卫 | 拦截什么 |
+|---|---|
+| `protect-main` | 直推 `main`/`master` 分支 |
+| `block-dangerous` | `rm -rf /`、`mkfs`、`dd` 写盘、`curl \| sh` |
+| `git-destructive` | `reset --hard`、`clean -f`、`checkout -- .`（丢工作区） |
+| `secret-scan` | 把硬编码密钥（AWS key、私钥、token）写进文件 |
+| `protect-credentials` | 把 `~/.ssh`、`~/.aws/credentials`、`*.pem` 读进模型上下文 |
+| `protect-paths` | 手改 lockfile；写 `node_modules/`、`dist/`、`.git/` |
+| `protect-guards` | agent 自行关闭护栏或改写护栏配置 |
+| `secret-scan-post` | PostToolUse 补扫，捕获经 shell 重定向写入的密钥 |
 
-## 预设目录
+**可见、可调、诚实：**
 
-| 预设 | 技术栈 | 审查 Agent | Hooks | 官方插件仓 |
-|---|---|---|---|---|
-| `vue3` | Vue 3 + TypeScript | `vue3-reviewer` | 🛡️ main 分支保护 | [✅ kimi-boost-vue3](https://github.com/shidesheng0218/kimi-boost-vue3) |
-| `react` | React + TypeScript | `react-reviewer` | 🛡️ main 分支保护 | [✅ kimi-boost-react](https://github.com/shidesheng0218/kimi-boost-react) |
-| `go` | Go | `go-reviewer` | 🛡️ main 分支保护 | [✅ kimi-boost-go](https://github.com/shidesheng0218/kimi-boost-go) |
-| `python` | Python | `python-reviewer` | 🛡️ 危险命令拦截 | [✅ kimi-boost-python](https://github.com/shidesheng0218/kimi-boost-python) |
-| `nextjs` | Next.js（全栈） | `nextjs-reviewer` | 🛡️ main 分支保护 | 经 CLI 安装 |
-| `react-native` | React Native | `react-native-reviewer` | 🛡️ main 分支保护 | 经 CLI 安装 |
-| `flutter` | Flutter / Dart | `flutter-reviewer` | 🛡️ main 分支保护 | 经 CLI 安装 |
-| `uniapp` | uni-app（跨端） | `uniapp-reviewer` | 🛡️ main 分支保护 | 经 CLI 安装 |
-| `weapp` | 微信小程序 | `weapp-reviewer` | — | 经 CLI 安装 |
-| `nestjs` | NestJS / TypeScript 后端 | `nestjs-reviewer` | 🛡️ main 分支保护 | 经 CLI 安装 |
-| `express` | Express（Node.js） | `express-reviewer` | 🛡️ main 分支保护 | 经 CLI 安装 |
-| `fastapi` | FastAPI（Python） | `fastapi-reviewer` | 🛡️ main 分支保护 | 经 CLI 安装 |
-| `rust` | Rust | `rust-reviewer` | 🛡️ main 分支保护 | 经 CLI 安装 |
-| `java` | Java（Spring Boot） | `java-reviewer` | 🛡️ main 分支保护 | 经 CLI 安装 |
+- 每次拦截都记入 `~/.kimi-boost/guard-log.jsonl`（摘要脱敏，绝不记录密钥本身）。`kimi-boost guard` 看状态与拦截次数；`guard --log` 看明细；`kimi-boost stats` 的分享卡片会显示 **🛡️ N 次拦截**。
+- 不重装即可调整：`--disable/--enable <名称>` 开关守卫，`--warn/--block <名称>` 软化为只记录不阻断或恢复硬拦，`--explain <名称>` 说明拦什么/如何放行/关掉的风险，`--add-pattern <正则>` 给 `block-dangerous` 加自定义模式。
+- **同一套守卫，进 CI**：`guard --ci [--staged]` 扫描变更文件里的密钥并以非零码退出；`guard --install-git-hook` 把它接进 pre-commit。
 
-**特殊预设：**
+> [!IMPORTANT]
+> **护栏不承诺什么。** 模式匹配不是安全边界——沙箱才是。这些 hook 抬高的是"事故成本"，挡不住有心规避的对手（或被提示注入的 agent）：`base64 | sh`、脚本包装、运行时拼装密钥都能绕过。一切 fail-open 是刻意取舍：hook 出错绝不阻塞你。`secret-scan-post` 只能告知（触发时文件已写入）。守卫按工具注册生效。请把护栏与宿主侧密钥扫描、代码审查、沙箱叠加使用。
 
-| 预设 | 能力 | 官方插件仓 |
-|---|---|---|
-| `usage` | 会话/提示/工具调用统计到 `~/.kimi-boost/usage.json`；`KIMI_BOOST_DAILY_LIMIT` 每日阈值提醒；`kimi-boost stats` 查看 | [✅ kimi-boost-usage](https://github.com/shidesheng0218/kimi-boost-usage) |
-| `core` | **任何项目都该装的最小保险**——拦直推 main/master、拦危险 shell 命令（`rm -rf /`、`mkfs`、`dd` 写盘、`curl\|sh`）、拦写入硬编码密钥、拦凭证读取与丢弃工作区的 git 操作。`kimi-boost init` 默认附带 | [✅ kimi-boost-core](https://github.com/shidesheng0218/kimi-boost-core) |
-| `mcp-tools` | 零配置 MCP servers：`fetch`（网页抓取）+ `time`（时区）——写入 `~/.kimi-code/mcp.json` | 经 CLI 安装 |
-| `security` | 跨栈守卫：写入文件即扫描硬编码密钥、拦截危险 `git push`（`--force`/`--delete`，放行 `--force-with-lease`）；外加 `security-reviewer` 审查 agent | 经 CLI 安装 |
-| `git-workflow` | 约定式提交、分支命名与 PR 规范（自动加载的 skill）+ `git-workflow-reviewer` 审查 agent；无 hooks | 经 CLI 安装 |
+---
 
-> 每个预设都内置一份最佳实践 SKILL.md（自动加载）+ 一个审查 Agent。新技术栈由投票驱动——[issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1)。"经 CLI 安装"的预设会随需求增长陆续镜像为官方插件仓。
+## 📦 预设目录
 
-每个预设就是本仓库里的**一个目录**——既是合法的 `kimi.plugin.json` 插件，也是 kimi-boost 预设。欢迎贡献：
+每个预设就是本仓库里的**一个目录**——既是合法的 `kimi.plugin.json` 插件，也是 kimi-boost 预设：
 
 ```
 presets/<id>/
@@ -128,146 +105,170 @@ presets/<id>/
 └── hooks/<name>.mjs     # 跨平台 Node，fail-open 设计
 ```
 
-## 命令
+**按技术栈：**
+
+| 预设 | 技术栈 | 审查 | 护栏 | 镜像仓 |
+|---|---|---|---|---|
+| `vue3` | Vue 3 + TypeScript | ✅ | 🛡️ main | [✅](https://github.com/shidesheng0218/kimi-boost-vue3) |
+| `react` | React + TypeScript | ✅ | 🛡️ main | [✅](https://github.com/shidesheng0218/kimi-boost-react) |
+| `go` | Go | ✅ | 🛡️ main | [✅](https://github.com/shidesheng0218/kimi-boost-go) |
+| `python` | Python | ✅ | 🛡️ 危险命令 | [✅](https://github.com/shidesheng0218/kimi-boost-python) |
+| `nextjs` | Next.js（全栈） | ✅ | 🛡️ main | 经 CLI |
+| `react-native` | React Native | ✅ | 🛡️ main | 经 CLI |
+| `flutter` | Flutter / Dart | ✅ | 🛡️ main | 经 CLI |
+| `uniapp` | uni-app（跨端） | ✅ | 🛡️ main | 经 CLI |
+| `weapp` | 微信小程序 | ✅ | — | 经 CLI |
+| `nestjs` | NestJS 后端 | ✅ | 🛡️ main | 经 CLI |
+| `express` | Express（Node.js） | ✅ | 🛡️ main | 经 CLI |
+| `fastapi` | FastAPI | ✅ | 🛡️ main | 经 CLI |
+| `rust` | Rust | ✅ | 🛡️ main | 经 CLI |
+| `java` | Java（Spring Boot） | ✅ | 🛡️ main | 经 CLI |
+
+**特殊预设：**
+
+| 预设 | 能力 | 镜像仓 |
+|---|---|---|
+| `core` 🛡️ | **任何项目都该装的最小保险**——上面 8 个守卫。`init` 默认附带 | [✅](https://github.com/shidesheng0218/kimi-boost-core) |
+| `usage` | 会话/提示/工具调用统计到 `~/.kimi-boost/usage.json`；`KIMI_BOOST_DAILY_LIMIT` 阈值提醒；`kimi-boost stats` 查看 | [✅](https://github.com/shidesheng0218/kimi-boost-usage) |
+| `security` | 更深的安全包：写入扫描密钥、拦 `git push --force`/`--delete` + `security-reviewer` 审查 agent | 经 CLI |
+| `git-workflow` | 约定式提交、分支命名与 PR 规范（自动加载 skill）+ 审查 agent | 经 CLI |
+| `mcp-tools` | 零配置 MCP servers：`fetch` + `time` | 经 CLI |
+
+> [!NOTE]
+> 每个预设都内置一份最佳实践 SKILL.md（自动加载）+ 一个审查 Agent。新技术栈由投票驱动——[issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1)。"经 CLI"的预设会随需求增长陆续镜像为官方插件仓。
+
+---
+
+## 🔧 命令
+
+**安装与管理**
 
 | 命令 | 作用 |
 |---|---|
-| `kimi-boost install [预设]` | 按 id 安装预设——或从任意 GitHub 仓库安装：`install github:owner/repo`（`--dry-run` 预览，`--with-hooks` 强制含 hooks，`--project` 装进当前项目） |
-| `kimi-boost init` | 识别当前项目技术栈并安装匹配预设——默认附带 `core` 核心护栏（`--yes` 跳过交互，`--dry-run` 预览，`--project`） |
-| `kimi-boost list` | 查看可用与已安装预设 |
-| `kimi-boost remove <预设>` | 干净卸载 |
-| `kimi-boost update [--repo owner/repo]` | 拉取最新版本并重新应用（支持 fork；社区 preset 从其来源仓库更新） |
-| `kimi-boost update --dry-run` | 预览更新会带来什么变化（版本号 + 文件级 diff），不写盘 |
-| `kimi-boost outdated [--project] [--json]` | 查看已安装预设中有新版本的清单 |
-| `kimi-boost doctor [--fix]` | 诊断配置、hooks、挂载目录、manifest 一致性、重复 hook |
-| `kimi-boost guard` | 护栏状态 + 拦截历史；`--log`、`--disable/--enable`、`--warn/--block`、`--explain <名称>`、`--add-pattern <正则>`、`--ci [--staged]`、`--install-git-hook`——不重装即可调整与接入 CI |
-| `kimi-boost marketplace [--source-mode repo\|zip]` | 生成 Kimi Code 自定义市场 JSON |
-| `kimi-boost stats [-d N] [--share]` | 用量报告：柱状图 + 连续天数 + 工具拆解；`--share` 导出 SVG 分享卡片（别名：`usage`） |
-| `kimi-boost badge [预设]` | 输出 README 徽章（markdown），展示本项目用 kimi-boost |
-| `kimi-boost export [文件]` | 把你的 preset 配置导出为可分享的文件（`--embed-content` 离线复现，`--include-usage`） |
-| `kimi-boost import <文件>` | 在另一台机器上恢复此前导出的配置（`--yes`、`--dry-run`） |
-| `kimi-boost validate <目录>` | 校验 preset 目录（给 preset 作者用） |
-| `kimi-boost dev <目录>` | 校验 + 预览安装本地 preset（dry-run） |
-| `kimi-boost package <目录>` | 校验 + 打成 `<id>-<version>.zip` |
-| `kimi-boost status` | 检测已安装的 CLI 与平台 |
-| `kimi-boost bootstrap [--makefile]` | 生成团队 onboarding 用的 `setup.sh`（或 Makefile 的 `setup` target） |
-| `kimi-boost update --check` | 只检查预设是否有更新，不安装；发现更新会通知并以非零码退出 |
-| `kimi-boost update --watch [--interval 小时] [--uninstall]` | 注册/移除周期性后台更新检查 |
+| `init` | 识别当前项目技术栈并安装匹配预设——默认附带 `core` 核心护栏（`--yes`、`--dry-run`、`--project`） |
+| `install [预设]` | 按 id 安装——或从任意 GitHub 仓库：`install github:owner/repo`（`--dry-run`、`--with-hooks`、`--project`） |
+| `remove <预设>` | 干净卸载 |
+| `list` | 查看可用与已安装预设 |
+| `status` | 检测已安装的 CLI 与平台 |
+| `doctor [--fix]` | 诊断配置、hooks、挂载目录、manifest 一致性、重复 hook |
 
-### 项目级安装（团队共享）
+**护栏**
 
-`kimi-boost install <预设> --project` 把预设写进当前项目而不是你的用户配置：
+| 命令 | 作用 |
+|---|---|
+| `guard` | 护栏状态 + 拦截历史 |
+| `guard --log [-n N]` | 最近的拦截明细 |
+| `guard --disable/--enable <名称>` | 关/开某个守卫——即时生效，无需重装 |
+| `guard --warn/--block <名称>` | 软化为只记录不阻断 / 恢复硬拦 |
+| `guard --explain <名称>` | 拦什么、如何放行、关掉的风险 |
+| `guard --add-pattern <正则>` | 给 `block-dangerous` 加自定义拦截模式 |
+| `guard --ci [--staged]` | 扫描变更/暂存文件里的密钥，命中以非零码退出 |
+| `guard --install-git-hook` | 把 `--ci --staged` 接进 pre-commit（`--uninstall-git-hook` 移除） |
 
-- skills → `.agents/skills/`（Kimi Code 及兼容 `.agents/` 约定的工具）和 `.claude/skills/`
-- agents → `.agents/agents/` 和 `.claude/agents/`
-- hooks → `.claude/settings.json`（仅 Claude Code——Kimi Code 暂无项目级 hook 机制；Codex 跳过）
+**更新**
 
-所有产物都落在项目根（最近的 `.git` 上级目录）内，因此可以**提交进 git 与团队共享**——每个 clone 都获得一致的 AI 行为。卸载用 `kimi-boost remove <预设> --project`。
+| 命令 | 作用 |
+|---|---|
+| `update` | 拉取最新版本并重新应用（支持 fork；社区 preset 从其来源仓库更新） |
+| `update --dry-run` | 预览更新的版本 + 文件级 diff，不写盘 |
+| `update --check` | 只检查不安装；有更新会通知并以非零码退出 |
+| `update --watch [--interval 小时] [--uninstall]` | 注册/移除周期性后台更新检查 |
+| `outdated [--project] [--json]` | 已安装预设中有新版本的清单 |
 
-### 社区预设——从任意 GitHub 仓库安装
+**统计与分享**
 
-任何人都可以把一个 preset 发布为普通 GitHub 仓库（仓库根含 `preset.json`，外加 `skills/`、`agents/`、`hooks/`）：
+| 命令 | 作用 |
+|---|---|
+| `stats [-d N] [--share]` | 用量报告：柱状图 + 连续天数 + 工具拆解；`--share` 导出 SVG 卡片（别名：`usage`） |
+| `badge [预设]` | 输出 README 徽章（markdown） |
+| `export [文件]` | 把 preset 配置导出为可分享的文件（`--embed-content`、`--include-usage`） |
+| `import <文件>` | 恢复此前导出的配置（`--yes`、`--dry-run`） |
+
+**创作与团队**
+
+| 命令 | 作用 |
+|---|---|
+| `create <id>` | 在 `presets/` 下脚手架一个新预设（`--shape skill\|mcp\|command`） |
+| `validate <目录>` | 校验 preset 目录 |
+| `dev <目录>` | 校验 + dry-run 预览安装本地 preset |
+| `package <目录>` | 校验 + 打成 `<id>-<version>.zip` |
+| `marketplace` | 生成 Kimi Code 自定义市场 JSON |
+| `bootstrap [--makefile]` | 生成团队 onboarding 用的 `setup.sh` / Makefile target |
+
+---
+
+## 🌐 安装渠道
+
+**① 官方 Kimi Code 插件渠道——无需安装任何 CLI。** 旗舰预设已镜像为独立插件仓库：
+
+```
+/plugins install https://github.com/shidesheng0218/kimi-boost-vue3
+```
+
+现有镜像：[vue3](https://github.com/shidesheng0218/kimi-boost-vue3) · [react](https://github.com/shidesheng0218/kimi-boost-react) · [go](https://github.com/shidesheng0218/kimi-boost-go) · [python](https://github.com/shidesheng0218/kimi-boost-python) · [usage](https://github.com/shidesheng0218/kimi-boost-usage) · **[core](https://github.com/shidesheng0218/kimi-boost-core)**（护栏——在 Kimi Code 里无需任何 CLI 即可安装）。
+
+也可以接入我们的市场源，在 `/plugins` 面板里浏览安装：
 
 ```bash
-kimi-boost install github:owner/repo          # 也支持完整 https://github.com/owner/repo 链接
+export KIMI_CODE_PLUGIN_MARKETPLACE_URL=https://raw.githubusercontent.com/shidesheng0218/kimi-boost/main/marketplace.json
+```
+
+**② kimi-boost CLI——全部 19 个预设，三个平台**（Kimi Code、Claude Code、Codex CLI），带更新、体检和干净卸载：
+
+```bash
+npx kimi-boost install
+```
+
+| | 官方渠道 | kimi-boost CLI |
+|---|---|---|
+| 预设数量 | 6 个旗舰（镜像仓） | 全部 19 个 |
+| 支持平台 | Kimi Code | Kimi Code · Claude Code · Codex |
+| 前置要求 | 只要 Kimi Code | Node.js |
+| 额外能力 | — | 更新 · doctor 体检 · 用量统计 · dry-run 预览 |
+
+**③ 社区预设**——任何人都能把 preset 发布为普通 GitHub 仓库（根目录含 `preset.json`）：
+
+```bash
+kimi-boost install github:owner/repo          # 也支持完整 URL
 kimi-boost install github:owner/repo@v1.2.0   # 可锁定分支或 tag
 ```
 
-安装前 kimi-boost 会展示该 preset 将注册的内容——特别是 hooks（agent 运行时会执行的脚本）——并要求你显式确认（脚本场景用 `--yes` 跳过， `--dry-run` 只预览）。社区 preset 会被 `update` / `outdated` 跟踪其来源仓库，保持最新。**只安装你信任的作者发布的 preset**——hooks 会以你 agent 的权限执行 shell 命令。
+安装前 kimi-boost 会展示该 preset 将注册的内容（特别是 hooks）并要求确认。**只安装你信任的作者发布的 preset**——hooks 会以你 agent 的权限执行 shell 命令。
 
-### 可分享的用量报告——你的 AI 编程 Wrapped
+---
 
-`usage` 预设会默默记录你的 会话/提示/工具调用。`stats` 把它变成值得截图的报告：
+## 📊 可分享的用量报告——你的 AI 编程 Wrapped
+
+`usage` 预设会默默记录你的会话/提示/工具调用。`stats` 把它变成值得截图的报告：
 
 ```bash
 $ kimi-boost stats -d 7
 📊 kimi-boost stats · last 7 days
-
   128 prompts  ·  12 sessions  ·  856 tool calls  ·  5 active days  ·  streak 3 🔥
-
-09-01 ████████████ 24
-09-02 ██████ 12
-...
 
 $ kimi-boost stats --share   # → kimi-boost-stats.svg
 ```
 
-`--share` 导出一张自包含的 SVG 卡片（纯本地生成，无服务器、不上传——数据不出本机）。发出来晒一晒，或嵌进 README 配一个 `kimi-boost badge`。
+`--share` 导出一张自包含的 SVG 卡片（纯本地生成，无服务器、不上传——数据不出本机）：
+
+<div align="center">
 
 ![kimi-boost 用量卡片](../assets/stats-card.svg)
 
-### 看得见的护栏
+</div>
 
-大多数"agent 安全"是隐形的——hook 默默拦了某个操作,你永远不知道 agent 差点跑了 `rm -rf /`。kimi-boost 让这条安全带可见:
+---
 
-- 每次拦截都会记到 `~/.kimi-boost/guard-log.jsonl`（密钥摘要会脱敏——绝不记录密钥本身）。
-- `kimi-boost guard` 显示每个守卫的状态和累计拦截次数;`guard --log` 列出最近的拦截明细。
-- `kimi-boost stats` 会报告 `🛡️ N 次拦截`——你的分享卡片现在能讲"这周它帮我拦了 N 次"的故事。
-- 不重装即可调整:`--disable/--enable <名称>` 开关守卫,`--warn/--block <名称>` 把守卫软化为"只记录不阻断"或恢复硬拦,`--explain <名称>` 解释它拦什么、如何放行、关掉有什么风险;`--add-pattern <正则>` 给危险命令守卫加自定义模式。
+## 📤 更多
 
-**`core` preset 现在共 8 个守卫**:`protect-main`（直推主干）、`block-dangerous`（危险 shell）、`git-destructive`（`reset --hard`/`clean -f`/`checkout -- .`）、`secret-scan`（写入硬编码密钥）、`protect-credentials`（把 `~/.ssh`、`~/.aws/credentials`、`*.pem` 读进上下文）、`protect-paths`（手改 lockfile、写 `node_modules/`/`.git/`）、`protect-guards`（agent 关闭护栏或改写护栏配置）、`secret-scan-post`（PostToolUse 补扫,捕获经 shell 重定向写入的密钥）。
+- **项目级安装（团队共享）**——`install <预设> --project` 把 skills/agents 写进项目的 `.agents/` + `.claude/`，提交进 git，每个 clone 都获得一致的 AI 行为。
+- **导出与导入**——`kimi-boost export` 把 preset + 版本 + 社区来源 + 后台检查打包成一个可分享的文件；新机器 `import` 一键复现。适合放进 dotfiles 仓。
+- **创作 preset**——`validate` / `dev` / `package` 覆盖整个流程；把目录推到 GitHub，别人即可 `install github:you/my-preset`。
+- **doctor**——`kimi-boost doctor` 诊断配置、hooks、挂载目录与 manifest 一致性；`--fix` 自动修复缺失项。
 
-**同一套守卫,进 CI:** `kimi-boost guard --ci [--staged]` 扫描变更文件里的密钥,命中以非零码退出;`guard --install-git-hook` 把它接进 pre-commit,让 agent 写的代码在本地过同一套检查。
+---
 
-#### 护栏不承诺什么
-
-在把重要的事托付给它之前,请读这一节:
-
-- **模式匹配不是安全边界,沙箱才是。** 这些 hook 抬高的是"事故成本",挡不住有心规避的对手（或被提示注入的 agent）——混淆命令（`base64 | sh`）、把写入藏进脚本、运行时拼装密钥都能绕过。要真隔离,请把 agent 跑进沙箱（如 Claude Code 的 `/sandbox`）或容器。
-- **一切 fail-open 是刻意的。** hook 自身出错、运行时缺失、matcher 没覆盖到某个工具时,动作会被放行——可用性优先于严格性。
-- **`secret-scan-post` 只能告知,无法撤销。** 它触发时文件已写入,作用是把问题立刻告诉 agent。
-- **守卫是按工具注册的。** 为 `Write`/`Edit` 注册的守卫,看不见文件工具命名不同的 harness。
-- 把它当一层:宿主侧密钥扫描（如 GitHub push protection）、代码审查、沙箱是另外几层。
-
-### 导出与导入——把 AI 配置克隆到任何机器
-
-### 导出与导入——把 AI 配置克隆到任何机器
-
-`export` 把你的整套 kimi-boost 配置——已安装 preset（含版本）、社区 preset 来源、后台更新检查——导出为一个可分享的文件：
-
-```bash
-kimi-boost export                          # → kimi-boost-export.json
-kimi-boost export --embed-content          # → .tar.gz(含 preset 内容,精确离线复现)
-kimi-boost export --include-usage          # 顺带携带用量历史
-
-# 在新机器上:
-kimi-boost import kimi-boost-export.json   # 展示计划,确认一次,全部装回
-kimi-boost import kimi-boost-export.json --dry-run
-```
-
-官方 preset 从 registry 重装,社区 preset 按精确的 `repo@ref` 来源重装,后台检查也会重新注册。把这个文件提交进你的 dotfiles 仓库,或丢进团队群——一个文件,处处同款 AI 工作流。
-
-### 创作 preset
-
-想写自己的社区 preset？三个工具覆盖整个流程：
-
-```bash
-kimi-boost validate ./my-preset   # 校验 schema、hooks、skills、plugin manifest
-kimi-boost dev ./my-preset        # 校验 + dry-run 预览安装
-kimi-boost package ./my-preset    # 校验 + 打成 my-preset-1.0.0.zip
-```
-
-把目录推到 GitHub 仓库（根目录含 `preset.json`），任何人都能 `kimi-boost install github:you/my-preset` 安装。
-
-### `doctor`——随时确认环境健康
-
-```bash
-$ kimi-boost doctor
-✓ kimi: detected
-  version 0.36.1
-✓ kimi: config.toml parses
-✓ kimi: hook script valid
-  /Users/you/.kimi-boost/hooks/vue3/protect-main.mjs
-✓ kimi: mounted dir present
-⚠ codex: CLI not detected
-  Install codex or ignore if you don't use it.
-
-1 warning(s), no errors
-```
-
-`kimi-boost doctor --fix` 会自动修复缺失的挂载目录和 hook 脚本。
-
-## 工作原理
+## 🏗️ 工作原理
 
 ```mermaid
 flowchart TD
@@ -280,7 +281,7 @@ flowchart TD
 
     REG --> CI
     SPLIT -->|"自动镜像"| M1["kimi-boost-vue3"]
-    SPLIT -->|"自动镜像"| M2["react · go · python · usage"]
+    SPLIT -->|"自动镜像"| M2["react · go · python · usage · core"]
     M1 & M2 -->|"/plugins install"| KP["Kimi Code /plugins"]
     REG -->|"生成（单仓源）"| MKT["marketplace.json"]
     MKT -->|"KIMI_CODE_PLUGIN_MARKETPLACE_URL"| KP
@@ -299,22 +300,24 @@ flowchart TD
     class KCF,CCS,CXC,KP out;
 ```
 
-- **唯一事实来源**——预设只在主仓维护；五个旗舰镜像仓是 CI 自动同步的只读产物，每次推送自动更新。
+- **唯一事实来源**——预设只在主仓维护；六个旗舰镜像仓是 CI 自动同步的只读产物，每次推送自动更新。
 - **Kimi Code**——CLI 以**文本级**方式编辑 `~/.kimi-code/config.toml`（一个 `# >>> kimi-boost managed >>>` 受管区块 + 原位数组合并），你的注释和格式原样保留。
-- **Claude Code 与 Codex**——以 manifest 驱动方式装入 `~/.claude` / `~/.codex`；Agent 文件采用原生 frontmatter 格式（按 Kimi 官方文档跨平台兼容）。
-- **Hooks 就是普通 Node `.mjs`**——与 Kimi Code 官方文档同款写法，macOS / Windows / Linux 行为一致。
+- **Claude Code 与 Codex**——以 manifest 驱动方式装入 `~/.claude` / `~/.codex`；Agent 文件采用原生 frontmatter 格式。
+- **Hooks 就是普通 Node `.mjs`**——macOS / Windows / Linux 行为一致。
 - **兼容性是测出来的，不是猜的**——CI 会在每个 PR 上把 19 个预设实装进真实的 Kimi Code CLI，并每周跑一次以捕捉上游变化。
 
-## 默认安全
+## 🛡️ 默认安全
 
 - 🔒 **绝不碰受管区块以外的配置**——注释、顺序、格式全部保留
 - 🗄️ 每次修改前备份到 `<config>.kboost.bak`
 - 🚧 受管目录白名单——拒绝删除 `~/.kimi-boost`、`~/.kimi-code`、`~/.claude`、`~/.codex` 之外的任何内容
 - 🛡️ 双渠道防重——已经通过 Kimi `/plugins` 装过？不会重复注册 hook
-- ♻️ **按内容去重 hook**——多个预设携带相同守卫脚本（如 `protect-main.mjs`）时只注册一条共享条目；卸载其中一个预设会自动把条目重定向到下一个共享者，其余预设不受影响。`doctor` 会标记冗余或内容分叉的 hook 副本
+- ♻️ **按内容去重 hook**——多个预设携带相同守卫脚本时只注册一条共享条目；卸载其中一个预设会自动把条目重定向到下一个共享者。`doctor` 会标记冗余或内容分叉的副本
 - ⚡ Hooks fail-open——hook 崩溃也不会阻塞你的工作（退出码 `0` 放行 · `2` 拦截）
 
-## 路线图
+---
+
+## 🗺️ 路线图
 
 - [x] MCP server 预设
 - [x] Token/成本用量守卫 hooks
@@ -327,6 +330,10 @@ flowchart TD
 
 预设目录由 PR 驱动：在 `presets/` 下新增一个目录即可，CI 会校验 schema、hook 事件和文件存在性，并把你的预设实装进真实的 Kimi Code CLI 验证。详见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
 
-## 许可证
+---
 
-MIT
+<div align="center">
+
+MIT · 由 [kimi-boost contributors](https://github.com/shidesheng0218/kimi-boost) 用 ⚡ 构建
+
+</div>
