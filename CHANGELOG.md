@@ -1,4 +1,4 @@
-## Unreleased
+## 0.16.0 (2026-09-28)
 
 ### Guardrails v3 — a hard layer + prompt-injection detection
 
@@ -14,6 +14,7 @@ Competitor research (agent-guard, dwarvesf/claude-guardrails) showed our hooks a
 ### Docs
 
 - New README section framing the two layers (hard deny + soft hooks) and where injection-scan fits.
+- Visual README upgrade: a four-card value strip (`assets/pillars.svg`) at the top of the Why section and a two-layers diagram (`assets/layers.svg`) in the guardrails section, in both English and Chinese READMEs.
 
 ## 0.15.0 (2026-09-20)
 
