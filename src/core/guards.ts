@@ -110,6 +110,14 @@ export const GUARD_REGISTRY: GuardInfo[] = [
     risk: "关掉后经由 shell 重定向写入的密钥不再被提醒(PreToolUse 只看得到 Write/Edit)",
   },
   {
+    name: "injection-scan",
+    preset: "core",
+    description: "提示注入检测:读到可疑'劫持指令'时提醒 agent 别照做(只提醒,不阻断)",
+    blocks: "PostToolUse 工具输出里的注入模式(ignore previous instructions、you are now、new instructions、exfiltration 指令等)",
+    bypass: "它从不阻断;若误报太多可 guard --disable injection-scan",
+    risk: "关掉后读到恶意网页/文件里的劫持指令时,不会再有这层提醒",
+  },
+  {
     name: "block-force-push",
     preset: "security",
     description: "拦截 git push --force / --delete",

@@ -1,3 +1,20 @@
+## Unreleased
+
+### Guardrails v3 — a hard layer + prompt-injection detection
+
+Competitor research (agent-guard, dwarvesf/claude-guardrails) showed our hooks are a *soft* layer the agent could in principle route around. This release adds the *hard* layer they have and we lacked, plus prompt-injection detection.
+
+**Native deny layer (Claude Code):**
+- Presets can now declare `denyRules` (new optional `PresetDefinition` field, validated as `Tool(spec)` strings). Installing `core` on Claude Code also writes a curated `permissions.deny` list into `~/.claude/settings.json` — `Read(~/.ssh/**)`, `Read(**/*.pem)`, `Edit(~/.claude/settings.json)`, `Edit(~/.kimi-boost/**)`, `Bash(rm -rf *)`, `Bash(mkfs *)`, `Bash(sudo *)`, `Bash(git reset --hard*)`, `Bash(git clean -f*)` and more. These are enforced by the harness itself, so the agent cannot disable them by editing hook config (unlike our hooks, which it could).
+- The rules we add are recorded in the install manifest and removed **surgically** on uninstall — the user's own deny rules are never touched. Kimi/Codex unchanged (no native deny layer; hooks already cover it).
+
+**Prompt-injection guard (core 1.3.0):**
+- New `injection-scan` hook: PostToolUse, scans tool output for injection patterns ("ignore previous instructions", "you are now", "new instructions:", exfiltration commands, system-prompt probes). **Warn-only by design** — it logs + alerts but never blocks (false positives are inherent to this class of detection).
+
+### Docs
+
+- New README section framing the two layers (hard deny + soft hooks) and where injection-scan fits.
+
 ## 0.15.0 (2026-09-20)
 
 ### Guardrails v2 — absorb what the other guardrail projects got right

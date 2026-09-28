@@ -3,7 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { Adapter, AdapterContext, InstallReport } from "./types.js";
 import { backupDir, backupFile } from "../core/config.js";
-import { clearInstall, installedFilesFor, readHookRegistry, recordInstall, writeHookRegistry } from "../core/manifest.js";
+import { clearInstall, installedFilesFor, readHookRegistry, recordInstall, writeHookRegistry, recordDenyRules, installedDenyRulesFor } from "../core/manifest.js";
 import { claimPresetHooks, fingerprintPresetHooks, hookCommandOwner, releasePresetRefs } from "../core/hookRegistry.js";
 import { copyDirIfWritable, ensureDir as mkdirSyncSafe, isDryRun, removeIfWritable, writeFileIfWritable } from "../core/fsguard.js";
 import { assertManagedPath } from "../core/safety.js";
@@ -18,6 +18,8 @@ function boostHooksDir() {
 
 type ClaudeSettings = {
   hooks?: Record<string, Array<{ matcher?: string; hooks: Array<{ type: string; command: string; timeout?: number }> }>>;
+  /** Claude Code 原生强制层:permissions.deny(Tool(spec) 形式,harness 内强制,比 hook 更难绕过) */
+  permissions?: { deny?: string[] };
 };
 
 function readSettings(): { path: string; data: ClaudeSettings } {
@@ -78,6 +80,39 @@ function buildHookCommand(hooksBase: string, h: PresetHook): string {
   return `node "${join(hooksBase, h.script)}"${h.args && h.args.length ? ` ${h.args.join(" ")}` : ""}`;
 }
 
+/** 把 preset 的 deny 规则并入 settings.json 的 permissions.deny(保留用户已有规则,去重) */
+function upsertClaudeDenyRules(data: ClaudeSettings, rules: string[]): boolean {
+  const perms = data.permissions ?? {};
+  const existing = perms.deny ?? [];
+  const set = new Set(existing);
+  let changed = false;
+  for (const r of rules) {
+    if (!set.has(r)) {
+      set.add(r);
+      changed = true;
+    }
+  }
+  if (changed) {
+    perms.deny = [...set];
+    data.permissions = perms;
+  }
+  return changed;
+}
+
+/** 精准移除我们当初写入的 deny 规则(不动用户自己的);空了连 permissions.deny 一起清掉 */
+function removeClaudeDenyRules(data: ClaudeSettings, rules: string[]): boolean {
+  const deny = data.permissions?.deny;
+  if (!deny || deny.length === 0) return false;
+  const remove = new Set(rules);
+  const next = deny.filter((r) => !remove.has(r));
+  if (next.length === deny.length) return false;
+  if (data.permissions) {
+    if (next.length === 0) delete data.permissions.deny;
+    else data.permissions.deny = next;
+  }
+  return true;
+}
+
 function copyDir(src: string, dest: string): string[] {
   return copyDirIfWritable(src, dest);
 }
@@ -92,6 +127,7 @@ export const claudeAdapter: Adapter = {
     const backups: Array<{ orig: string; bak: string }> = [];
     // 上次安装记录内的目标归本工具管理,直接覆盖;记录之外的用户文件先备份
     const prevInstalled = new Set(installedFilesFor(preset.id, "claude"));
+    const denyRules = preset.denyRules ?? [];
 
     try {
       if (existsSync(join(sourceDir, "agents"))) {
@@ -125,12 +161,12 @@ export const claudeAdapter: Adapter = {
       }
 
       // hook 内容去重:释放本预设旧引用(keepFps 之外的)→ 重定向/清理 config 条目 → 重新认领。
-      // 需要动 settings.json 的两种情况:本预设带 hooks,或释放动作需要重定向/清理陈旧条目
+      // 需要动 settings.json 的情况:本预设带 hooks,或带 deny 规则,或释放动作需要重定向/清理陈旧条目
       const registry = readHookRegistry();
       const fps = fingerprintPresetHooks(sourceDir, preset.hooks);
       const released = releasePresetRefs(registry, preset.id, new Set(fps.filter((f): f is string => Boolean(f))));
 
-      if (preset.hooks.length > 0 || released.length > 0) {
+      if (preset.hooks.length > 0 || released.length > 0 || denyRules.length > 0) {
         const { path, data } = readSettings();
         const backup = backupFile(path);
         if (backup) configChanges.push(backup);
@@ -150,12 +186,19 @@ export const claudeAdapter: Adapter = {
         }
         if (claim.registryChanged || released.length > 0) writeHookRegistry(registry);
 
+        // 原生强制层:permissions.deny(写入 settings;记录到 manifest 挪到 finally 之后,因为那里才有安装记录)
+        if (denyRules.length > 0) {
+          upsertClaudeDenyRules(data, denyRules);
+        }
+
         writeFileIfWritable(path, JSON.stringify(data, null, 2));
         configChanges.push(path);
       }
     } finally {
       // 增量记录:即使中途抛错,本轮已写文件也进 manifest,保证 remove 总能清理干净
       recordInstall(preset.id, "claude", written, preset.version);
+      // 记录本端写入的 deny 规则(必须在 recordInstall 之后——记录里要先有条目)
+      if (denyRules.length > 0) recordDenyRules(preset.id, "claude", denyRules);
     }
 
     const all = [...written, ...configChanges];
@@ -202,6 +245,9 @@ export const claudeAdapter: Adapter = {
     }
     const changed: string[] = [];
 
+    // 先取出本预设写入的 deny 规则——clearInstall 会把 manifest 记录(含 denyRules)删掉
+    const ourDeny = installedDenyRulesFor(presetId, "claude");
+
     for (const file of installedFilesFor(presetId, "claude")) {
       if (existsSync(file)) {
         assertManagedPath(file);
@@ -220,13 +266,18 @@ export const claudeAdapter: Adapter = {
     const { path, data } = readSettings();
     const backup = backupFile(path);
     if (backup) changed.push(backup);
+
+    // 精准移除本预设写入的 deny 规则(不动用户自己的)
+    const denyRemoved = ourDeny.length > 0 && removeClaudeDenyRules(data, ourDeny);
+    if (denyRemoved) changed.push(`${path} (permissions.deny)`);
+
     const retargets = new Map(released.filter((r) => r.newCommand).map((r) => [r.oldCommand, r.newCommand!]));
     const removed = transformClaudeHooks(data, (cmd) => {
       const t = retargets.get(cmd);
       if (t) return t;
       return hookCommandOwner(cmd) === presetId ? undefined : cmd;
     });
-    if (removed) {
+    if (removed || denyRemoved) {
       writeFileIfWritable(path, JSON.stringify(data, null, 2));
       changed.push(path);
     }
