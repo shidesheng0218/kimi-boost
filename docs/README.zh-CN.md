@@ -25,6 +25,12 @@ AI 编程助手只会做你教它的事。不加以引导，它会写出泛泛�
 
 **kimi-boost 几秒钟把完整、有主张的开发工作流装进你的助手：**
 
+<div align="center">
+
+![Skills · 审查 Agent · 守卫 · 更新](../assets/pillars.svg)
+
+</div>
+
 | 你能得到 | 作用 |
 |---|---|
 | 🧠 **Skills** | 助手**自动加载**的最佳实践规则——无需每次提醒 |
@@ -90,6 +96,12 @@ All checks passed.
 - 不重装即可调整：`--disable/--enable <名称>` 开关守卫，`--warn/--block <名称>` 软化为只记录不阻断或恢复硬拦，`--explain <名称>` 说明拦什么/如何放行/关掉的风险，`--add-pattern <正则>` 给 `block-dangerous` 加自定义模式。
 - **同一套守卫，进 CI**：`guard --ci [--staged]` 扫描变更文件里的密钥并以非零码退出；`guard --install-git-hook` 把它接进 pre-commit。
 - **软硬两层**：hook 是软层（我们装的脚本）；在 Claude Code 上 `core` 还会往 `~/.claude/settings.json` 写一份精挑的 `permissions.deny`——**硬层**，由 harness 原生强制，agent 无法经 hook 配置绕过。另有 `injection-scan` 监听工具输出里的提示注入模式（只提醒不阻断）。
+
+<div align="center">
+
+![软硬两层:harness 强制的 deny 层 + fail-open 的 hook 层](../assets/layers.svg)
+
+</div>
 
 > [!IMPORTANT]
 > **护栏不承诺什么。** 模式匹配不是安全边界——沙箱才是。这些 hook 抬高的是"事故成本"，挡不住有心规避的对手（或被提示注入的 agent）：`base64 | sh`、脚本包装、运行时拼装密钥都能绕过。一切 fail-open 是刻意取舍：hook 出错绝不阻塞你。`secret-scan-post` 只能告知（触发时文件已写入）。守卫按工具注册生效。请把护栏与宿主侧密钥扫描、代码审查、沙箱叠加使用。
