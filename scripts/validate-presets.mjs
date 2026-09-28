@@ -57,6 +57,19 @@ for (const entry of readdirSync(presetsDir)) {
     }
   }
 
+  // denyRules(若存在)必须是字符串数组,且形如 Tool(spec),如 Read(**/*.pem)、Bash(rm -rf *)
+  if (preset.denyRules !== undefined) {
+    if (!Array.isArray(preset.denyRules)) {
+      errors.push(`presets/${entry}: denyRules must be an array`);
+    } else {
+      for (const r of preset.denyRules) {
+        if (typeof r !== "string" || !/^[A-Za-z]+\(.+\)$/.test(r)) {
+          errors.push(`presets/${entry}: invalid denyRule '${String(r)}' (expect Tool(spec), e.g. Read(**/*.pem))`);
+        }
+      }
+    }
+  }
+
   if (existsSync(join(dir, "skills"))) {
     const skillDir = join(dir, "skills");
     let foundSkill = false;

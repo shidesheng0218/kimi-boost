@@ -36,6 +36,8 @@ export interface PresetDefinition {
   asPlugin?: boolean;
   /** MCP server 声明(serverName -> 配置),写入 ~/.kimi-code/mcp.json */
   mcpServers?: Record<string, unknown>;
+  /** Claude Code 原生 permissions.deny 规则(Tool(spec) 形式,harness 原生强制、比 hook 更难绕过;仅 claude 端生效) */
+  denyRules?: string[];
   docs?: string;
 }
 

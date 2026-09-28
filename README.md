@@ -70,7 +70,7 @@ Most agent safety is invisible: a hook silently blocks something and you never l
 
 </div>
 
-**Eight guards in the `core` preset** (included by default in `kimi-boost init`, or `/plugins install …/kimi-boost-core` with no CLI at all):
+**Nine guards in the `core` preset** (included by default in `kimi-boost init`, or `/plugins install …/kimi-boost-core` with no CLI at all):
 
 | Guard | What it blocks |
 |---|---|
@@ -82,12 +82,15 @@ Most agent safety is invisible: a hook silently blocks something and you never l
 | `protect-paths` | Hand-editing lockfiles; writes into `node_modules/`, `dist/`, `.git/` |
 | `protect-guards` | The agent disabling guardrails or rewriting their config |
 | `secret-scan-post` | A PostToolUse re-scan that catches secrets written via shell redirection |
+| `injection-scan` | Prompt-injection patterns in tool output (warn-only — alerts, never blocks) |
 
 **Visible, tunable, honest:**
 
 - Every block lands in `~/.kimi-boost/guard-log.jsonl` (previews redacted — never the secret itself). `kimi-boost guard` shows status + block counts; `guard --log` lists recent blocks; `kimi-boost stats` reports **🛡️ N blocks** on your share card.
 - Tune live without reinstalling: `guard --disable/--enable <name>` toggles, `--warn/--block <name>` softens to warn-only, `--explain <name>` tells you what it blocks and the risk of disabling it, `--add-pattern <regex>` teaches `block-dangerous` your own patterns.
 - **Same guards in CI**: `guard --ci [--staged]` scans changed files for secrets and exits non-zero on findings; `guard --install-git-hook` wires that into a pre-commit hook.
+
+**Two layers, not one.** Hooks are the *soft* layer — scripts we install. On Claude Code, `core` additionally writes a curated `permissions.deny` list into `~/.claude/settings.json`: the *hard* layer, enforced by the harness itself so the agent can't route around it. And `injection-scan` watches tool output for prompt-injection patterns (warn-only — it alerts, never blocks, since false positives are inherent there).
 
 > [!IMPORTANT]
 > **What the guardrails don't promise.** Pattern matching is not a security boundary — sandboxing is. These hooks raise the cost of accidents; a determined adversary (or a prompt-injected agent) can obfuscate around them (`base64 | sh`, scripts, runtime-assembled secrets). Everything fails open on purpose: a hook error never blocks your work. `secret-scan-post` informs — the write already happened. Guards are per-tool. Layer them with host-side secret scanning, review, and a sandbox.

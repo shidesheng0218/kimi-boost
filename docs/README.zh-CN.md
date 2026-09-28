@@ -70,7 +70,7 @@ All checks passed.
 
 </div>
 
-**`core` preset 内置 8 个守卫**（`kimi-boost init` 默认附带；也可以 `/plugins install …/kimi-boost-core` 零 CLI 安装）：
+**`core` preset 内置 9 个守卫**（`kimi-boost init` 默认附带；也可以 `/plugins install …/kimi-boost-core` 零 CLI 安装）：
 
 | 守卫 | 拦截什么 |
 |---|---|
@@ -82,12 +82,14 @@ All checks passed.
 | `protect-paths` | 手改 lockfile；写 `node_modules/`、`dist/`、`.git/` |
 | `protect-guards` | agent 自行关闭护栏或改写护栏配置 |
 | `secret-scan-post` | PostToolUse 补扫，捕获经 shell 重定向写入的密钥 |
+| `injection-scan` | 提示注入检测：读到疑似"劫持指令"时提醒 agent 别照做（只提醒，不阻断） |
 
 **可见、可调、诚实：**
 
 - 每次拦截都记入 `~/.kimi-boost/guard-log.jsonl`（摘要脱敏，绝不记录密钥本身）。`kimi-boost guard` 看状态与拦截次数；`guard --log` 看明细；`kimi-boost stats` 的分享卡片会显示 **🛡️ N 次拦截**。
 - 不重装即可调整：`--disable/--enable <名称>` 开关守卫，`--warn/--block <名称>` 软化为只记录不阻断或恢复硬拦，`--explain <名称>` 说明拦什么/如何放行/关掉的风险，`--add-pattern <正则>` 给 `block-dangerous` 加自定义模式。
 - **同一套守卫，进 CI**：`guard --ci [--staged]` 扫描变更文件里的密钥并以非零码退出；`guard --install-git-hook` 把它接进 pre-commit。
+- **软硬两层**：hook 是软层（我们装的脚本）；在 Claude Code 上 `core` 还会往 `~/.claude/settings.json` 写一份精挑的 `permissions.deny`——**硬层**，由 harness 原生强制，agent 无法经 hook 配置绕过。另有 `injection-scan` 监听工具输出里的提示注入模式（只提醒不阻断）。
 
 > [!IMPORTANT]
 > **护栏不承诺什么。** 模式匹配不是安全边界——沙箱才是。这些 hook 抬高的是"事故成本"，挡不住有心规避的对手（或被提示注入的 agent）：`base64 | sh`、脚本包装、运行时拼装密钥都能绕过。一切 fail-open 是刻意取舍：hook 出错绝不阻塞你。`secret-scan-post` 只能告知（触发时文件已写入）。守卫按工具注册生效。请把护栏与宿主侧密钥扫描、代码审查、沙箱叠加使用。
@@ -130,7 +132,7 @@ presets/<id>/
 
 | 预设 | 能力 | 镜像仓 |
 |---|---|---|
-| `core` 🛡️ | **任何项目都该装的最小保险**——上面 8 个守卫。`init` 默认附带 | [✅](https://github.com/shidesheng0218/kimi-boost-core) |
+| `core` 🛡️ | **任何项目都该装的最小保险**——上面 9 个守卫。`init` 默认附带 | [✅](https://github.com/shidesheng0218/kimi-boost-core) |
 | `usage` | 会话/提示/工具调用统计到 `~/.kimi-boost/usage.json`；`KIMI_BOOST_DAILY_LIMIT` 阈值提醒；`kimi-boost stats` 查看 | [✅](https://github.com/shidesheng0218/kimi-boost-usage) |
 | `security` | 更深的安全包：写入扫描密钥、拦 `git push --force`/`--delete` + `security-reviewer` 审查 agent | 经 CLI |
 | `git-workflow` | 约定式提交、分支命名与 PR 规范（自动加载 skill）+ 审查 agent | 经 CLI |
