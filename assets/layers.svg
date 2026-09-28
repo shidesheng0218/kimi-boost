@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="380" viewBox="0 0 720 380" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <!-- 顶部:agent 动作 -->
+  <rect x="180" y="16" width="360" height="56" rx="12" fill="#161b26" stroke="#30363d"/>
+  <text x="360" y="50" text-anchor="middle" font-size="18" font-weight="600" fill="#f0f6fc">🤖 Agent action</text>
+
+  <line x1="360" y1="76" x2="360" y2="102" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 硬层:deny -->
+  <rect x="120" y="104" width="480" height="84" rx="12" fill="#3d1f1f" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="360" y="136" text-anchor="middle" font-size="16" font-weight="700" fill="#ffa198">🛡️ Hard layer — permissions.deny</text>
+  <text x="360" y="160" text-anchor="middle" font-size="13" fill="#f0888c">enforced by the harness itself — the agent can't route around it</text>
+  <text x="360" y="178" text-anchor="middle" font-size="12" fill="#c5636b">(Claude Code: settings.json · permissions.deny)</text>
+
+  <line x1="360" y1="192" x2="360" y2="218" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 软层:hooks -->
+  <rect x="120" y="220" width="480" height="84" rx="12" fill="#12261a" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="360" y="252" text-anchor="middle" font-size="16" font-weight="700" fill="#56d364">⚡ Soft layer — hooks</text>
+  <text x="360" y="276" text-anchor="middle" font-size="13" fill="#56d364">our scripts · fail-open · tunable via kimi-boost guard</text>
+  <text x="360" y="294" text-anchor="middle" font-size="12" fill="#3f8f4f">(all three harnesses: Kimi Code · Claude Code · Codex)</text>
+
+  <line x1="360" y1="308" x2="360" y2="334" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 底部:执行 -->
+  <rect x="180" y="336" width="360" height="40" rx="12" fill="#161b26" stroke="#30363d"/>
+  <text x="360" y="361" text-anchor="middle" font-size="16" font-weight="600" fill="#a7f3d0">✓ executes only if it passes both</text>
+</svg>

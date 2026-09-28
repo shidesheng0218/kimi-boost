@@ -25,6 +25,12 @@ Your AI coding agent only knows what you teach it. Unguided, it writes generic c
 
 **kimi-boost installs a complete, opinionated workflow in seconds:**
 
+<div align="center">
+
+![Skills · Reviewers · Guards · Updates](assets/pillars.svg)
+
+</div>
+
 | You get | What it does |
 |---|---|
 | 🧠 **Skills** | Best-practice rules your agent **auto-loads** — no prompting required |
@@ -91,6 +97,12 @@ Most agent safety is invisible: a hook silently blocks something and you never l
 - **Same guards in CI**: `guard --ci [--staged]` scans changed files for secrets and exits non-zero on findings; `guard --install-git-hook` wires that into a pre-commit hook.
 
 **Two layers, not one.** Hooks are the *soft* layer — scripts we install. On Claude Code, `core` additionally writes a curated `permissions.deny` list into `~/.claude/settings.json`: the *hard* layer, enforced by the harness itself so the agent can't route around it. And `injection-scan` watches tool output for prompt-injection patterns (warn-only — it alerts, never blocks, since false positives are inherent there).
+
+<div align="center">
+
+![Two layers: a harness-enforced deny layer over fail-open hooks](assets/layers.svg)
+
+</div>
 
 > [!IMPORTANT]
 > **What the guardrails don't promise.** Pattern matching is not a security boundary — sandboxing is. These hooks raise the cost of accidents; a determined adversary (or a prompt-injected agent) can obfuscate around them (`base64 | sh`, scripts, runtime-assembled secrets). Everything fails open on purpose: a hook error never blocks your work. `secret-scan-post` informs — the write already happened. Guards are per-tool. Layer them with host-side secret scanning, review, and a sandbox.
