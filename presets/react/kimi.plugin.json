@@ -1,6 +1,6 @@
 {
   "name": "react",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React + TypeScript 最佳实践:组件组合、Hooks 规范、性能与可访问性。",
   "keywords": [
     "react",

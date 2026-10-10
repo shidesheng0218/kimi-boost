@@ -57,7 +57,7 @@ describe("project manifest versioning", () => {
     await installProjectPreset("vue3", { root: proj });
 
     const rows = projectInstalledPresets(proj);
-    expect(rows).toEqual([{ id: "vue3", version: "1.0.0" }]);
+    expect(rows).toEqual([{ id: "vue3", version: "1.0.1" }]);
   });
 
   it("removeProjectPreset still cleans legacy array-shaped manifests", async () => {

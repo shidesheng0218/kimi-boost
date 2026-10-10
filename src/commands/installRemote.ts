@@ -3,6 +3,7 @@ import { join } from "node:path";
 import pc from "picocolors";
 import prompts from "prompts";
 import { downloadRepoTarball, findDirWith } from "../core/github.js";
+import { describeProjectInstall, formatPresetSurface, installProjectPreset, type ProjectPresetSource } from "../core/project.js";
 import { writeSource } from "../core/sources.js";
 import type { PresetDefinition, ToolName } from "../core/types.js";
 import { getPreset } from "../registry/presets.js";
@@ -41,6 +42,8 @@ export interface RemoteInstallOptions {
   /** 跳过安全确认(CI/脚本场景) */
   yes?: boolean;
   withHooks?: boolean;
+  /** 安装到当前项目(.agents/、.claude/)而非用户级配置 */
+  project?: boolean;
 }
 
 /**
@@ -64,15 +67,22 @@ export async function installRemotePreset(spec: RemoteSpec, opts: RemoteInstallO
       throw new Error(`preset.json in ${repoSlug}@${spec.ref} 缺少 id/name 字段`);
     }
 
-    // 展示将安装的内容,特别是会执行的 hooks
-    console.log(pc.bold(`远程 preset: ${preset.id} (${preset.name}) v${preset.version ?? "?"}`) + pc.dim(` ← github.com/${repoSlug}@${spec.ref}`));
-    if (preset.description) console.log(pc.dim(`  ${preset.description}`));
-    const hooks = preset.hooks ?? [];
-    if (hooks.length > 0) {
-      console.log(pc.yellow(`  ⚠ 该 preset 将注册 ${hooks.length} 个 hook,agent 运行时会执行对应脚本:`));
-      for (const h of hooks) {
-        console.log(`    ${pc.yellow("•")} [${h.event}${h.matcher ? `/${h.matcher}` : ""}] node hooks/${h.script}`);
+    // 展示将安装的内容,特别是会执行的 hooks。项目级与 inspect 用同一份摘要。
+    const source: ProjectPresetSource = `github:${repoSlug}@${spec.ref}`;
+    if (opts.project) {
+      console.log(formatPresetSurface(describeProjectInstall(preset, presetRoot, source, opts.tool)));
+      if (opts.dryRun) console.log("(dry-run: no files will be written)");
+    } else {
+      console.log(pc.bold(`远程 preset: ${preset.id} (${preset.name}) v${preset.version ?? "?"}`) + pc.dim(` ← github.com/${repoSlug}@${spec.ref}`));
+      if (preset.description) console.log(pc.dim(`  ${preset.description}`));
+      const hooks = preset.hooks ?? [];
+      if (hooks.length > 0) {
+        console.log(pc.yellow(`  ⚠ 该 preset 将注册 ${hooks.length} 个 hook,agent 运行时会执行对应脚本:`));
+        for (const h of hooks) {
+          console.log(`    ${pc.yellow("•")} [${h.event}${h.matcher ? `/${h.matcher}` : ""}] node hooks/${h.script}`);
+        }
       }
+      console.log(pc.dim("  network: github (tarball already downloaded for this preview)"));
     }
     if (!opts.yes && !opts.dryRun) {
       const answer = await prompts({ type: "confirm", name: "ok", message: "确认安装这个第三方 preset?", initial: false });
@@ -87,14 +97,23 @@ export async function installRemotePreset(spec: RemoteSpec, opts: RemoteInstallO
       console.warn(pc.yellow(`[warn] '${preset.id}' 与官方 registry 中的 preset 同名;安装后 update 将改为跟踪 ${repoSlug}。`));
     }
 
-    const reports = await installPreset(preset.id, {
-      tool: opts.tool,
-      dryRun: opts.dryRun,
-      withHooks: opts.withHooks,
-      sourceDir: presetRoot,
-    });
-    // 注意:installPreset 内部会切换全局 dryRun;来源标记只在真实安装时写
-    if (!opts.dryRun) writeSource(preset.id, { repo: repoSlug, ref: spec.ref });
+    const reports = opts.project
+      ? await installProjectPreset(preset.id, {
+          tool: opts.tool,
+          dryRun: opts.dryRun,
+          sourceDir: presetRoot,
+          source,
+          preset,
+          quiet: true,
+        })
+      : await installPreset(preset.id, {
+          tool: opts.tool,
+          dryRun: opts.dryRun,
+          withHooks: opts.withHooks,
+          sourceDir: presetRoot,
+        });
+    // 注意:install 内部会切换全局 dryRun;来源标记只在真实的用户级安装时写
+    if (!opts.dryRun && !opts.project) writeSource(preset.id, { repo: repoSlug, ref: spec.ref });
     return reports;
   } finally {
     dl.cleanup();

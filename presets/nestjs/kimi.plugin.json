@@ -1,6 +1,6 @@
 {
   "name": "nestjs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "NestJS / TypeScript 后端最佳实践:模块化、依赖注入、守卫与测试。",
   "keywords": [
     "nestjs",

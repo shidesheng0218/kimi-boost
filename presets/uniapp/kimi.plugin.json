@@ -1,6 +1,6 @@
 {
   "name": "uniapp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "uni-app 跨端最佳实践:页面结构、条件编译、性能与兼容性。",
   "keywords": [
     "uniapp",

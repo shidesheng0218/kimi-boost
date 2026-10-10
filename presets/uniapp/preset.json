@@ -8,7 +8,7 @@
     "miniprogram",
     "cross-platform"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "hooks": [
     {
       "event": "PreToolUse",

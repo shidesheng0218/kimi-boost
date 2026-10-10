@@ -145,7 +145,7 @@ presets/<id>/
 
 | Preset | What it gives you | Mirror |
 |---|---|---|
-| `core` 🛡️ | **The baseline insurance every project should have** — the 8 guardrails above. Default in `init` | [✅](https://github.com/shidesheng0218/kimi-boost-core) |
+| `core` 🛡️ | **The baseline insurance every project should have** — the 9 guardrails above (`injection-scan` is warn-only). Default in `init` | [✅](https://github.com/shidesheng0218/kimi-boost-core) |
 | `usage` | Sessions / prompts / tool calls tracked into `~/.kimi-boost/usage.json`; daily limit hint via `KIMI_BOOST_DAILY_LIMIT`; view with `kimi-boost stats` | [✅](https://github.com/shidesheng0218/kimi-boost-usage) |
 | `security` | Deeper guard pack: scans Write/Edit for secrets, blocks `git push --force`/`--delete` + `security-reviewer` agent | via CLI |
 | `git-workflow` | Conventional commits, branch naming & PR discipline (skill) + reviewer agent | via CLI |
@@ -163,7 +163,9 @@ presets/<id>/
 | Command | What it does |
 |---|---|
 | `init` | Detect this project's stack and install matching presets — always includes the `core` guardrails (`--yes`, `--dry-run`, `--project`) |
-| `install [preset]` | Install by id — or from any GitHub repo: `install github:owner/repo` (`--dry-run`, `--with-hooks`, `--project`) |
+| `install [preset]` | Install by id — or from any GitHub repo: `install github:owner/repo` (`--dry-run`, `--with-hooks`, `--project`, `--yes`) |
+| `inspect <preset>` | Preview a project-level install (components, hosts, hooks/MCP/deny/scripts, network, skipped) without writing |
+| `verify --project` | Compare `.kimi-boost/installed.json` with installed files; non-zero on drift; does not delete edits |
 | `remove <preset>` | Uninstall cleanly |
 | `list` | Show available + installed presets |
 | `status` | Detect installed CLIs & platform |
@@ -278,7 +280,13 @@ $ kimi-boost stats --share   # → kimi-boost-stats.svg
 
 ## 📤 More
 
-- **Project-level installs (team sharing)** — `install <preset> --project` writes skills/agents into `.agents/` + `.claude/` inside your repo, commit it, and every clone gets the same AI behavior.
+- **Project-level installs (team sharing)** — `install <preset> --project` writes skills/agents into `.agents/` + `.claude/` and a lock at `.kimi-boost/installed.json` (version, source, content hash, targets, skipped). Commit it. Hooks land in Claude project settings only; Codex is skipped (no project-level config); MCP servers and Claude `permissions.deny` stay user-level and are recorded as skipped. `injection-scan` in `core` is warn-only.
+
+```bash
+kimi-boost inspect vue3          # preview, writes nothing
+kimi-boost install vue3 --project
+kimi-boost verify --project      # non-zero if files changed or the lock is stale
+```
 - **Export & import** — `kimi-boost export` captures presets + versions + community sources + the update watch into one shareable file; `import` restores it on another machine. Dotfiles-friendly.
 - **Authoring presets** — `validate` / `dev` / `package` cover the loop; push the directory to GitHub and anyone can `install github:you/my-preset`.
 - **doctor** — `kimi-boost doctor` diagnoses config, hooks, mounted dirs and manifest consistency; `--fix` restores what's missing.

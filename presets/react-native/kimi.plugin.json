@@ -1,6 +1,6 @@
 {
   "name": "react-native",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React Native 最佳实践:组件组织、性能、原生桥接与发布。",
   "keywords": [
     "react-native",

@@ -12,6 +12,8 @@ export default tseslint.config(
       "docs/",
       ".zcode/",
       ".tmp/",
+      "src/hooks-runtime/",
+      "scripts/build-hooks.mjs",
     ],
   },
   js.configs.recommended,

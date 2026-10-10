@@ -1,6 +1,6 @@
 {
   "name": "fastapi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "FastAPI 最佳实践:pydantic 校验、异步、依赖注入与测试。",
   "keywords": [
     "fastapi",

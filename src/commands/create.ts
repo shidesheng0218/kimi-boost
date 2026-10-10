@@ -1,6 +1,11 @@
+import { readFileSync } from "node:fs";
 import { existsSync, writeFileSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { presetsRoot } from "../registry/presets.js";
+
+// 项目根目录(用于读取 hook 模板源文件,不受测试 mock 影响)
+const projectRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
 export interface CreateOptions {
   name?: string;
@@ -111,10 +116,12 @@ export function createPreset(id: string, opts: CreateOptions = {}): string[] {
   ]);
 
   if (shape === "skill") {
-    files.push([
-      "hooks/protect-main.mjs",
-      `import { execFileSync } from "node:child_process";\n\nlet input = "";\nprocess.stdin.on("data", (c) => (input += c));\nprocess.stdin.on("end", () => {\n  try {\n    const payload = JSON.parse(input);\n    const command = String(payload.tool_input?.command ?? "");\n    if (!/git push/i.test(command)) process.exit(0);\n    let branch = "";\n    try {\n      branch = execFileSync("git", ["branch", "--show-current"], { encoding: "utf8" }).trim();\n    } catch { /* not a git repo */ }\n    if (branch === "main" || branch === "master") {\n      console.error("[kimi-boost] Blocked: direct push to " + branch + ". Use a feature branch and open a PR instead.");\n      process.exit(2);\n    }\n  } catch { /* fail-open */ }\n  process.exit(0);\n});\n`,
-    ]);
+    // protect-main 从真实项目目录读取(避免测试 mock 影响)
+    const protectMainSource = join(projectRoot, "presets", "core", "hooks", "protect-main.mjs");
+    if (!existsSync(protectMainSource)) {
+      throw new Error("core/hooks/protect-main.mjs not found — run npm run build:hooks first");
+    }
+    files.push(["hooks/protect-main.mjs", readFileSync(protectMainSource, "utf8")]);
   }
   if (shape === "command") {
     files.push([

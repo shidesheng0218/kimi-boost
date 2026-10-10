@@ -183,10 +183,14 @@ export function addCustomPattern(pattern: string): void {
   }
 }
 
+/** hook 在日志超限时把当前文件 rename 为 <log>.1(只保留一代);读取时按旧→新拼接 */
 export function readGuardLog(): GuardEvent[] {
   try {
-    if (!existsSync(guardLogFile())) return [];
-    return readFileSync(guardLogFile(), "utf8")
+    const files = [`${guardLogFile()}.1`, guardLogFile()].filter((f) => existsSync(f));
+    if (files.length === 0) return [];
+    return files
+      .map((f) => readFileSync(f, "utf8"))
+      .join("\n")
       .split("\n")
       .filter(Boolean)
       .map((line) => {
@@ -245,7 +249,9 @@ export interface SecretFinding {
 
 function gitLines(args: string[]): string[] {
   try {
-    return execFileSync("git", args, { encoding: "utf8" })
+    // stderr 管道化:不在仓库内时 git 的 "fatal: not a git repository" 不应泄漏到终端,
+    // 调用方已经通过返回空数组处理该情况
+    return execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
       .split("\n")
       .map((l) => l.trim())
       .filter(Boolean);

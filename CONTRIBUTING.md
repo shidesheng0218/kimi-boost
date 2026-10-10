@@ -57,6 +57,7 @@ Rules:
 
 - `hooks/*.mjs` must be pure Node (cross-platform, no bash)
 - hooks must **fail-open** (non-zero exit = allow, exit 2 = block)
+- guard hooks share one runtime block (config, log, `blockOrWarn`) between the `// ---- kimi-boost guard runtime` and `// ---- end guard runtime ----` markers. Never edit it by hand: change `scripts/hook-runtime/guard-runtime.tpl` and run `npm run sync:hooks`. CI runs `npm run check:hooks` and fails on drift
 - agents must be read-only unless the prompt explains why not
 - all content must be original or license-compatible (MIT/CC0) with attribution
 

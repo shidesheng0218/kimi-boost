@@ -3,18 +3,18 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, sep } from "node:path";
 import { detect } from "../core/detect.js";
 import { copyDirIfWritable, ensureDir, writeFileIfWritable } from "../core/fsguard.js";
-import { findProjectRoot } from "../core/project.js";
+import { findProjectRoot, missingLockFields, type ProjectPresetRecord } from "../core/project.js";
 import { presetSourceDir } from "../registry/presets.js";
 import type { DoctorIssue } from "./doctor.js";
 
 interface ProjectManifest {
-  presets: Record<string, string[] | { files: string[]; version?: string }>;
+  presets: Record<string, ProjectPresetRecord>;
 }
 
 /** 兼容新旧两种记录形态 */
-function filesOf(rec: string[] | { files: string[] } | undefined): string[] {
+function filesOf(rec: ProjectPresetRecord | undefined): string[] {
   if (!rec) return [];
-  return Array.isArray(rec) ? rec : rec.files;
+  return Array.isArray(rec) ? rec : rec.files ?? [];
 }
 
 const MANIFEST_REL = join(".kimi-boost", "installed.json");
@@ -64,6 +64,24 @@ export function runProjectDoctor(fix = false, cwd: string = process.cwd()): Doct
     return issues;
   }
   issues.push({ level: "ok", item: "project: .kimi-boost/installed.json valid", detail: join(root, MANIFEST_REL) });
+
+  for (const [id, rec] of Object.entries(manifest.presets)) {
+    const missing = missingLockFields(rec);
+    if (missing.length) {
+      issues.push({
+        level: "warn",
+        item: `${id}: project record is not reproducible`,
+        detail: `missing ${missing.join(", ")}; reinstall to refresh the lock: kboost install ${id} --project`,
+      });
+    } else {
+      const obj = rec as Exclude<ProjectPresetRecord, string[]>;
+      issues.push({
+        level: "ok",
+        item: `${id}: project lock complete`,
+        detail: `v${obj.version ?? "?"} ${obj.source} ${obj.contentHash?.slice(0, 12)}…`,
+      });
+    }
+  }
 
   // 1) 清单里记录的文件逐个验证
   const missing: Array<{ id: string; rel: string }> = [];

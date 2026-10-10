@@ -1,6 +1,6 @@
 {
   "name": "nextjs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Next.js 最佳实践:App Router、服务端组件、数据获取与性能。",
   "keywords": [
     "nextjs",

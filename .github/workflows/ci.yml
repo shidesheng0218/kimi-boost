@@ -25,6 +25,8 @@ jobs:
         run: npm run lint
       - name: Unit tests
         run: npm test
+      - name: Hook runtime in sync
+        run: npm run check:hooks
       - name: Preset validation
         run: node scripts/validate-presets.mjs
       - name: Build

@@ -162,7 +162,9 @@ presets/<id>/
 | 命令 | 作用 |
 |---|---|
 | `init` | 识别当前项目技术栈并安装匹配预设——默认附带 `core` 核心护栏（`--yes`、`--dry-run`、`--project`） |
-| `install [预设]` | 按 id 安装——或从任意 GitHub 仓库：`install github:owner/repo`（`--dry-run`、`--with-hooks`、`--project`） |
+| `install [预设]` | 按 id 安装——或从任意 GitHub 仓库：`install github:owner/repo`（`--dry-run`、`--with-hooks`、`--project`、`--yes`） |
+| `inspect <预设>` | 预览项目级安装（组件、宿主、hooks/MCP/deny/scripts、网络、跳过项），不写盘 |
+| `verify --project` | 核对 `.kimi-boost/installed.json` 与已安装文件；漂移时非零退出，不删除改动 |
 | `remove <预设>` | 干净卸载 |
 | `list` | 查看可用与已安装预设 |
 | `status` | 检测已安装的 CLI 与平台 |
@@ -277,7 +279,13 @@ $ kimi-boost stats --share   # → kimi-boost-stats.svg
 
 ## 📤 更多
 
-- **项目级安装（团队共享）**——`install <预设> --project` 把 skills/agents 写进项目的 `.agents/` + `.claude/`，提交进 git，每个 clone 都获得一致的 AI 行为。
+- **项目级安装（团队共享）**——`install <预设> --project` 把 skills/agents 写进 `.agents/` + `.claude/`，并在 `.kimi-boost/installed.json` 记下版本、来源、内容哈希、目标宿主和跳过原因。hooks 只进 Claude 的项目配置；Codex 没有项目级机制，会明确跳过；MCP 与 Claude `permissions.deny` 仍是用户级，记在 skipped 里。`core` 的 `injection-scan` 只提醒、不阻断。
+
+```bash
+kimi-boost inspect vue3
+kimi-boost install vue3 --project
+kimi-boost verify --project
+```
 - **导出与导入**——`kimi-boost export` 把 preset + 版本 + 社区来源 + 后台检查打包成一个可分享的文件；新机器 `import` 一键复现。适合放进 dotfiles 仓。
 - **创作 preset**——`validate` / `dev` / `package` 覆盖整个流程；把目录推到 GitHub，别人即可 `install github:you/my-preset`。
 - **doctor**——`kimi-boost doctor` 诊断配置、hooks、挂载目录与 manifest 一致性；`--fix` 自动修复缺失项。

@@ -1,3 +1,42 @@
+## Unreleased
+
+### Reproducible project installs
+
+- `install <preset> --project` now writes a lock record to `.kimi-boost/installed.json`: version, source (`builtin` or `github:owner/repo@ref`), source content hash, installed-files hash, target hosts, components and explicit `skipped` reasons (Codex has no project-level config; MCP servers and Claude `permissions.deny` stay user-level). Commit it for team sharing.
+- Community presets now work with `--project` (`install github:owner/repo --project`); previously this was rejected.
+- New `inspect <preset>`: preview a project-level install (components, hosts, hooks/MCP/deny/scripts, network, skipped) without writing anything.
+- New `verify --project`: compare the lock with installed files, exit non-zero on drift. Never deletes local edits.
+- `doctor` warns on legacy manifests that predate the lock fields and tells you to reinstall to refresh them.
+
+### Guard hooks: one runtime source
+
+- The guard runtime that every hook inlined (config read, log write, `blockOrWarn`) now lives in one template, `scripts/hook-runtime/guard-runtime.tpl`. `npm run sync:hooks` regenerates it into all 24 guard scripts; `npm run check:hooks` (CI + `prepublishOnly`) fails on drift. Presets stay self-contained, so they still ship as standalone plugins and mirror repos.
+- **Fix: lost block events under parallel hooks.** `guard-log.jsonl` was rewritten whole on every block (read all, append, truncate, write back), so concurrent hooks overwrote each other: 24 simultaneous blocks left 5 log lines. Hooks now `append` one line; past 256 KB the log rotates to `guard-log.jsonl.1` (one generation). `guard --log` and `stats` read both files, so counts don't drop at rotation.
+
+### Guard quality improvements
+
+**`protect-main` (core 1.3.1, 13 other presets 1.0.1):**
+- Now parses refspecs: blocks `git push origin HEAD:main`, `git push feat:master`, `+main`, `refs/heads/main`.
+- Blocks `--mirror` and `--all` (when main/master exists).
+- Respects `-C <dir>` and `--git-dir`: checks the target repo's branch, not the hook process cwd.
+- Unwraps command prefixes (`sudo`, `env VAR=1`, `sh -c`, `eval`) and compound commands (`&&`, `||`, `;`, `()`).
+- 29 new regression tests cover targeting, flags, wrapping, and cross-repo scenarios.
+
+**`block-dangerous` (core 1.3.1, python 1.0.2):**
+- Added patterns: `sudo rm -rf`, `git clean -f`, `git reset --hard`, `chmod -R 777`, `wget | bash`, `eval ... base64`.
+- 9 new tests for destructive git ops, sudo escalation, obfuscated injection.
+
+**`secret-scan` (core 1.3.1, security 1.0.1):**
+- Added: Slack webhook URLs (`hooks.slack.com/services/...`).
+- 8 new tests: GitHub tokens, private key headers, API key patterns, tool-scoping (only Write/Edit are scanned).
+
+**Developer experience:**
+- `create <id>` scaffolds now copy `protect-main.mjs` from `core` at generation time, so new presets get the latest guard logic instead of a stale inline copy.
+
+### Fixes
+
+- `guard --install-git-hook` outside a git repository no longer leaks git's `fatal: not a git repository` to the terminal; the existing friendly error is the only output.
+
 ## 0.16.0 (2026-09-28)
 
 ### Guardrails v3 — a hard layer + prompt-injection detection
