@@ -1,12 +1,8 @@
 import type { Command } from "commander";
-import { createRequire } from "node:module";
 import { wrapAction } from "./wrapAction.js";
 import { runExport } from "./export.js";
 
-const require = createRequire(import.meta.url);
-const pkgVersion = (require("../../package.json") as { version: string }).version;
-
-export function registerExport(program: Command) {
+export function registerExport(program: Command, pkgVersion: string) {
   program
     .command("export [file]")
     .description("Export your preset setup (presets + sources + watch) to a shareable file")

@@ -12,6 +12,7 @@ import type { PresetHook } from "../core/types.js";
 const CLAUDE_HOME = process.env.CLAUDE_CODE_HOME ?? join(homedir(), ".claude");
 const CLAUDE_AGENTS = join(CLAUDE_HOME, "agents");
 const CLAUDE_SKILLS = join(CLAUDE_HOME, "skills");
+const CLAUDE_COMMANDS = join(CLAUDE_HOME, "commands");
 function boostHooksDir() {
   return process.env.KIMI_BOOST_HOME ? join(process.env.KIMI_BOOST_HOME, "hooks") : join(homedir(), ".kimi-boost", "hooks");
 }
@@ -158,6 +159,21 @@ export const claudeAdapter: Adapter = {
         removeIfWritable(skillRoot, { recursive: true, force: true });
         written.push(...copyDir(join(sourceDir, "skills"), skillRoot));
         written.push(skillRoot);
+      }
+
+      // slash 命令:复制到 ~/.claude/commands/<id>/
+      if (existsSync(join(sourceDir, "commands"))) {
+        const cmdRoot = join(CLAUDE_COMMANDS, preset.id);
+        if (existsSync(cmdRoot) && !prevInstalled.has(cmdRoot)) {
+          const bak = backupDir(cmdRoot);
+          if (bak) {
+            backups.push({ orig: cmdRoot, bak });
+            configChanges.push(bak);
+          }
+        }
+        removeIfWritable(cmdRoot, { recursive: true, force: true });
+        written.push(...copyDir(join(sourceDir, "commands"), cmdRoot));
+        written.push(cmdRoot);
       }
 
       // hook 内容去重:释放本预设旧引用(keepFps 之外的)→ 重定向/清理 config 条目 → 重新认领。

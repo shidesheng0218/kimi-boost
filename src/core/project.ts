@@ -561,6 +561,7 @@ export async function installProjectPreset(id: string, opts: ProjectOptions = {}
       const changed: string[] = [];
       const skillsDest = join(root, tool === "kimi" ? join(".agents", "skills") : join(".claude", "skills"));
       const agentsDest = join(root, tool === "kimi" ? join(".agents", "agents") : join(".claude", "agents"));
+      const commandsDest = join(root, tool === "kimi" ? join(".agents", "commands") : join(".claude", "commands"));
 
       if (existsSync(join(sourceDir, "skills"))) {
         for (const f of copyDirIfWritable(join(sourceDir, "skills"), skillsDest)) {
@@ -570,6 +571,12 @@ export async function installProjectPreset(id: string, opts: ProjectOptions = {}
       }
       if (existsSync(join(sourceDir, "agents"))) {
         for (const f of copyDirIfWritable(join(sourceDir, "agents"), agentsDest)) {
+          changed.push(rel(root, f));
+          writtenAll.add(rel(root, f));
+        }
+      }
+      if (existsSync(join(sourceDir, "commands"))) {
+        for (const f of copyDirIfWritable(join(sourceDir, "commands"), commandsDest)) {
           changed.push(rel(root, f));
           writtenAll.add(rel(root, f));
         }
@@ -598,6 +605,9 @@ export async function installProjectPreset(id: string, opts: ProjectOptions = {}
       }
       if (tool === "kimi" && preset.hooks?.length) {
         notes.push("hooks 未装:Kimi Code 仅支持用户级 hook(需要可全局安装: kboost install " + id + ")");
+      }
+      if (tool === "kimi" && existsSync(join(sourceDir, "commands"))) {
+        notes.push("slash 命令已复制到 .agents/commands/(当前版本 Kimi Code 不扫描此目录,需走 /plugins 渠道启用)");
       }
 
       const files = [...writtenAll].sort();

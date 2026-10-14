@@ -1,5 +1,14 @@
 ## Unreleased
 
+### Slash commands now installed via CLI
+
+- `kimi-boost install` now installs preset `commands/` directories:
+  - **Claude Code**: copied to `~/.claude/commands/<id>/` (user-level) or `.claude/commands/<id>/` (project-level), available as `/<command>` immediately
+  - **Kimi Code**: copied to `~/.kimi-code/commands/<id>/` — the current Kimi Code version does not scan this directory (no `extra_command_dirs` config), so a note directs you to `/plugins install` for slash command activation. Files are pre-positioned for when directory scanning lands.
+  - **Codex**: skipped (no custom slash command mechanism)
+- `remove` cleans up commands directories on both tools
+- `create --shape command` scaffolds a `commands/<id>-report.md` stub that now actually gets installed
+
 ### Reproducible project installs
 
 - `install <preset> --project` now writes a lock record to `.kimi-boost/installed.json`: version, source (`builtin` or `github:owner/repo@ref`), source content hash, installed-files hash, target hosts, components and explicit `skipped` reasons (Codex has no project-level config; MCP servers and Claude `permissions.deny` stay user-level). Commit it for team sharing.
