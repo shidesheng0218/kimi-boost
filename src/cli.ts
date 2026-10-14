@@ -45,7 +45,7 @@ registerDoctor(program);
 registerCreate(program);
 registerStats(program);
 registerBadge(program);
-registerExport(program);
+registerExport(program, pkgVersion);
 registerImport(program);
 registerValidate(program);
 registerDev(program);
