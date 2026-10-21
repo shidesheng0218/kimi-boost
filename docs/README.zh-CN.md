@@ -2,9 +2,20 @@
 
 ![kimi-boost](../assets/hero.svg)
 
-**`npx kimi-boost init` → 识别你的技术栈 → 装好护栏与规范。**
+### 给 AI 编程助手加上可检查的护栏和工程规范。
 
-如果它帮你拦住过一次危险的 `rm -rf` 或一次误推主干，**点个 ⭐ 让别人也能找到它**。
+**Claude Code · Kimi Code · Codex CLI**
+
+```bash
+# 1. 3 秒安全沙箱回放（不写盘、不改任何 CLI 配置）
+npx kimi-boost demo
+
+# 2. 安装前完整预览将被写入的内容与配置
+npx kimi-boost inspect core
+
+# 3. 一键初始化护栏与项目技术栈规范
+npx kimi-boost init
+```
 
 [![GitHub stars](https://img.shields.io/github/stars/shidesheng0218/kimi-boost?style=flat-square)](https://github.com/shidesheng0218/kimi-boost)
 [![npm](https://img.shields.io/npm/v/kimi-boost?style=flat-square)](https://www.npmjs.com/package/kimi-boost)
@@ -21,9 +32,9 @@
 
 ## ⚡ 为什么需要它
 
-AI 编程助手只会做你教它的事。不加以引导，它会写出泛泛的代码、直接推 main 分支、对你还想保留的文件执行 `rm -rf`。手动配置 skills / hooks / agents 要花几个小时——大多数人永远不会去做。
+AI 编程助手只会做你教它的事。不加以引导，它会写出泛泛的代码、直接推 main 分支、对你还想保留的文件执行破坏性操作。手动配置 skills / hooks / agents 要花几个小时——大多数人永远不会去做。
 
-**kimi-boost 几秒钟把完整、有主张的开发工作流装进你的助手：**
+**kimi-boost 几秒钟把工程规范和看得见的护栏装进你的助手：**
 
 <div align="center">
 
@@ -152,7 +163,7 @@ presets/<id>/
 | `mcp-tools` | 零配置 MCP servers：`fetch` + `time` | 经 CLI |
 
 > [!NOTE]
-> 每个预设都内置一份最佳实践 SKILL.md（自动加载）+ 一个审查 Agent。新技术栈由投票驱动——[issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1)。"经 CLI"的预设会随需求增长陆续镜像为官方插件仓。
+> 多数技术栈预设内置一份最佳实践 SKILL.md（自动加载）+ 一个审查 Agent（`core`、`usage`、`mcp-tools` 等专用预设结构略有不同）。新技术栈由投票驱动——[issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1)。"经 CLI"的预设会随需求增长陆续镜像为官方插件仓。
 
 ---
 

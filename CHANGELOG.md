@@ -19,7 +19,7 @@
 
 ### Guard hooks: one runtime source
 
-- The guard runtime that every hook inlined (config read, log write, `blockOrWarn`) now lives in one template, `scripts/hook-runtime/guard-runtime.tpl`. `npm run sync:hooks` regenerates it into all 24 guard scripts; `npm run check:hooks` (CI + `prepublishOnly`) fails on drift. Presets stay self-contained, so they still ship as standalone plugins and mirror repos.
+- The guard runtime that every hook inlined (config read, log write, `blockOrWarn`) now lives in `src/hooks-runtime/guard-runtime.mjs`. `npm run build:hooks` regenerates it into guard scripts; `npm run check:hooks` (CI + `prepublishOnly`) fails on drift. Presets stay self-contained, so they still ship as standalone plugins and mirror repos.
 - **Fix: lost block events under parallel hooks.** `guard-log.jsonl` was rewritten whole on every block (read all, append, truncate, write back), so concurrent hooks overwrote each other: 24 simultaneous blocks left 5 log lines. Hooks now `append` one line; past 256 KB the log rotates to `guard-log.jsonl.1` (one generation). `guard --log` and `stats` read both files, so counts don't drop at rotation.
 
 ### Guard quality improvements

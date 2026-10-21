@@ -28,7 +28,7 @@
 npx kimi-boost install core
 ```
 
-## 五个守卫
+## 九个守卫
 
 | 守卫 | 拦截什么 |
 |---|---|
@@ -37,6 +37,10 @@ npx kimi-boost install core
 | `git-destructive` | 丢弃工作区的 git 操作：`reset --hard`、`clean -f`、`checkout -- .` |
 | `secret-scan` | 把硬编码密钥（AWS key、私钥、GitHub token…）写进文件 |
 | `protect-credentials` | 把 `~/.ssh`、`~/.aws/credentials`、`*.pem` 等凭证读进上下文 |
+| `protect-guards` | 阻止 agent 自身关闭护栏或改写其配置 |
+| `protect-paths` | 保护 lockfile、`node_modules/`、`.git/` 等关键路径不被手工篡改 |
+| `secret-scan-post` | 写入后的二次审查，捕获重定向流出的潜在敏感信息 |
+| `injection-scan` | 提示词注入模式检测（仅提醒，不阻断） |
 
 全部 **fail-open**：守卫自身出错时放行，绝不阻塞 agent 正常工作。
 

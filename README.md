@@ -2,9 +2,20 @@
 
 ![kimi-boost](assets/hero.svg)
 
-**`npx kimi-boost init` → detects your stack → installs guardrails + conventions.**
+### Practical guardrails and engineering workflows for AI coding agents.
 
-If it's ever saved you from a bad `rm -rf` or a push to `main`, **a ⭐ tells others it's worth finding**.
+**Claude Code · Kimi Code · Codex CLI**
+
+```bash
+# 1. Try a zero-risk sandboxed replay in 3 seconds (no install, no config changed)
+npx kimi-boost demo
+
+# 2. Preview what would be written before installing
+npx kimi-boost inspect core
+
+# 3. Install guardrails & stack conventions
+npx kimi-boost init
+```
 
 [![GitHub stars](https://img.shields.io/github/stars/shidesheng0218/kimi-boost?style=flat-square)](https://github.com/shidesheng0218/kimi-boost)
 [![npm](https://img.shields.io/npm/v/kimi-boost?style=flat-square)](https://www.npmjs.com/package/kimi-boost)
@@ -21,9 +32,9 @@ If it's ever saved you from a bad `rm -rf` or a push to `main`, **a ⭐ tells ot
 
 ## ⚡ Why
 
-Your AI coding agent only knows what you teach it. Unguided, it writes generic code, pushes straight to `main`, and runs `rm -rf` without flinching. Hand-configuring skills, hooks and agents takes hours — so nobody does it.
+Your AI coding agent only knows what you teach it. Unguided, it writes generic code, pushes straight to `main`, and runs destructive shell operations. Hand-configuring skills, hooks and agents takes hours — so nobody does it.
 
-**kimi-boost installs a complete, opinionated workflow in seconds:**
+**kimi-boost gives your agent engineering discipline and visible guardrails in seconds:**
 
 <div align="center">
 
@@ -153,7 +164,7 @@ presets/<id>/
 | `mcp-tools` | Zero-config MCP servers: `fetch` + `time` | via CLI |
 
 > [!NOTE]
-> Every preset bundles a best-practice SKILL.md (auto-loaded) + a reviewer agent. New stacks are vote-driven — [issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1). "via CLI" presets get their own official repo as demand grows.
+> Most stack presets bundle an auto-loaded SKILL.md + a reviewer agent (with exceptions like `core`, `usage`, `mcp-tools` tailored to guardrails, metrics, or MCP servers). New stacks are vote-driven — [issue #1](https://github.com/shidesheng0218/kimi-boost/issues/1). "via CLI" presets get their own official repo as demand grows.
 
 ---
 

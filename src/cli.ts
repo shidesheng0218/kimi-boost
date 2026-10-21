@@ -21,6 +21,7 @@ import { registerStatus } from "./commands/registerStatus.js";
 import { registerUpdate } from "./commands/registerUpdate.js";
 import { registerBootstrap } from "./commands/registerBootstrap.js";
 import { registerMarketplace } from "./commands/registerMarketplace.js";
+import { registerDemo } from "./commands/registerDemo.js";
 
 const program = new Command();
 const require = createRequire(import.meta.url);
@@ -53,5 +54,6 @@ registerPackage(program);
 registerGuard(program);
 registerOutdated(program);
 registerStatus(program);
+registerDemo(program);
 
 program.parse(process.argv);
