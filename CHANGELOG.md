@@ -1,3 +1,14 @@
+## Unreleased
+
+### Removed: speculative Kimi commands pre-positioning
+
+`install <preset>` no longer copies `commands/` into `~/.kimi-code/commands/<id>/` (user-level) or `.agents/commands/` (project-level). The current Kimi Code CLI does not scan those directories, so the files were inert — "pre-positioned for when directory scanning lands" was speculative and produced permanent garbage on user machines.
+
+- Slash commands on Kimi Code now route exclusively through `/plugins install https://github.com/shidesheng0218/kimi-boost-<id>` (the official plugin channel). The install message points users there directly when a preset ships `commands/`.
+- `remove` / `deactivate` no longer touch `~/.kimi-code/commands/<id>/` either. If you installed a preset with an earlier version, those orphaned files are yours to delete — the CLI won't silently remove files it no longer owns.
+- Project-level install (`install <preset> --project`) skips `commands/` for the Kimi target entirely; the note in the per-preset report now says "slash 命令未装" instead of "已复制但不扫描".
+- Claude Code and Codex behavior unchanged: Claude still installs to `~/.claude/commands/<id>/` / `.claude/commands/<id>/`, Codex still skips.
+
 ## 0.17.0 (2026-10-14)
 
 ### Slash commands now installed via CLI

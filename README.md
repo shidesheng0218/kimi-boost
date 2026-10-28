@@ -46,7 +46,7 @@ Your AI coding agent only knows what you teach it. Unguided, it writes generic c
 |---|---|
 | 🧠 **Skills** | Best-practice rules your agent **auto-loads** — no prompting required |
 | 🔍 **Reviewer agents** | Read-only subagents your agent delegates to before committing |
-| ⚡ **Slash commands** | One-shot workflows like `/<preset>:review` — installed to `~/.claude/commands/` (Claude Code) or pre-positioned for Kimi Code |
+| ⚡ **Slash commands** | One-shot workflows like `/<preset>:review` — installed to `~/.claude/commands/` (Claude Code). For Kimi Code, use `/plugins install https://github.com/shidesheng0218/kimi-boost-<id>` |
 | 🛡️ **Guards** | Cross-platform Node hooks: dangerous commands, trunk protection, secret scanning |
 | 🔄 **One-command updates** | `kimi-boost update` keeps every preset current, even on forks |
 

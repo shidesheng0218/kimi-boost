@@ -46,7 +46,7 @@ AI 编程助手只会做你教它的事。不加以引导，它会写出泛泛�
 |---|---|
 | 🧠 **Skills** | 助手**自动加载**的最佳实践规则——无需每次提醒 |
 | 🔍 **审查 Agent** | 提交前可以委派的只读 subagent |
-| ⚡ **Slash 命令** | `/<preset>:review` 等一键工作流——Claude Code 装进 `~/.claude/commands/`，Kimi Code 预置到 `~/.kimi-code/commands/` |
+| ⚡ **Slash 命令** | `/<preset>:review` 等一键工作流——Claude Code 装进 `~/.claude/commands/`;Kimi Code 请走 `/plugins install https://github.com/shidesheng0218/kimi-boost-<id>` |
 | 🛡️ **守卫** | 跨平台 Node 护栏：危险命令拦截、主干保护、密钥扫描 |
 | 🔄 **一键更新** | `kimi-boost update` 保持所有预设最新，支持 fork |
 

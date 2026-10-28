@@ -30,20 +30,13 @@ function buildHookCommand(hooksBase: string, h: PresetHook): string {
   return `node "${join(hooksBase, h.script)}"${h.args && h.args.length ? ` ${h.args.join(" ")}` : ""}`;
 }
 
-function mergePresetFiles(presetId: string, sourceDir: string): { skillsDir: string; agentsDir: string; hooksDir: string; commandsDir?: string } {
+function mergePresetFiles(presetId: string, sourceDir: string): { skillsDir: string; agentsDir: string; hooksDir: string } {
   const sDir = join(skillsDir(), presetId);
   const aDir = join(agentsDir(), presetId);
   const hDir = join(hooksDir(), presetId);
   if (existsSync(join(sourceDir, "skills"))) copyDirIfWritable(join(sourceDir, "skills"), sDir);
   if (existsSync(join(sourceDir, "agents"))) copyDirIfWritable(join(sourceDir, "agents"), aDir);
-  // slash 命令:kimi-code 暂无 extra_command_dirs 配置项,先复制到 <kimiHome>/commands/<id>/
-  // (未来若支持目录扫描则自动生效),同时在 install 输出中提示用户走 /plugins 渠道
-  let cDir: string | undefined;
-  if (existsSync(join(sourceDir, "commands"))) {
-    cDir = join(kimiHomeDir(), "commands", presetId);
-    copyDirIfWritable(join(sourceDir, "commands"), cDir);
-  }
-  return { skillsDir: sDir, agentsDir: aDir, hooksDir: hDir, commandsDir: cDir };
+  return { skillsDir: sDir, agentsDir: aDir, hooksDir: hDir };
 }
 
 export const kimiAdapter: Adapter = {
@@ -53,10 +46,9 @@ export const kimiAdapter: Adapter = {
     const { preset, sourceDir } = ctx;
     const changed: string[] = [];
 
-    const { skillsDir: sDir, agentsDir: aDir, commandsDir: cDir } = mergePresetFiles(preset.id, sourceDir);
+    const { skillsDir: sDir, agentsDir: aDir } = mergePresetFiles(preset.id, sourceDir);
     if (existsSync(join(sourceDir, "skills"))) changed.push(sDir);
     if (existsSync(join(sourceDir, "agents"))) changed.push(aDir);
-    if (cDir) changed.push(cDir);
 
     const { path, text } = readRawConfig();
     const backup = backupFile(path);
@@ -119,7 +111,7 @@ export const kimiAdapter: Adapter = {
     ensureDir(dirname(path));
     writeFileIfWritable(path, nextText);
 
-    const recorded = [sDir, aDir, cDir].filter((d): d is string => Boolean(d));
+    const recorded = [sDir, aDir].filter((d): d is string => Boolean(d));
     recordInstall(preset.id, "kimi", recorded, preset.version);
 
     // 安装后自检:回读本轮应写入的关键目录,缺失则标记失败
@@ -140,8 +132,8 @@ export const kimiAdapter: Adapter = {
     }
 
     const sharedNote = sharedCount > 0 ? ` (${sharedCount} hook(s) shared with already-installed presets)` : "";
-    const cmdNote = cDir
-      ? `\n  slash 命令已复制到 ${cDir}，但当前版本 Kimi Code 不扫描此目录。如需启用，请走 /plugins 渠道: /plugins install https://github.com/shidesheng0218/kimi-boost-${preset.id}`
+    const cmdNote = existsSync(join(sourceDir, "commands"))
+      ? `\n  slash 命令未安装:当前 Kimi Code 不支持从目录加载。请改用官方插件渠道: /plugins install https://github.com/shidesheng0218/kimi-boost-${preset.id}`
       : "";
     const msg = changed.length
       ? `Installed preset '${preset.id}' into Kimi Code (${changed.join(", ")}). Run /reload or start a new session.${sharedNote}${cmdNote}`
@@ -217,7 +209,7 @@ export const kimiAdapter: Adapter = {
 
     clearInstall(presetId, "kimi");
 
-    for (const dir of [skillsDir(), agentsDir(), hooksDir(), join(kimiHomeDir(), "commands")]) {
+    for (const dir of [skillsDir(), agentsDir(), hooksDir()]) {
       const target = join(dir, presetId);
       assertManagedPath(target);
       if (existsSync(target)) {
