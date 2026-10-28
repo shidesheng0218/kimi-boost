@@ -65,7 +65,7 @@ describe("commands installation", () => {
     expect(existsSync(join(claudeHome, "commands", "test-claude-rm"))).toBe(false);
   });
 
-  it("kimi: copies commands/ to <kimiHome>/commands/<id>/ and includes a note", async () => {
+  it("kimi: skips commands/ copy and points user to /plugins channel", async () => {
     const sourceDir = writePresetWithCommands("test-kimi-cmd");
     const { kimiAdapter } = await import("../src/adapters/kimi.js");
     const report = await kimiAdapter.activate({
@@ -75,12 +75,16 @@ describe("commands installation", () => {
       installDir: join(tmp, "install", "test-kimi-cmd"),
     });
     expect(report.ok).toBe(true);
-    const cmdFile = join(kimiHome, "commands", "test-kimi-cmd", "review.md");
-    expect(existsSync(cmdFile)).toBe(true);
+    // 不再复制到 <kimiHome>/commands/<id>/ — 当前 Kimi Code 不扫描该目录,
+    // 预先放置会成为永久垃圾;改为在 message 里指向 /plugins install
+    expect(existsSync(join(kimiHome, "commands", "test-kimi-cmd"))).toBe(false);
     expect(report.message).toContain("/plugins install");
+    expect(report.message).toContain("未安装");
   });
 
-  it("kimi: deactivate removes commands directory", async () => {
+  it("kimi: deactivate does not touch <kimiHome>/commands/", async () => {
+    // 历史遗留:0.17.0 之前的版本会把 commands 复制过去。新版本不再写,
+    // deactivate 也不主动清理 — 留给用户手动删除或未来迁移命令处理
     const sourceDir = writePresetWithCommands("test-kimi-rm");
     const { kimiAdapter } = await import("../src/adapters/kimi.js");
     await kimiAdapter.activate({
@@ -89,7 +93,7 @@ describe("commands installation", () => {
       sourceDir,
       installDir: join(tmp, "install", "test-kimi-rm"),
     });
-    expect(existsSync(join(kimiHome, "commands", "test-kimi-rm"))).toBe(true);
+    expect(existsSync(join(kimiHome, "commands", "test-kimi-rm"))).toBe(false);
     await kimiAdapter.deactivate("test-kimi-rm");
     expect(existsSync(join(kimiHome, "commands", "test-kimi-rm"))).toBe(false);
   });

@@ -576,10 +576,14 @@ export async function installProjectPreset(id: string, opts: ProjectOptions = {}
         }
       }
       if (existsSync(join(sourceDir, "commands"))) {
-        for (const f of copyDirIfWritable(join(sourceDir, "commands"), commandsDest)) {
-          changed.push(rel(root, f));
-          writtenAll.add(rel(root, f));
+        if (tool === "claude") {
+          for (const f of copyDirIfWritable(join(sourceDir, "commands"), commandsDest)) {
+            changed.push(rel(root, f));
+            writtenAll.add(rel(root, f));
+          }
         }
+        // kimi: 当前版本 Kimi Code 不支持从 .agents/commands/ 扫描,
+        // 跳过复制,走后面的 notes 提示用户改用 /plugins 渠道
       }
 
       const notes: string[] = [];
@@ -607,7 +611,7 @@ export async function installProjectPreset(id: string, opts: ProjectOptions = {}
         notes.push("hooks 未装:Kimi Code 仅支持用户级 hook(需要可全局安装: kboost install " + id + ")");
       }
       if (tool === "kimi" && existsSync(join(sourceDir, "commands"))) {
-        notes.push("slash 命令已复制到 .agents/commands/(当前版本 Kimi Code 不扫描此目录,需走 /plugins 渠道启用)");
+        notes.push("slash 命令未装:当前 Kimi Code 不支持从目录加载,请改用 /plugins 渠道");
       }
 
       const files = [...writtenAll].sort();
