@@ -78,6 +78,20 @@ All checks passed.
 
 ---
 
+## 🧭 Guardrails, not a runtime guard
+
+kimi-boost installs **static guardrails at install time** — skills, reviewer agents, slash commands, MCP config and tool-call rules. It does **not** supervise the agent while it runs.
+
+For runaway loops, quota burn, false completion claims and unattended runs, use **[agent-guard](https://github.com/shidesheng0218/kimi-guard)** (the `@shidesheng0218/agentguard` package). The two are independent tools: install either alone, or both in any order. They write only their own managed blocks — see [docs/relationship.md](docs/relationship.md) for the coexistence contract.
+
+| What you want | Install |
+|---|---|
+| Stack conventions, skills/agents/commands, static guardrails, config updates | kimi-boost |
+| Stop runaway loops, quota burn, false completion, or run unattended CI | agent-guard |
+| Both | Install in any order; each writes only its own managed block |
+
+---
+
 ## 🛡️ Guardrails — the seatbelt you can see
 
 Most agent safety is invisible: a hook silently blocks something and you never learn your agent almost ran `rm -rf /`. kimi-boost makes the seatbelt visible.

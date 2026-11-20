@@ -1,5 +1,12 @@
 ## Unreleased
 
+### Boundary with agent-guard, and coexistence detection
+
+- New [`docs/relationship.md`](docs/relationship.md) states the split: kimi-boost installs static guardrails at install time; [agent-guard](https://github.com/shidesheng0218/kimi-guard) (`@shidesheng0218/agentguard`) supervises runtime behavior. Both work standalone and can be installed in any order.
+- `doctor` now recognizes agent-guard's hooks instead of reporting them as "hook has no script path", and reports `coexistence: agent-guard detected` (or `installed (hooks not detected)`) as an informational `ok` line. It stays silent when agent-guard is absent and errors only when one tool's managed block is nested inside the other's.
+- `status` shows a `runtime guard` line for the same detection.
+- The `usage` preset is now documented as **visibility only**; quota gates and enforcement belong to agent-guard.
+
 ### Removed: speculative Kimi commands pre-positioning
 
 `install <preset>` no longer copies `commands/` into `~/.kimi-code/commands/<id>/` (user-level) or `.agents/commands/` (project-level). The current Kimi Code CLI does not scan those directories, so the files were inert — "pre-positioned for when directory scanning lands" was speculative and produced permanent garbage on user machines.

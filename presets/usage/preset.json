@@ -1,7 +1,7 @@
 {
   "id": "usage",
   "name": "用量守卫",
-  "description": "会话/提示/工具调用用量统计、按工具拆解与每日阈值提示(KIMI_BOOST_DAILY_LIMIT)。",
+  "description": "用量可见性:会话/提示/工具调用统计、按工具拆解与每日阈值提示(KIMI_BOOST_DAILY_LIMIT);不做预算拦截——需要配额门请用 agentguard。",
   "tags": [
     "usage",
     "cost",
