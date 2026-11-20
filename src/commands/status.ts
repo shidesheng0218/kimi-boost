@@ -2,10 +2,12 @@ import { detect } from "../core/detect.js";
 import { availableAdapters } from "../adapters/index.js";
 import { listPresets } from "../registry/presets.js";
 import { storedPresetVersion } from "../core/config.js";
+import { detectAgentGuard, type RelatedToolStatus } from "../core/related.js";
 
 export interface StatusLine {
   platform: string;
   tools: Array<{ name: string; installed: boolean; version?: string; homeDir: string; configured: boolean }>;
+  related: RelatedToolStatus;
 }
 
 export interface PresetMatrixEntry {
@@ -31,6 +33,7 @@ export function getStatus(): StatusLine {
       homeDir: env.tools[t].homeDir,
       configured: env.tools[t].configured,
     })),
+    related: detectAgentGuard(),
   };
 }
 

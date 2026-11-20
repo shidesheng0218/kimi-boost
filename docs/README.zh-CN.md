@@ -47,7 +47,7 @@ AI 编程助手只会做你教它的事。不加以引导，它会写出泛泛�
 | 🧠 **Skills** | 助手**自动加载**的最佳实践规则——无需每次提醒 |
 | 🔍 **审查 Agent** | 提交前可以委派的只读 subagent |
 | ⚡ **Slash 命令** | `/<preset>:review` 等一键工作流——Claude Code 装进 `~/.claude/commands/`;Kimi Code 请走 `/plugins install https://github.com/shidesheng0218/kimi-boost-<id>` |
-| 🛡️ **守卫** | 跨平台 Node 护栏：危险命令拦截、主干保护、密钥扫描 |
+| 🛡️ **护栏** | 跨平台 Node 护栏：危险命令拦截、主干保护、密钥扫描 |
 | 🔄 **一键更新** | `kimi-boost update` 保持所有预设最新，支持 fork |
 
 <div align="center">
@@ -75,6 +75,20 @@ All checks passed.
 ```
 
 </details>
+
+---
+
+## 🧭 是护栏，不是运行时守卫
+
+kimi-boost 在**安装时**写入静态护栏——skills、审查 agents、slash 命令、MCP 配置和工具调用规则。它**不**在 agent 运行时进行监督。
+
+需要阻止死循环、配额烧尽、虚假完成声明，或跑无人值守任务，请用 **[agent-guard](https://github.com/shidesheng0218/kimi-guard)**（`@shidesheng0218/agentguard` 包）。两者相互独立：可以只装一个，也可以任意顺序都装；各自只写自己的 managed 块。共存契约见 [docs/relationship.md](docs/relationship.md)。
+
+| 你想要 | 装这个 |
+|---|---|
+| 技术栈规范、skills/agents/commands、静态护栏、配置更新 | kimi-boost |
+| 阻止 agent 死循环、烧配额、假完成，或跑无人值守 CI | agent-guard |
+| 两者都要 | 任意顺序安装；两者只写各自的 managed 块 |
 
 ---
 

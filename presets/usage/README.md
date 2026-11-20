@@ -4,6 +4,8 @@
 
 **会话/提示/工具调用用量统计与每日阈值提示(KIMI_BOOST_DAILY_LIMIT)。**
 
+> **仅可见性，不做拦截。** 本预设负责统计与提示；需要配额门、循环拦截或预算执行，请用 [agent-guard](https://github.com/shidesheng0218/kimi-guard)（`@shidesheng0218/agentguard`）。
+
 [![auto-mirrored](https://img.shields.io/badge/auto--mirrored%20from-kimi--boost-7c3aed?style=flat-square)](https://github.com/shidesheng0218/kimi-boost)
 [![plugin compat](https://img.shields.io/github/actions/workflow/status/shidesheng0218/kimi-boost/verify.yml?style=flat-square&label=%E6%8F%92%E4%BB%B6%E5%85%BC%E5%AE%B9)](https://github.com/shidesheng0218/kimi-boost/actions/workflows/verify.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/shidesheng0218/kimi-boost/blob/main/LICENSE)
