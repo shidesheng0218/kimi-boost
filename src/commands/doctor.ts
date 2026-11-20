@@ -8,6 +8,7 @@ import { copyFileIfWritable, writeFileIfWritable } from "../core/fsguard.js";
 import { readManifest } from "../core/manifest.js";
 import { fingerprintHook, hookCommandOwner } from "../core/hookRegistry.js";
 import { removeHookByCommand } from "../core/kimiTextEdit.js";
+import { AGENT_GUARD_COMMAND_RE, agentGuardBlockNestedInBoost, detectAgentGuard } from "../core/related.js";
 import type { ToolName } from "../core/types.js";
 
 export interface DoctorIssue {
@@ -59,6 +60,10 @@ export function runDoctor(fix = false): DoctorIssue[] {
   const rawHooks = Array.isArray(kimi.data.hooks) ? (kimi.data.hooks as Array<Record<string, unknown>>) : [];
   for (const h of rawHooks) {
     const command = String(h.command ?? "");
+    if (AGENT_GUARD_COMMAND_RE.test(command)) {
+      issues.push({ level: "ok", item: "kimi: hook managed by agent-guard", detail: command });
+      continue;
+    }
     const script = extractScriptPath(command);
     if (!script) {
       issues.push({ level: "warn", item: "kimi: hook has no script path", detail: command });
@@ -101,6 +106,32 @@ export function runDoctor(fix = false): DoctorIssue[] {
     collectCodexHookTriples(env.tools.codex.homeDir),
     fix ? { kind: "codex-toml", path: join(env.tools.codex.homeDir, "config.toml") } : undefined,
   );
+
+  // Coexistence with agentguard: informational only when present or wired;
+  // silent when absent so neither tool nags about the other.
+  const related = detectAgentGuard();
+  if (related.active) {
+    issues.push({
+      level: "ok",
+      item: "coexistence: agent-guard detected",
+      detail: "runtime guard (loops/quota/verify); complementary to install-time presets; both managed blocks intact",
+    });
+  } else if (related.present) {
+    issues.push({
+      level: "ok",
+      item: "coexistence: agent-guard installed (hooks not detected)",
+      detail: "run agentguard install if you expect runtime guarding",
+    });
+  }
+  const kimiConfigPath = join(env.tools.kimi.homeDir, "config.toml");
+  const kimiConfigText = existsSync(kimiConfigPath) ? readFileSync(kimiConfigPath, "utf8") : "";
+  if (agentGuardBlockNestedInBoost(kimiConfigText)) {
+    issues.push({
+      level: "error",
+      item: "coexistence: agent-guard block nested inside kimi-boost block",
+      detail: "reinstall either tool so each managed block is separate",
+    });
+  }
 
   const manifest = readManifest();
   for (const [id, tools] of Object.entries(manifest.presets)) {

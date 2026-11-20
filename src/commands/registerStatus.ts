@@ -22,6 +22,12 @@ export function registerStatus(program: Command) {
         console.log(`${pc.bold(t.name)} ${mark} ${t.version ?? ""}${cfg}`);
         console.log(`   config: ${t.homeDir}`);
       }
+      const related = s.related.active
+        ? "agentguard detected"
+        : s.related.present
+          ? "agentguard installed (hooks not detected)"
+          : "not detected";
+      console.log(`${pc.bold("runtime guard")} ${pc.dim(related)}`);
       if (matrix.length > 0) {
         console.log();
         console.log(pc.bold("installed presets:"));
