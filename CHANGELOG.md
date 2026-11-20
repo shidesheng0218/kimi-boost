@@ -1,5 +1,11 @@
 ## Unreleased
 
+### Compatibility snapshot and known-issue checks
+
+- `doctor --json` prints a recursively redacted environment snapshot for upstream issues and support: platform, CLI versions, installed Kimi plugin count, Kimi hook counts from both install channels, doctor issues, and matched known regressions.
+- `doctor` now matches two known upstream regressions with verifiable conditions: `KI-2553` (Windows + kimi-code 0.29.x + 2+ plugins) and `KI-2564` (PostToolUse hooks installed). Unmatched issues are never warned about.
+- New read-only collectors: `installedKimiPlugins()`, `kimiHookEvents()`, `kimiHookSummary()` (managed dirs + `installed.json`, `config.toml` + plugin manifests).
+
 ### Removed: speculative Kimi commands pre-positioning
 
 `install <preset>` no longer copies `commands/` into `~/.kimi-code/commands/<id>/` (user-level) or `.agents/commands/` (project-level). The current Kimi Code CLI does not scan those directories, so the files were inert — "pre-positioned for when directory scanning lands" was speculative and produced permanent garbage on user machines.
