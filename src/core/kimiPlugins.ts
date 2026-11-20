@@ -1,6 +1,7 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { kimiHomeDir } from "./detect.js";
+import { readKimiConfig } from "./config.js";
 
 /**
  * 检测某 preset 是否已通过 Kimi Code 官方 `/plugins` 通道安装。
@@ -30,4 +31,69 @@ export function kimiPluginInstalled(presetId: string): boolean {
     }
   }
   return false;
+}
+
+/** Installed Kimi plugins: managed directories ∪ installed.json ids. Read-only. */
+export function installedKimiPlugins(): string[] {
+  const home = kimiHomeDir();
+  const ids = new Set<string>();
+
+  try {
+    for (const entry of readdirSync(join(home, "plugins", "managed"), { withFileTypes: true })) {
+      if (entry.isDirectory()) ids.add(entry.name);
+    }
+  } catch {
+    /* no managed dir */
+  }
+
+  const file = join(home, "plugins", "installed.json");
+  if (existsSync(file)) {
+    try {
+      const data = JSON.parse(readFileSync(file, "utf8")) as Record<string, unknown>;
+      const arr = Array.isArray(data.plugins) ? data.plugins : Array.isArray(data.installed) ? data.installed : [];
+      for (const p of arr as Array<Record<string, unknown>>) {
+        const id = String(p.id ?? p.name ?? p ?? "");
+        if (id) ids.add(id);
+      }
+    } catch {
+      /* malformed record: keep the directory probe result */
+    }
+  }
+
+  return [...ids].sort();
+}
+
+/**
+ * Kimi hook events across both install channels: config.toml [[hooks]] and
+ * plugins/managed/<id>/kimi.plugin.json hooks[]. Deduped and sorted.
+ */
+export function kimiHookEvents(): string[] {
+  const events = new Set<string>();
+
+  try {
+    const hooks = readKimiConfig().data.hooks;
+    if (Array.isArray(hooks)) {
+      for (const h of hooks as Array<Record<string, unknown>>) {
+        if (typeof h.event === "string") events.add(h.event);
+      }
+    }
+  } catch {
+    /* malformed config: plugin manifests may still provide events */
+  }
+
+  for (const id of installedKimiPlugins()) {
+    const file = join(kimiHomeDir(), "plugins", "managed", id, "kimi.plugin.json");
+    try {
+      const data = JSON.parse(readFileSync(file, "utf8")) as { hooks?: unknown };
+      if (Array.isArray(data.hooks)) {
+        for (const h of data.hooks as Array<Record<string, unknown>>) {
+          if (typeof h.event === "string") events.add(h.event);
+        }
+      }
+    } catch {
+      /* missing or malformed manifest */
+    }
+  }
+
+  return [...events].sort();
 }
