@@ -39,7 +39,14 @@ export function runDoctor(fix = false): DoctorIssue[] {
   checkJsonSyntax(issues, "claude", join(env.tools.claude.homeDir, "settings.json"));
   checkTomlSyntax(issues, "codex", env.tools.codex.homeDir);
 
-  const kimi = readKimiConfig();
+  let kimi: ReturnType<typeof readKimiConfig>;
+  try {
+    kimi = readKimiConfig();
+  } catch {
+    // The syntax error is already reported by checkTomlSyntax above; keep the
+    // rest of doctor running so --json can still describe the environment.
+    kimi = { path: join(env.tools.kimi.homeDir, "config.toml"), data: {} };
+  }
 
   const mounted = [
     ...(Array.isArray(kimi.data.extra_skill_dirs) ? (kimi.data.extra_skill_dirs as string[]) : []),

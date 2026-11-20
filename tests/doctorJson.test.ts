@@ -127,6 +127,15 @@ describe("doctor parse-error redaction", () => {
     const issue = runDoctor(false).find((i) => i.item.startsWith("known issue KI-2564"));
     expect(issue?.level).toBe("ok");
   });
+
+  it("does not crash on a malformed Kimi config", async () => {
+    fs.writeFileSync(join(process.env.KIMI_CODE_HOME!, "config.toml"), 'broken = "unterminated\n', "utf8");
+    const { runDoctor } = await import("../src/commands/doctor.js");
+    expect(() => runDoctor(false)).not.toThrow();
+    const bad = runDoctor(false).find((i) => i.item === "kimi: config.toml is invalid");
+    expect(bad).toBeDefined();
+    expect(bad!.detail).not.toContain("unterminated");
+  });
 });
 
 describe("doctor --json", () => {
