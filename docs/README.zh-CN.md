@@ -194,7 +194,7 @@ presets/<id>/
 | `remove <预设>` | 干净卸载 |
 | `list` | 查看可用与已安装预设 |
 | `status` | 检测已安装的 CLI 与平台 |
-| `doctor [--fix]` | 诊断配置、hooks、挂载目录、manifest 一致性、重复 hook |
+| `doctor [--fix] [--json]` | 诊断配置、hooks、挂载目录、manifest 一致性、重复 hook；`--json` 输出脱敏的支持快照 |
 
 **护栏**
 
@@ -238,6 +238,17 @@ presets/<id>/
 | `package <目录>` | 校验 + 打成 `<id>-<version>.zip` |
 | `marketplace` | 生成 Kimi Code 自定义市场 JSON |
 | `bootstrap [--makefile]` | 生成团队 onboarding 用的 `setup.sh` / Makefile target |
+
+### 兼容性快照——`doctor --json`
+
+`kimi-boost doctor --json` 输出脱敏的环境快照，便于贴到上游 issue 或支持渠道：
+
+- 平台、各 CLI 版本与配置位置
+- 已安装 Kimi 插件数（managed 目录 + `installed.json`）
+- 两条安装通道的 Kimi hook 计数（`config.toml` 与插件 manifest：`kimi.plugin.json` 或 `.kimi-plugin/plugin.json`）
+- doctor 发现的问题，以及命中的已知回归/提示（当前为 `KI-2553`、`KI-2564`，附上游链接）
+
+JSON 中所有 home/用户目录路径都会替换为 `~`；相对路径仍可能保留，贴出前请自行检查。文本版 `doctor` 也会显示命中的已知问题（警告或提示）；平台/版本/配置条件不匹配时不会警告。
 
 ---
 

@@ -195,7 +195,7 @@ presets/<id>/
 | `remove <preset>` | Uninstall cleanly |
 | `list` | Show available + installed presets |
 | `status` | Detect installed CLIs & platform |
-| `doctor [--fix]` | Diagnose config, hooks, mounted dirs, manifest consistency, duplicate hooks |
+| `doctor [--fix] [--json]` | Diagnose config, hooks, mounted dirs, manifest consistency, duplicate hooks; `--json` prints a redacted support snapshot |
 
 **Guardrails**
 
@@ -239,6 +239,17 @@ presets/<id>/
 | `package <dir>` | Validate + pack a preset into `<id>-<version>.zip` |
 | `marketplace` | Generate a Kimi Code custom marketplace JSON |
 | `bootstrap [--makefile]` | Generate a `setup.sh` / Makefile target for team onboarding |
+
+### Compatibility snapshot — `doctor --json`
+
+`kimi-boost doctor --json` prints a redacted environment snapshot for upstream bug reports and support:
+
+- platform, each CLI's version and config location
+- installed Kimi plugin count (managed dirs + `installed.json`)
+- Kimi hook counts from both channels (`config.toml` and plugin manifests: `kimi.plugin.json` or `.kimi-plugin/plugin.json`)
+- the doctor issues, plus matched known regressions/advisories with upstream links (currently `KI-2553` and `KI-2564`)
+
+Every home/user-directory path in the JSON is replaced with `~`. Relative paths can remain, so review before posting. The text `doctor` output also shows matched known issues (as a warning or an advisory); it never warns about a regression whose platform/version/config conditions do not match.
 
 ---
 

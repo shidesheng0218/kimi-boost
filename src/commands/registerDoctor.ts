@@ -1,8 +1,13 @@
 import type { Command } from "commander";
+import { homedir } from "node:os";
 import pc from "picocolors";
 import { wrapAction } from "./wrapAction.js";
 import { runDoctor } from "./doctor.js";
 import { runProjectDoctor } from "./doctorProject.js";
+import { detect } from "../core/detect.js";
+import { installedKimiPlugins, kimiHookEvents, kimiHookSummary } from "../core/kimiPlugins.js";
+import { buildDoctorSnapshot, redactSnapshot } from "./doctorSnapshot.js";
+import type { ToolName } from "../core/types.js";
 
 export function registerDoctor(program: Command) {
   program
@@ -10,10 +15,38 @@ export function registerDoctor(program: Command) {
     .description("Diagnose your setup: config syntax, hooks, mounted dirs, manifest consistency")
     .option("-f, --fix", "attempt to auto-fix fixable issues (missing dirs / hook scripts)")
     .option("-p, --project", "diagnose project-level presets instead of user config")
-    .action(wrapAction(async (opts?: { fix?: boolean; project?: boolean }) => {
+    .option("--json", "print a redacted machine-readable snapshot (for issues/support)")
+    .action(wrapAction(async (opts?: { fix?: boolean; project?: boolean; json?: boolean }) => {
       const issues = opts?.project
         ? runProjectDoctor(Boolean(opts?.fix))
         : runDoctor(Boolean(opts?.fix));
+      if (opts?.json) {
+        const env = detect();
+        const tools = Object.fromEntries(
+          (["kimi", "claude", "codex"] as ToolName[]).map((t) => [
+            t,
+            { installed: env.tools[t].installed, version: env.tools[t].version, home: env.tools[t].homeDir },
+          ]),
+        );
+        const pluginIds = installedKimiPlugins();
+        const hookEvents = kimiHookEvents();
+        const summary = kimiHookSummary();
+        const snapshot = buildDoctorSnapshot({
+          issues,
+          platform: env.platform,
+          tools,
+          pluginIds,
+          hookEvents,
+          byEvent: summary.byEvent,
+        });
+        // Redact only the user's home directory; the generic patterns inside
+// redactSnapshot handle other user-home shapes. Passing tool homes here would
+// collapse "~/.kimi-code" to "~" and hide the config location support needs.
+        const homes = [homedir()];
+        console.log(JSON.stringify(redactSnapshot(snapshot, homes), null, 2));
+        process.exitCode = issues.some((i) => i.level === "error") ? 1 : 0;
+        return;
+      }
       let errors = 0;
       let warns = 0;
       for (const i of issues) {

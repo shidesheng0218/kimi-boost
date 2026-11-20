@@ -8,6 +8,8 @@ import { copyFileIfWritable, writeFileIfWritable } from "../core/fsguard.js";
 import { readManifest } from "../core/manifest.js";
 import { fingerprintHook, hookCommandOwner } from "../core/hookRegistry.js";
 import { removeHookByCommand } from "../core/kimiTextEdit.js";
+import { installedKimiPlugins, kimiHookEvents } from "../core/kimiPlugins.js";
+import { knownIssueMatches } from "../core/knownIssues.js";
 import { AGENT_GUARD_COMMAND_RE, agentGuardBlockNestedInBoost, detectAgentGuard } from "../core/related.js";
 import type { ToolName } from "../core/types.js";
 
@@ -38,7 +40,14 @@ export function runDoctor(fix = false): DoctorIssue[] {
   checkJsonSyntax(issues, "claude", join(env.tools.claude.homeDir, "settings.json"));
   checkTomlSyntax(issues, "codex", env.tools.codex.homeDir);
 
-  const kimi = readKimiConfig();
+  let kimi: ReturnType<typeof readKimiConfig>;
+  try {
+    kimi = readKimiConfig();
+  } catch {
+    // The syntax error is already reported by checkTomlSyntax above; keep the
+    // rest of doctor running so --json can still describe the environment.
+    kimi = { path: join(env.tools.kimi.homeDir, "config.toml"), data: {} };
+  }
 
   const mounted = [
     ...(Array.isArray(kimi.data.extra_skill_dirs) ? (kimi.data.extra_skill_dirs as string[]) : []),
@@ -107,6 +116,20 @@ export function runDoctor(fix = false): DoctorIssue[] {
     fix ? { kind: "codex-toml", path: join(env.tools.codex.homeDir, "config.toml") } : undefined,
   );
 
+const known = knownIssueMatches({
+    platform: env.platform,
+    kimiVersion: env.tools.kimi.version,
+    pluginCount: installedKimiPlugins().length,
+    hookEvents: kimiHookEvents(),
+  });
+  for (const ki of known) {
+    issues.push({
+      level: ki.severity === "warn" ? "warn" : "ok",
+      item: `known issue ${ki.id}: ${ki.title}`,
+      detail: `${ki.advice} (${ki.url})`,
+    });
+  }
+
   // Coexistence with agentguard: informational only when present or wired;
   // silent when absent so neither tool nags about the other.
   const related = detectAgentGuard();
@@ -164,7 +187,10 @@ function checkTomlSyntax(issues: DoctorIssue[], tool: string, homeDir: string): 
     parseToml(readFileSync(file, "utf8"));
     issues.push({ level: "ok", item: `${tool}: config.toml parses`, detail: file });
   } catch (err) {
-    issues.push({ level: "error", item: `${tool}: config.toml is invalid`, detail: err instanceof Error ? err.message : String(err) });
+    // Parser messages can embed a code frame with the offending line (often a
+    // secret in an env block). Keep only the first line and no snippet.
+    const firstLine = (err instanceof Error ? err.message : String(err)).split("\n")[0]!.slice(0, 200);
+    issues.push({ level: "error", item: `${tool}: config.toml is invalid`, detail: firstLine });
   }
 }
 
@@ -173,8 +199,9 @@ function checkJsonSyntax(issues: DoctorIssue[], tool: string, file: string): voi
   try {
     JSON.parse(readFileSync(file, "utf8"));
     issues.push({ level: "ok", item: `${tool}: settings.json parses`, detail: file });
-  } catch (err) {
-    issues.push({ level: "error", item: `${tool}: settings.json is invalid`, detail: err instanceof Error ? err.message : String(err) });
+  } catch {
+    // V8 messages may quote a slice of the input; never echo them.
+    issues.push({ level: "error", item: `${tool}: settings.json is invalid`, detail: "invalid JSON" });
   }
 }
 
