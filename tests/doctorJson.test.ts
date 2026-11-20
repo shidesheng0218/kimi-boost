@@ -157,6 +157,7 @@ describe("doctor --json", () => {
           env: {
             ...process.env,
             HOME: tmp,
+            USERPROFILE: tmp,
             KIMI_CODE_HOME: kimiHome,
             KIMI_BOOST_HOME: path.join(tmp, "kboost"),
             CLAUDE_CODE_HOME: path.join(tmp, "claude"),
@@ -174,7 +175,7 @@ describe("doctor --json", () => {
     };
     expect(parsed.platform).toBeTruthy();
     expect(parsed.redaction.applied).toBe(true);
-    expect(parsed.tools.kimi.home).toBe("~/.kimi-code");
+    expect(parsed.tools.kimi.home).toBe(path.join("~", ".kimi-code"));
     expect(fs.readFileSync(configPath, "utf8")).toBe(before);
   });
 });
