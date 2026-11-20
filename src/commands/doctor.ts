@@ -8,6 +8,8 @@ import { copyFileIfWritable, writeFileIfWritable } from "../core/fsguard.js";
 import { readManifest } from "../core/manifest.js";
 import { fingerprintHook, hookCommandOwner } from "../core/hookRegistry.js";
 import { removeHookByCommand } from "../core/kimiTextEdit.js";
+import { installedKimiPlugins, kimiHookEvents } from "../core/kimiPlugins.js";
+import { knownIssueMatches } from "../core/knownIssues.js";
 import type { ToolName } from "../core/types.js";
 
 export interface DoctorIssue {
@@ -101,6 +103,20 @@ export function runDoctor(fix = false): DoctorIssue[] {
     collectCodexHookTriples(env.tools.codex.homeDir),
     fix ? { kind: "codex-toml", path: join(env.tools.codex.homeDir, "config.toml") } : undefined,
   );
+
+  const known = knownIssueMatches({
+    platform: env.platform,
+    kimiVersion: env.tools.kimi.version,
+    pluginCount: installedKimiPlugins().length,
+    hookEvents: kimiHookEvents(),
+  });
+  for (const ki of known) {
+    issues.push({
+      level: "warn",
+      item: `known issue ${ki.id}: ${ki.title}`,
+      detail: `${ki.advice} (${ki.url})`,
+    });
+  }
 
   const manifest = readManifest();
   for (const [id, tools] of Object.entries(manifest.presets)) {

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { installedKimiPlugins, kimiHookEvents } from "../src/core/kimiPlugins.js";
+import { installedKimiPlugins, kimiHookEvents, kimiHookSummary } from "../src/core/kimiPlugins.js";
 
 let tmp: string;
 let home: string;
@@ -70,5 +70,11 @@ describe("kimiHookEvents", () => {
   it("returns an empty list when nothing is installed", () => {
     rmSync(join(home, "plugins", "managed"), { recursive: true, force: true });
     expect(kimiHookEvents()).toEqual([]);
+  });
+
+  it("summarizes hook counts across channels including duplicates", () => {
+    config([{ event: "PreToolUse" }, { event: "PostToolUse" }]);
+    manifest("a", [{ event: "PostToolUse" }, { event: "Stop" }]);
+    expect(kimiHookSummary()).toEqual({ total: 4, byEvent: { PreToolUse: 1, PostToolUse: 2, Stop: 1 } });
   });
 });

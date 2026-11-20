@@ -65,16 +65,17 @@ export function installedKimiPlugins(): string[] {
 
 /**
  * Kimi hook events across both install channels: config.toml [[hooks]] and
- * plugins/managed/<id>/kimi.plugin.json hooks[]. Deduped and sorted.
+ * plugins/managed/<id>/kimi.plugin.json hooks[]. Duplicates are preserved so
+ * callers can count actual hook entries.
  */
-export function kimiHookEvents(): string[] {
-  const events = new Set<string>();
+function collectHookEvents(): string[] {
+  const events: string[] = [];
 
   try {
     const hooks = readKimiConfig().data.hooks;
     if (Array.isArray(hooks)) {
       for (const h of hooks as Array<Record<string, unknown>>) {
-        if (typeof h.event === "string") events.add(h.event);
+        if (typeof h.event === "string") events.push(h.event);
       }
     }
   } catch {
@@ -87,7 +88,7 @@ export function kimiHookEvents(): string[] {
       const data = JSON.parse(readFileSync(file, "utf8")) as { hooks?: unknown };
       if (Array.isArray(data.hooks)) {
         for (const h of data.hooks as Array<Record<string, unknown>>) {
-          if (typeof h.event === "string") events.add(h.event);
+          if (typeof h.event === "string") events.push(h.event);
         }
       }
     } catch {
@@ -95,5 +96,18 @@ export function kimiHookEvents(): string[] {
     }
   }
 
-  return [...events].sort();
+  return events;
+}
+
+/** Deduped, sorted Kimi hook events across both install channels. */
+export function kimiHookEvents(): string[] {
+  return [...new Set(collectHookEvents())].sort();
+}
+
+/** Actual hook counts by event, preserving duplicates across channels. */
+export function kimiHookSummary(): { total: number; byEvent: Record<string, number> } {
+  const all = collectHookEvents();
+  const byEvent: Record<string, number> = {};
+  for (const e of all) byEvent[e] = (byEvent[e] ?? 0) + 1;
+  return { total: all.length, byEvent };
 }
