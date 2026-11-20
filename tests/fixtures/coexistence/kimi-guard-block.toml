@@ -1,0 +1,6 @@
+# >>> kimi-guard managed >>> DO NOT EDIT
+[[hooks]]
+event = "PreToolUse"
+command = "kguard hook PreToolUse"
+timeout = 5
+# <<< kimi-guard <<<
