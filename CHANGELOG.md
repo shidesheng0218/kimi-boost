@@ -1,5 +1,12 @@
 ## Unreleased
 
+### Boundary with agent-guard, and coexistence detection
+
+- New [`docs/relationship.md`](docs/relationship.md) states the split: kimi-boost installs static guardrails at install time; [agent-guard](https://github.com/shidesheng0218/kimi-guard) (`@shidesheng0218/agentguard`) supervises runtime behavior. Both work standalone and can be installed in any order.
+- `doctor` now recognizes agent-guard's hooks instead of reporting them as "hook has no script path", and reports `coexistence: agent-guard detected` (or `installed (hooks not detected)`) as an informational `ok` line. It stays silent when agent-guard is absent and errors only when one tool's managed block is nested inside the other's.
+- `status` shows a `runtime guard` line for the same detection.
+- The `usage` preset is now documented as **visibility only**; quota gates and enforcement belong to agent-guard.
+
 ### Compatibility snapshot and known-issue checks
 
 - `doctor --json` prints a recursively redacted environment snapshot for upstream issues and support: platform, CLI versions, installed Kimi plugin count, Kimi hook counts from both install channels, doctor issues, and matched known regressions/advisories.
