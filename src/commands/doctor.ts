@@ -112,7 +112,7 @@ export function runDoctor(fix = false): DoctorIssue[] {
   });
   for (const ki of known) {
     issues.push({
-      level: "warn",
+      level: ki.severity === "warn" ? "warn" : "ok",
       item: `known issue ${ki.id}: ${ki.title}`,
       detail: `${ki.advice} (${ki.url})`,
     });
@@ -149,7 +149,10 @@ function checkTomlSyntax(issues: DoctorIssue[], tool: string, homeDir: string): 
     parseToml(readFileSync(file, "utf8"));
     issues.push({ level: "ok", item: `${tool}: config.toml parses`, detail: file });
   } catch (err) {
-    issues.push({ level: "error", item: `${tool}: config.toml is invalid`, detail: err instanceof Error ? err.message : String(err) });
+    // Parser messages can embed a code frame with the offending line (often a
+    // secret in an env block). Keep only the first line and no snippet.
+    const firstLine = (err instanceof Error ? err.message : String(err)).split("\n")[0]!.slice(0, 200);
+    issues.push({ level: "error", item: `${tool}: config.toml is invalid`, detail: firstLine });
   }
 }
 
@@ -158,8 +161,9 @@ function checkJsonSyntax(issues: DoctorIssue[], tool: string, file: string): voi
   try {
     JSON.parse(readFileSync(file, "utf8"));
     issues.push({ level: "ok", item: `${tool}: settings.json parses`, detail: file });
-  } catch (err) {
-    issues.push({ level: "error", item: `${tool}: settings.json is invalid`, detail: err instanceof Error ? err.message : String(err) });
+  } catch {
+    // V8 messages may quote a slice of the input; never echo them.
+    issues.push({ level: "error", item: `${tool}: settings.json is invalid`, detail: "invalid JSON" });
   }
 }
 

@@ -231,10 +231,10 @@ presets/<id>/
 
 - 平台、各 CLI 版本与配置位置
 - 已安装 Kimi 插件数（managed 目录 + `installed.json`）
-- 两条安装通道的 Kimi hook 计数（`config.toml` 与 `plugins/managed/*/kimi.plugin.json`）
-- doctor 发现的问题，以及命中的已知回归（当前为 `KI-2553`、`KI-2564`，附上游链接）
+- 两条安装通道的 Kimi hook 计数（`config.toml` 与插件 manifest：`kimi.plugin.json` 或 `.kimi-plugin/plugin.json`）
+- doctor 发现的问题，以及命中的已知回归/提示（当前为 `KI-2553`、`KI-2564`，附上游链接）
 
-JSON 中所有 home/用户目录路径都会替换为 `~`；相对路径仍可能保留，贴出前请自行检查。文本版 `doctor` 也会把命中的已知问题显示为警告；平台/版本/配置条件不匹配时不会警告。
+JSON 中所有 home/用户目录路径都会替换为 `~`；相对路径仍可能保留，贴出前请自行检查。文本版 `doctor` 也会显示命中的已知问题（警告或提示）；平台/版本/配置条件不匹配时不会警告。
 
 ---
 

@@ -48,6 +48,17 @@ describe("installedKimiPlugins", () => {
     rmSync(join(home, "plugins", "managed"), { recursive: true, force: true });
     expect(installedKimiPlugins()).toEqual([]);
   });
+
+  it("skips malformed plugin records without inflating the count", () => {
+    writeFileSync(
+      join(home, "plugins", "installed.json"),
+      JSON.stringify({
+        plugins: [{ foo: 1 }, { id: "real" }, null, "str", { name: "named" }, { enabled: false, id: "disabled" }],
+      }),
+      "utf8",
+    );
+    expect(installedKimiPlugins()).toEqual(["named", "real", "str"]);
+  });
 });
 
 describe("kimiHookEvents", () => {
@@ -76,5 +87,32 @@ describe("kimiHookEvents", () => {
     config([{ event: "PreToolUse" }, { event: "PostToolUse" }]);
     manifest("a", [{ event: "PostToolUse" }, { event: "Stop" }]);
     expect(kimiHookSummary()).toEqual({ total: 4, byEvent: { PreToolUse: 1, PostToolUse: 2, Stop: 1 } });
+  });
+
+  it("reads hooks from a .kimi-plugin/plugin.json manifest", () => {
+    const dir = join(home, "plugins", "managed", "a", ".kimi-plugin");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "plugin.json"), JSON.stringify({ hooks: [{ event: "PostToolUse" }] }), "utf8");
+    expect(kimiHookEvents()).toContain("PostToolUse");
+  });
+
+  it("uses the installed.json root when a plugin lives outside managed/", () => {
+    const external = join(tmp, "external");
+    const dir = join(external, ".kimi-plugin");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "plugin.json"), JSON.stringify({ hooks: [{ event: "Stop" }] }), "utf8");
+    writeFileSync(
+      join(home, "plugins", "installed.json"),
+      JSON.stringify({ plugins: [{ id: "ext", root: external }] }),
+      "utf8",
+    );
+    expect(kimiHookEvents()).toContain("Stop");
+  });
+
+  it("skips null hook entries without dropping the rest of the manifest", () => {
+    const dir = join(home, "plugins", "managed", "a");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "kimi.plugin.json"), JSON.stringify({ hooks: [null, { event: "PostToolUse" }] }), "utf8");
+    expect(kimiHookEvents()).toEqual(["PostToolUse"]);
   });
 });

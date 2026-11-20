@@ -39,7 +39,10 @@ export function registerDoctor(program: Command) {
           hookEvents,
           byEvent: summary.byEvent,
         });
-        const homes = [...new Set([...Object.values(tools).map((t) => t.home), homedir()])];
+        // Redact only the user's home directory; the generic patterns inside
+// redactSnapshot handle other user-home shapes. Passing tool homes here would
+// collapse "~/.kimi-code" to "~" and hide the config location support needs.
+        const homes = [homedir()];
         console.log(JSON.stringify(redactSnapshot(snapshot, homes), null, 2));
         process.exitCode = issues.some((i) => i.level === "error") ? 1 : 0;
         return;

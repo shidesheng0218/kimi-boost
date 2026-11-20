@@ -69,9 +69,69 @@ describe("redactSnapshot", () => {
   });
 });
 
+describe("doctor parse-error redaction", () => {
+  const keys = ["KIMI_CODE_HOME", "CLAUDE_CODE_HOME", "CODEX_HOME"] as const;
+  let saved: Map<string, string | undefined>;
+
+  beforeEach(() => {
+    saved = new Map(keys.map((k) => [k, process.env[k]]));
+    process.env.KIMI_CODE_HOME = path.join(tmp, ".kimi-code");
+    process.env.CLAUDE_CODE_HOME = path.join(tmp, "claude");
+    process.env.CODEX_HOME = path.join(tmp, "codex");
+    fs.mkdirSync(process.env.KIMI_CODE_HOME, { recursive: true });
+    fs.mkdirSync(process.env.CLAUDE_CODE_HOME, { recursive: true });
+    fs.mkdirSync(process.env.CODEX_HOME, { recursive: true });
+  });
+
+  afterEach(() => {
+    for (const k of keys) {
+      const v = saved.get(k);
+      if (v === undefined) delete process.env[k];
+      else process.env[k] = v;
+    }
+  });
+
+  it("does not leak config values from a TOML parse error", async () => {
+    fs.writeFileSync(
+      join(process.env.CODEX_HOME!, "config.toml"),
+      '[mcp_servers.x.env]\nAPI_KEY = "sk-LEAKME"\nbroken\n',
+      "utf8",
+    );
+    const { runDoctor } = await import("../src/commands/doctor.js");
+    const bad = runDoctor(false).find((i) => i.item === "codex: config.toml is invalid");
+    expect(bad).toBeDefined();
+    expect(bad!.detail).not.toContain("sk-LEAKME");
+    expect(bad!.detail).not.toContain("\n");
+  });
+
+  it("does not leak config values from a JSON parse error", async () => {
+    fs.writeFileSync(
+      join(process.env.CLAUDE_CODE_HOME!, "settings.json"),
+      '{"apiKey":"sk-LEAKME", broken',
+      "utf8",
+    );
+    const { runDoctor } = await import("../src/commands/doctor.js");
+    const bad = runDoctor(false).find((i) => i.item === "claude: settings.json is invalid");
+    expect(bad).toBeDefined();
+    expect(bad!.detail).not.toContain("sk-LEAKME");
+    expect(bad!.detail).not.toContain("\n");
+  });
+
+  it("reports KI-2564 as an ok advisory, not a warning", async () => {
+    fs.writeFileSync(
+      join(process.env.KIMI_CODE_HOME!, "config.toml"),
+      '[[hooks]]\nevent = "PostToolUse"\ncommand = "node x.mjs"\n',
+      "utf8",
+    );
+    const { runDoctor } = await import("../src/commands/doctor.js");
+    const issue = runDoctor(false).find((i) => i.item.startsWith("known issue KI-2564"));
+    expect(issue?.level).toBe("ok");
+  });
+});
+
 describe("doctor --json", () => {
   it("does not create or modify any config file and prints a parseable snapshot", () => {
-    const kimiHome = path.join(tmp, "kimi-code");
+    const kimiHome = path.join(tmp, ".kimi-code");
     fs.mkdirSync(kimiHome, { recursive: true });
     const configPath = path.join(kimiHome, "config.toml");
     fs.writeFileSync(configPath, 'default_model = "kimi-k3"\n', "utf8");
@@ -98,9 +158,14 @@ describe("doctor --json", () => {
     } catch (err) {
       stdout = (err as { stdout?: string }).stdout ?? "";
     }
-    const parsed = JSON.parse(stdout) as { platform: string; redaction: { applied: boolean } };
+    const parsed = JSON.parse(stdout) as {
+      platform: string;
+      redaction: { applied: boolean };
+      tools: { kimi: { home: string } };
+    };
     expect(parsed.platform).toBeTruthy();
     expect(parsed.redaction.applied).toBe(true);
+    expect(parsed.tools.kimi.home).toBe("~/.kimi-code");
     expect(fs.readFileSync(configPath, "utf8")).toBe(before);
   });
 });

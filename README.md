@@ -232,10 +232,10 @@ presets/<id>/
 
 - platform, each CLI's version and config location
 - installed Kimi plugin count (managed dirs + `installed.json`)
-- Kimi hook counts from both channels (`config.toml` and `plugins/managed/*/kimi.plugin.json`)
-- the doctor issues, plus matched known regressions with upstream links (currently `KI-2553` and `KI-2564`)
+- Kimi hook counts from both channels (`config.toml` and plugin manifests: `kimi.plugin.json` or `.kimi-plugin/plugin.json`)
+- the doctor issues, plus matched known regressions/advisories with upstream links (currently `KI-2553` and `KI-2564`)
 
-Every home/user-directory path in the JSON is replaced with `~`. Relative paths can remain, so review before posting. The text `doctor` output also shows matched known issues as warnings; it never warns about a regression whose platform/version/config conditions do not match.
+Every home/user-directory path in the JSON is replaced with `~`. Relative paths can remain, so review before posting. The text `doctor` output also shows matched known issues (as a warning or an advisory); it never warns about a regression whose platform/version/config conditions do not match.
 
 ---
 

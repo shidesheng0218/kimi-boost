@@ -9,7 +9,7 @@ export interface KnownIssue {
   id: string;
   url: string;
   title: string;
-  severity: "warn";
+  severity: "warn" | "info";
   advice: string;
 }
 
@@ -27,8 +27,8 @@ const KI_2564: KnownIssue = {
   id: "KI-2564",
   url: "https://github.com/MoonshotAI/kimi-cli/issues/2564",
   title: "PostToolUse / PostToolUseFailure hooks can be dropped by GC before completion",
-  severity: "warn",
-  advice: "PostToolUse guards (secret-scan-post, injection-scan) are best-effort on affected kimi-code builds. PreToolUse guardrails are unaffected. Upgrade, then re-check that PostToolUse hooks fire.",
+  severity: "info",
+  advice: "Advisory: no fixed version is recorded yet, and the bundled core preset ships PostToolUse hooks, so this stays informational rather than a permanent warning. PostToolUse guards (secret-scan-post, injection-scan) are best-effort; PreToolUse guardrails are unaffected. Upgrade, then re-check that PostToolUse hooks fire.",
 };
 
 function is029(version: string | undefined): boolean {

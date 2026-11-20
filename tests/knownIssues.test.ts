@@ -18,8 +18,8 @@ describe("knownIssueMatches", () => {
   });
 
   it("KI-2564 fires when a PostToolUse hook is present", () => {
-    const ids = knownIssueMatches(ctx({ hookEvents: ["PreToolUse", "PostToolUse"] })).map((i) => i.id);
-    expect(ids).toContain("KI-2564");
+    const issue = knownIssueMatches(ctx({ hookEvents: ["PreToolUse", "PostToolUse"] })).find((i) => i.id === "KI-2564");
+    expect(issue).toMatchObject({ id: "KI-2564", severity: "info" });
   });
 
   it("KI-2564 does not fire without PostToolUse", () => {

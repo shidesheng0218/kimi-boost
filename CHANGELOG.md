@@ -2,9 +2,9 @@
 
 ### Compatibility snapshot and known-issue checks
 
-- `doctor --json` prints a recursively redacted environment snapshot for upstream issues and support: platform, CLI versions, installed Kimi plugin count, Kimi hook counts from both install channels, doctor issues, and matched known regressions.
-- `doctor` now matches two known upstream regressions with verifiable conditions: `KI-2553` (Windows + kimi-code 0.29.x + 2+ plugins) and `KI-2564` (PostToolUse hooks installed). Unmatched issues are never warned about.
-- New read-only collectors: `installedKimiPlugins()`, `kimiHookEvents()`, `kimiHookSummary()` (managed dirs + `installed.json`, `config.toml` + plugin manifests).
+- `doctor --json` prints a recursively redacted environment snapshot for upstream issues and support: platform, CLI versions, installed Kimi plugin count, Kimi hook counts from both install channels, doctor issues, and matched known regressions/advisories.
+- `doctor` now matches two known upstream issues with verifiable conditions: `KI-2553` (Windows + kimi-code 0.29.x + 2+ plugins, warning) and `KI-2564` (PostToolUse hooks installed, informational until a fixed version is recorded). Unmatched issues are never warned about.
+- New read-only collectors: `installedKimiPlugins()`, `kimiHookEvents()`, `kimiHookSummary()` (managed dirs + `installed.json` / its `root`, `config.toml` + `kimi.plugin.json` / `.kimi-plugin/plugin.json`).
 
 ### Removed: speculative Kimi commands pre-positioning
 
